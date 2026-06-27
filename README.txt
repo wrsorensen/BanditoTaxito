@@ -1,38 +1,33 @@
-Bandito Taxito — Repo Support Restore v0.2.0
+Bandito Taxito v0.2.1 — Logbook Viewer
 
-Use this ZipPak because the repo was cleaned too aggressively and support folders/files were removed.
+Changed files only:
+- Code.gs
+- index.html
+- README.txt
 
-This ZipPak restores:
-- docs/
-- releases/
-- appsscript.json
-- .gitignore
-- README.txt instructions
+What changed:
+- Adds read-only Logbook screen to the GitHub frontend.
+- Adds API action `logbook` / `getLogbook` to GAS backend.
+- Shows recent Work Logs, Mileage, Receipts, and Notes/Photos from the Sheet.
+- Keeps records read-only; no edit/delete workflow yet.
+- Does not change billable-day/pay calculations.
+- Does not change Sheet headers.
+- Does not change assets/docs/releases/appsscript.json.
 
-It does NOT replace root Code.gs or root index.html.
-Keep your current v0.2.0 root Code.gs and index.html from the architecture ZipPak.
+Upload to GitHub root:
+- Replace Code.gs
+- Replace index.html
 
-Upload to GitHub repo root:
-- docs/
-- releases/
-- appsscript.json
-- .gitignore
+Apps Script:
+- Replace Code.gs only.
+- Deploy new Web App version.
 
-After upload, root should look like:
+Deploy note:
+v0.2.1 — Logbook viewer
 
-assets/
-docs/
-releases/
-Code.gs
-index.html
-appsscript.json
-README.txt or README.md
-.nojekyll if present
-
-Do NOT add:
-- Index.html
-
-For v0.2.0:
-- GitHub Pages uses index.html as the full branded frontend.
-- Apps Script uses Code.gs as the backend/API.
-- appsscript.json is only the Apps Script project manifest backup/source copy.
+Test:
+1. Open https://wrsorensen.github.io/BanditoTaxito/
+2. Confirm Backend OK.
+3. Tap View Logbook.
+4. Confirm recent Work Log test appears.
+5. Optional: add another Start/End Work record, then refresh Logbook.
