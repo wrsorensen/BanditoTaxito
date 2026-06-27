@@ -315,6 +315,89 @@
     .review-item.warn { background: var(--soft-yellow); border-color: #f0d59a; }
     .review-item.good { background: #edf7ea; border-color: #bfe6cd; }
 
+    .logbook-note {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .logbook-section {
+      margin-top: 14px;
+    }
+
+    .logbook-heading {
+      margin: 0 0 8px;
+      font-size: 15px;
+      color: var(--primary-dark);
+    }
+
+    .logbook-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .logbook-card {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .logbook-card summary {
+      min-height: 50px;
+      padding: 11px 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .logbook-card summary::-webkit-details-marker { display: none; }
+
+    .logbook-summary-main {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .logbook-date {
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .logbook-meta {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .logbook-details {
+      border-top: 1px solid #efe2ca;
+      padding: 10px 12px 12px;
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    .logbook-empty {
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      padding: 11px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      background: #fffaf0;
+    }
+
     .count {
       font-weight: 900;
     }
@@ -466,7 +549,7 @@
         </div>
       </div>
       <div class="status-row">
-        <div class="pill" id="versionPill">v0.2.0</div>
+        <div class="pill" id="versionPill">v0.2.1</div>
         <div class="pill" id="onlinePill">Checking connection</div>
         <div class="pill" id="queuePill">Queue: 0</div>
       </div>
@@ -507,6 +590,7 @@
         <button class="big-btn" onclick="showView('mileageView')">🛻 Add Mileage <span>odometer run or correction</span></button>
         <button class="big-btn" onclick="showView('noteView')">📸 Add Note / Photo <span>proof, issue, or reminder</span></button>
         <button class="big-btn" onclick="showView('taxView')">🌵 Tax Helper <span>tax stash reminders</span></button>
+        <button class="big-btn" onclick="showView('logbookView')">📒 View Logbook <span>recent work, mileage, receipts</span></button>
       </div>
 
       <div class="card">
@@ -518,6 +602,38 @@
         </div>
       </div>
     </main>
+
+    <section id="logbookView" class="card hidden">
+      <div class="section-head">
+        <h2 class="section-title">Logbook</h2>
+        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+      </div>
+      <p class="logbook-note">Read-only view of recent records saved to the backend Sheet. Editing stays in the Sheet for now.</p>
+      <div class="actions">
+        <button class="btn secondary" onclick="refreshLogbook()">Refresh Logbook</button>
+      </div>
+      <p class="tiny" id="logbookStatus">Open this screen to load recent records.</p>
+
+      <div class="logbook-section">
+        <h3 class="logbook-heading">Recent Work Logs</h3>
+        <div id="logbookWork" class="logbook-list"></div>
+      </div>
+
+      <div class="logbook-section">
+        <h3 class="logbook-heading">Recent Mileage</h3>
+        <div id="logbookMileage" class="logbook-list"></div>
+      </div>
+
+      <div class="logbook-section">
+        <h3 class="logbook-heading">Recent Receipts</h3>
+        <div id="logbookReceipts" class="logbook-list"></div>
+      </div>
+
+      <div class="logbook-section">
+        <h3 class="logbook-heading">Recent Notes / Photos</h3>
+        <div id="logbookNotes" class="logbook-list"></div>
+      </div>
+    </section>
 
     <section id="startWorkView" class="card hidden">
       <div class="section-head">
@@ -828,8 +944,8 @@
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyM4acSDZT7L6q_I7UQDfMc4xZiCFGXlw9B9pPPawGQSQtTCvtQZFNxbsAQ3z7vFBcPVQ/exec';
     const QUEUE_KEY = 'banditoTaxitoQueue_v020';
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
-    const UI_VERSION = 'v0.2.0';
-    let appState = { clients: [], settings: {}, weeklyReview: {} };
+    const UI_VERSION = 'v0.2.1';
+    let appState = { clients: [], settings: {}, weeklyReview: {}, logbook: {} };
 
     document.addEventListener('DOMContentLoaded', init);
     window.addEventListener('online', updateOnlineStatus);
@@ -933,12 +1049,13 @@
     }
 
     function showView(id) {
-      const views = ['homeView', 'startWorkView', 'endWorkView', 'receiptView', 'mileageView', 'noteView', 'taxView'];
+      const views = ['homeView', 'startWorkView', 'endWorkView', 'receiptView', 'mileageView', 'noteView', 'taxView', 'logbookView'];
       views.forEach(function(viewId) {
         document.getElementById(viewId).classList.toggle('hidden', viewId !== id);
       });
 
       if (id === 'endWorkView') fillEndFromActiveSession();
+      if (id === 'logbookView') refreshLogbook();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1106,6 +1223,7 @@
         .then(function() {
           toast(successMessage || 'Sent to backend.');
           window.setTimeout(refreshWeeklyReview, 3000);
+          if (!document.getElementById('logbookView').classList.contains('hidden')) window.setTimeout(refreshLogbook, 3500);
         })
         .catch(function(err) {
           queueItem(type, payload);
@@ -1132,6 +1250,7 @@
           updateQueuePill();
           toast('Offline queue sent.');
           window.setTimeout(refreshWeeklyReview, 3500);
+          if (!document.getElementById('logbookView').classList.contains('hidden')) window.setTimeout(refreshLogbook, 4000);
         })
         .catch(function(err) {
           toast('Queue send failed. Nothing deleted.');
@@ -1179,6 +1298,127 @@
       document.getElementById('reviewList').innerHTML = items.map(function(item) {
         return '<div class="review-item ' + item.type + '"><span>' + item.label + '</span><span class="count">' + item.value + '</span></div>';
       }).join('');
+    }
+
+    function refreshLogbook() {
+      const status = document.getElementById('logbookStatus');
+      if (status) status.textContent = 'Loading recent records...';
+
+      apiGet('logbook', { limit: 25 })
+        .then(function(data) {
+          appState.logbook = (data && data.logbook) || {};
+          renderLogbook(appState.logbook);
+          if (status) status.textContent = 'Showing newest 25 records per category.';
+        })
+        .catch(function(err) {
+          if (status) status.textContent = 'Could not load logbook.';
+          toast('Could not load logbook.');
+          console.error(err);
+        });
+    }
+
+    function renderLogbook(data) {
+      data = data || {};
+      renderLogbookGroup('logbookWork', data.work || [], 'No work logs yet.');
+      renderLogbookGroup('logbookMileage', data.mileage || [], 'No mileage records yet.');
+      renderLogbookGroup('logbookReceipts', data.receipts || [], 'No receipt records yet.');
+      renderLogbookGroup('logbookNotes', data.notes || [], 'No notes/photos yet.');
+    }
+
+    function renderLogbookGroup(id, rows, emptyText) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!rows || !rows.length) {
+        el.innerHTML = '<div class="logbook-empty">' + escapeHtml(emptyText) + '</div>';
+        return;
+      }
+      el.innerHTML = rows.map(renderLogbookCard).join('');
+    }
+
+    function renderLogbookCard(item) {
+      item = item || {};
+      const title = item.title || item.site || item.vendor || item.noteType || item.type || 'Record';
+      const date = item.date || item.timestamp || '';
+      const meta = logbookMeta(item);
+      const details = logbookDetails(item);
+
+      return '<details class="logbook-card">' +
+        '<summary>' +
+          '<div class="logbook-summary-main"><span>' + escapeHtml(title) + '</span><span class="logbook-date">' + escapeHtml(shortDate(date)) + '</span></div>' +
+          '<div class="logbook-meta">' + escapeHtml(meta || 'Tap to view details') + '</div>' +
+        '</summary>' +
+        '<div class="logbook-details">' + details + '</div>' +
+      '</details>';
+    }
+
+    function logbookMeta(item) {
+      if (item.type === 'work') return [item.client, item.status, item.hours ? item.hours + ' hrs' : '', item.miles ? item.miles + ' mi' : ''].filter(Boolean).join(' • ');
+      if (item.type === 'mileage') return [item.client, item.miles ? item.miles + ' mi' : '', item.reimbursed ? 'Reimbursed: ' + item.reimbursed : ''].filter(Boolean).join(' • ');
+      if (item.type === 'receipt') return [item.category, item.amount ? '$' + item.amount : '', item.reimbursable ? 'Reimbursable: ' + item.reimbursable : ''].filter(Boolean).join(' • ');
+      if (item.type === 'note') return [item.client, item.site, item.status].filter(Boolean).join(' • ');
+      return '';
+    }
+
+    function logbookDetails(item) {
+      const rows = [];
+      addDetail(rows, 'ID', item.id);
+      addDetail(rows, 'Saved', item.timestamp);
+      addDetail(rows, 'Date', item.date);
+      addDetail(rows, 'Client', item.client);
+      addDetail(rows, 'Site', item.site);
+
+      if (item.type === 'work') {
+        addDetail(rows, 'Start', item.startTime);
+        addDetail(rows, 'End', item.endTime);
+        addDetail(rows, 'Hours', item.hours);
+        addDetail(rows, 'Miles', item.miles);
+        addDetail(rows, 'Work Performed', item.workPerformed);
+        addDetail(rows, 'Notes', item.notes);
+        addDetail(rows, 'Billable Days', item.billableDays);
+        addDetail(rows, 'Estimated Pay', item.estimatedPay ? '$' + item.estimatedPay : '');
+      }
+
+      if (item.type === 'mileage') {
+        addDetail(rows, 'From', item.from);
+        addDetail(rows, 'To', item.to);
+        addDetail(rows, 'Miles', item.miles);
+        addDetail(rows, 'Purpose', item.purpose);
+        addDetail(rows, 'Reimbursed', item.reimbursed);
+        addDetail(rows, 'Notes', item.notes);
+      }
+
+      if (item.type === 'receipt') {
+        addDetail(rows, 'Vendor', item.vendor);
+        addDetail(rows, 'Amount', item.amount ? '$' + item.amount : '');
+        addDetail(rows, 'Category', item.category);
+        addDetail(rows, 'Reimbursable', item.reimbursable);
+        addDetail(rows, 'Paid By', item.paidBy);
+        addDetail(rows, 'Notes', item.notes);
+        if (item.fileUrl) rows.push('<div><strong>File:</strong> <a href="' + escapeAttr(item.fileUrl) + '" target="_blank" rel="noopener">Open upload</a></div>');
+      }
+
+      if (item.type === 'note') {
+        addDetail(rows, 'Type', item.noteType);
+        addDetail(rows, 'Status', item.status);
+        addDetail(rows, 'Note', item.note);
+        if (item.fileUrl) rows.push('<div><strong>File:</strong> <a href="' + escapeAttr(item.fileUrl) + '" target="_blank" rel="noopener">Open upload</a></div>');
+      }
+
+      return rows.length ? rows.join('') : '<div>No details available.</div>';
+    }
+
+    function addDetail(rows, label, value) {
+      if (value === null || value === undefined || String(value).trim() === '') return;
+      rows.push('<div><strong>' + escapeHtml(label) + ':</strong> ' + escapeHtml(value) + '</div>');
+    }
+
+    function shortDate(value) {
+      if (!value) return '';
+      return String(value).slice(0, 10);
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, '&#096;');
     }
 
     function renderClients(clients) {
