@@ -1,11 +1,11 @@
 /**
- * v0.2.0 — GitHub frontend + GAS API backend
+ * v0.2.1 — Logbook viewer API
  * Google Apps Script backend for a simple consultant work tracker.
  * Source of truth: Google Sheets.
  */
 
 const APP = {
-  version: 'v0.2.0',
+  version: 'v0.2.1',
   spreadsheetName: 'Bandito Taxito Backend',
   receiptFolderName: 'Bandito Taxito Receipt Uploads',
   photoFolderName: 'Bandito Taxito Photo Uploads',
@@ -131,6 +131,11 @@ function handleApiAction_(action, payload, request) {
 
   if (action === 'weeklyReview' || action === 'getWeeklyReview') {
     return { ok: true, weeklyReview: getWeeklyReview() };
+  }
+
+  if (action === 'logbook' || action === 'getLogbook') {
+    const limit = payload.limit || (request && request.params && request.params.limit) || 25;
+    return { ok: true, logbook: getLogbook(limit) };
   }
 
   if (action === 'taxSummary' || action === 'getTaxSummary') {
@@ -469,6 +474,119 @@ function getWeeklyReview() {
     missingMileage: missingMileage,
     openItems: missingEndTime + missingWorkNotes + missingReceiptFile + missingReceiptAmount + missingMileage
   };
+}
+
+
+function getLogbook(limit) {
+  setupSpreadsheet_();
+  limit = Math.max(1, Math.min(50, Number(limit) || 25));
+
+  return {
+    work: getRecentRows_(APP.tabs.workLog, limit, mapWorkLogForApi_),
+    mileage: getRecentRows_(APP.tabs.mileage, limit, mapMileageForApi_),
+    receipts: getRecentRows_(APP.tabs.receipts, limit, mapReceiptForApi_),
+    notes: getRecentRows_(APP.tabs.notes, limit, mapNoteForApi_)
+  };
+}
+
+function getRecentRows_(tabName, limit, mapper) {
+  const sheet = getSs_().getSheetByName(tabName);
+  return readRows_(sheet)
+    .filter(rowHasContent_)
+    .reverse()
+    .slice(0, limit)
+    .map(mapper);
+}
+
+function rowHasContent_(row) {
+  return Object.keys(row || {}).some(function(key) {
+    const value = row[key];
+    return value !== null && value !== undefined && String(value).trim() !== '';
+  });
+}
+
+function mapWorkLogForApi_(row) {
+  return {
+    type: 'work',
+    id: apiValue_(row['Entry ID']),
+    timestamp: apiValue_(row.Timestamp),
+    title: apiValue_(row['Project/Site'] || row.Client || 'Work Log'),
+    client: apiValue_(row.Client),
+    site: apiValue_(row['Project/Site']),
+    date: apiValue_(row['Work Date']),
+    startTime: apiValue_(row['Start Time']),
+    endTime: apiValue_(row['End Time']),
+    hours: apiValue_(row.Hours),
+    status: apiValue_(row.Status),
+    workPerformed: apiValue_(row['Work Performed']),
+    notes: apiValue_(row.Notes),
+    miles: apiValue_(row.Miles),
+    billableDays: apiValue_(row['Billable Days']),
+    rate: apiValue_(row.Rate),
+    estimatedPay: apiValue_(row['Estimated Pay'])
+  };
+}
+
+function mapMileageForApi_(row) {
+  return {
+    type: 'mileage',
+    id: apiValue_(row['Mileage ID']),
+    timestamp: apiValue_(row.Timestamp),
+    title: apiValue_((row.From && row.To) ? row.From + ' → ' + row.To : (row['Project/Site'] || 'Mileage')),
+    client: apiValue_(row.Client),
+    site: apiValue_(row['Project/Site']),
+    date: apiValue_(row['Trip Date']),
+    miles: apiValue_(row.Miles),
+    from: apiValue_(row.From),
+    to: apiValue_(row.To),
+    purpose: apiValue_(row.Purpose),
+    reimbursed: apiValue_(row['Reimbursed?']),
+    notes: apiValue_(row.Notes)
+  };
+}
+
+function mapReceiptForApi_(row) {
+  return {
+    type: 'receipt',
+    id: apiValue_(row['Receipt ID']),
+    timestamp: apiValue_(row.Timestamp),
+    title: apiValue_(row.Vendor || row.Category || 'Receipt'),
+    client: apiValue_(row.Client),
+    site: apiValue_(row['Project/Site']),
+    date: apiValue_(row['Receipt Date']),
+    vendor: apiValue_(row.Vendor),
+    amount: apiValue_(row.Amount),
+    category: apiValue_(row.Category),
+    reimbursable: apiValue_(row['Reimbursable?']),
+    paidBy: apiValue_(row['Paid By']),
+    notes: apiValue_(row.Notes),
+    fileUrl: apiValue_(row['File URL']),
+    aiStatus: apiValue_(row['AI Status'])
+  };
+}
+
+function mapNoteForApi_(row) {
+  return {
+    type: 'note',
+    id: apiValue_(row['Note ID']),
+    timestamp: apiValue_(row.Timestamp),
+    title: apiValue_(row.Type || 'Note / Photo'),
+    client: apiValue_(row.Client),
+    site: apiValue_(row['Project/Site']),
+    date: apiValue_(row['Note Date']),
+    noteType: apiValue_(row.Type),
+    note: apiValue_(row.Note),
+    status: apiValue_(row.Status),
+    fileUrl: apiValue_(row['File URL'])
+  };
+}
+
+function apiValue_(value) {
+  if (value === null || value === undefined) return '';
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  }
+  return String(value).trim();
 }
 
 function getTaxSummary() {
