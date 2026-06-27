@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="assets/app-icon-v1.png">
+  <style>
+    :root {
+      --bg: #11100d;
+      --card: #fff7e6;
+      --card-strong: #f4ead8;
+      --ink: #2b241c;
+      --muted: #735f47;
+      --line: #d4b37d;
+      --primary: #9c2f22;
+      --primary-dark: #28160f;
+      --teal: #123f3d;
+      --gold: #c59a45;
+      --green: #467a45;
+      --yellow: #b77a1a;
+      --red: #b53a2d;
+      --soft-primary: #fff1df;
+      --soft-red: #fff1ef;
+      --soft-yellow: #fff7e3;
+      --radius: 18px;
+      --asset-emblem: url('assets/main-emblem-v1.png');
+      --asset-dog: url('assets/dog-mascot-v1.png');
+      --asset-parchment: url('assets/parchment-bg-v1.png');
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(17, 16, 13, 0.88) 0%, rgba(31, 23, 17, 0.72) 42%, rgba(18, 63, 61, 0.82) 100%),
+        var(--asset-parchment),
+        #11100d;
+      background-size: cover;
+      background-position: center top;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(18, 63, 61, 0.96), rgba(40, 22, 15, 0.98) 52%, rgba(156, 47, 34, 0.92)),
+        radial-gradient(circle at 90% 15%, rgba(197, 154, 69, 0.34), transparent 28%);
+      color: #fff8eb;
+      border: 1px solid rgba(197, 154, 69, 0.62);
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34);
+      margin-bottom: 14px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -54px;
+      bottom: -80px;
+      width: 170px;
+      height: 170px;
+      border: 26px solid rgba(255, 248, 235, 0.07);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+
+    .brand-lockup {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .brand-mark {
+      width: 78px;
+      height: 78px;
+      flex: 0 0 78px;
+      border-radius: 19px;
+      object-fit: cover;
+      border: 2px solid rgba(197, 154, 69, 0.82);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.34);
+      background: #11100d;
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .brand-kicker {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(197, 154, 69, 0.16);
+      border: 1px solid rgba(197, 154, 69, 0.38);
+      color: #f8dfaa;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .mascot-panel {
+      margin-top: 13px;
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(18, 63, 61, 0.94), rgba(40, 22, 15, 0.95));
+      border: 1px solid rgba(197, 154, 69, 0.55);
+      color: #fff8eb;
+      overflow: hidden;
+    }
+
+    .mascot-img {
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.38));
+    }
+
+    .mascot-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 900;
+      color: #f8dfaa;
+    }
+
+    .mascot-copy {
+      margin: 5px 0 0;
+      color: #f6ead2;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 750;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.86;
+      margin-bottom: 5px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 29px;
+      line-height: 1.05;
+    }
+
+    .sub {
+      display: none;
+    }
+
+    .status-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .pill {
+      background: rgba(255, 248, 235, 0.15);
+      border: 1px solid rgba(255, 248, 235, 0.24);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .big-btn {
+      border: 1px solid rgba(197, 154, 69, 0.54);
+      border-radius: var(--radius);
+      padding: 18px 12px;
+      background:
+        linear-gradient(180deg, rgba(255, 248, 234, 0.98), rgba(244, 234, 216, 0.98));
+      color: var(--ink);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+      font-size: 16px;
+      font-weight: 900;
+      text-align: left;
+      min-height: 82px;
+      cursor: pointer;
+    }
+
+    .big-btn:active {
+      transform: translateY(1px);
+    }
+
+    .big-btn span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .big-btn.primary {
+      background:
+        linear-gradient(180deg, rgba(255, 246, 232, 0.98), rgba(255, 241, 223, 0.98));
+      border: 1px solid rgba(156, 47, 34, 0.40);
+      box-shadow: inset 0 0 0 1px rgba(197, 154, 69, 0.24), 0 8px 20px rgba(0, 0, 0, 0.18);
+    }
+
+    .card {
+      background:
+        linear-gradient(180deg, rgba(255, 248, 234, 0.97), rgba(244, 234, 216, 0.97));
+      border: 1px solid rgba(197, 154, 69, 0.50);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 9px 22px rgba(0, 0, 0, 0.16);
+    }
+
+    .hidden { display: none !important; }
+
+    .section-title {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      margin: 12px 0 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 13px;
+      font-size: 16px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    textarea { min-height: 92px; resize: vertical; }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 800;
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn.secondary {
+      background: #efe2ca;
+      color: var(--ink);
+    }
+
+    .btn.danger {
+      background: var(--red);
+    }
+
+    .review-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .review-item {
+      border-radius: 14px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .review-item.bad { background: var(--soft-red); border-color: #ffc6c1; }
+    .review-item.warn { background: var(--soft-yellow); border-color: #f0d59a; }
+    .review-item.good { background: #edf7ea; border-color: #bfe6cd; }
+
+    .count {
+      font-weight: 900;
+    }
+
+    .toast {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      max-width: 730px;
+      margin: 0 auto;
+      background: #111827;
+      color: white;
+      border-radius: 14px;
+      padding: 13px 14px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
+      display: none;
+      z-index: 9;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .tiny {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .active-session {
+      background: #edf7ea;
+      border-color: #bfe6cd;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .home-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 900;
+      background: #efe2ca;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .mini-panel {
+      margin-top: 10px;
+      border-radius: 14px;
+      background: #fbf1df;
+      border: 1px dashed var(--line);
+      padding: 11px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .estimate-box {
+      margin-top: 10px;
+      border-radius: 14px;
+      padding: 11px;
+      background: var(--soft-primary);
+      border: 1px solid #e5b98e;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+
+
+    .today-card {
+      background: #fff7ea;
+      border: 1px solid #e5c7a1;
+    }
+
+    .today-line {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 6px 9px;
+      background: #f1dfbe;
+      border: 1px solid #e1c397;
+      color: #4a2f1b;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .badge.green {
+      background: #edf7ea;
+      border-color: #bed8b5;
+      color: #2f5b30;
+    }
+
+    .badge.orange {
+      background: #fff1df;
+      border-color: #e5b98e;
+      color: #8a421b;
+    }
+
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
+      h1 { font-size: 25px; }
+      .big-btn { min-height: 72px; }
+      .brand-mark {
+        width: 66px;
+        height: 66px;
+        flex-basis: 66px;
+        border-radius: 16px;
+      }
+      .brand-lockup { align-items: flex-start; }
+      .mascot-panel {
+        grid-template-columns: 68px 1fr;
+      }
+      .mascot-img {
+        width: 68px;
+        height: 68px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div class="brand-lockup">
+        <img class="brand-mark" src="assets/main-emblem-v1.png" alt="Bandito Taxito emblem">
+        <div class="brand-copy">
+          <div class="eyebrow">Keep the receipts, amigo.</div>
+          <h1>Bandito Taxito</h1>
+          <div class="brand-kicker">1099 Tracker • Miles • Receipts</div>
+        </div>
+      </div>
+      <div class="status-row">
+        <div class="pill" id="versionPill">v0.2.0</div>
+        <div class="pill" id="onlinePill">Checking connection</div>
+        <div class="pill" id="queuePill">Queue: 0</div>
+      </div>
+    </header>
+
+    <main id="homeView">
+      <div id="activeSessionCard" class="card active-session hidden">
+        <h2 class="section-title">Active Work Session</h2>
+        <div id="activeSessionText" class="tiny"></div>
+        <div class="actions">
+          <button class="btn" onclick="showView('endWorkView')">End Work</button>
+          <button class="btn secondary" onclick="clearActiveSession()">Clear</button>
+        </div>
+      </div>
+
+      <div class="card today-card">
+        <h2 class="section-title">Today</h2>
+        <p class="today-line">No clutter. Log the work, grab the miles, keep the receipts.</p>
+        <div class="badge-row">
+          <span class="badge green">Mobile first</span>
+          <span class="badge orange">Receipts</span>
+          <span class="badge">Mileage</span>
+          <span class="badge">Tax stash</span>
+        </div>
+        <div class="mascot-panel">
+          <img class="mascot-img" src="assets/dog-mascot-v1.png" alt="Bandito Taxito dog mascot">
+          <div>
+            <p class="mascot-title">3 legs. All heart. All hustle.</p>
+            <p class="mascot-copy">Your rugged little paper-trail watchdog. Track it, write it, don’t lose the damn receipt.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <button class="big-btn primary" onclick="showView('startWorkView')">📍 Start Work <span>company, site, start odometer</span></button>
+        <button class="big-btn primary" onclick="showView('endWorkView')">🏁 End Work <span>close the log, amigo</span></button>
+        <button class="big-btn" onclick="showView('receiptView')">🧾 Add Receipt <span>snap it before it disappears</span></button>
+        <button class="big-btn" onclick="showView('mileageView')">🛻 Add Mileage <span>odometer run or correction</span></button>
+        <button class="big-btn" onclick="showView('noteView')">📸 Add Note / Photo <span>proof, issue, or reminder</span></button>
+        <button class="big-btn" onclick="showView('taxView')">🌵 Tax Helper <span>tax stash reminders</span></button>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Weekly Review</h2>
+        <div id="reviewList" class="review-list"></div>
+        <div class="actions">
+          <button class="btn secondary" onclick="refreshWeeklyReview()">Refresh</button>
+          <button class="btn secondary" onclick="syncQueue()">Sync Offline Queue</button>
+        </div>
+      </div>
+    </main>
+
+    <section id="startWorkView" class="card hidden">
+      <div class="section-head">
+        <h2 class="section-title">Start Work</h2>
+        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+      </div>
+      <label>Company / Client</label>
+      <input id="startClient" list="clientList" placeholder="Default company/client if set">
+      <label>Project / Site</label>
+      <input id="startSite" placeholder="Jobsite, plant, unit, location">
+      <div class="row">
+        <div>
+          <label>Work Date</label>
+          <input id="startWorkDate" type="date">
+        </div>
+        <div>
+          <label>Start Time</label>
+          <input id="startTime" type="datetime-local">
+        </div>
+      </div>
+      <label>Start Odometer</label>
+      <input id="startOdometer" inputmode="decimal" placeholder="Optional but recommended">
+      <div class="row">
+        <div>
+          <label>Pay Type</label>
+          <select id="startPayType">
+            <option>Day rate</option>
+            <option>Hourly</option>
+            <option>No pay tracking</option>
+            <option>Unknown</option>
+          </select>
+        </div>
+        <div>
+          <label>Rate</label>
+          <input id="startRate" inputmode="decimal" placeholder="Optional">
+        </div>
+      </div>
+      <label>Quick Note</label>
+      <textarea id="startNotes" placeholder="Anything important before starting?"></textarea>
+      <div class="actions">
+        <button class="btn" onclick="startWork()">Save Start</button>
+        <button class="btn secondary" onclick="showView('homeView')">Cancel</button>
+      </div>
+    </section>
+
+    <section id="endWorkView" class="card hidden">
+      <div class="section-head">
+        <h2 class="section-title">End Work</h2>
+        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+      </div>
+      <label>Company / Client</label>
+      <input id="endClient" list="clientList">
+      <label>Project / Site</label>
+      <input id="endSite">
+      <div class="row">
+        <div>
+          <label>Work Date</label>
+          <input id="endWorkDate" type="date">
+        </div>
+        <div>
+          <label>End Time</label>
+          <input id="endTime" type="datetime-local">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Start Odometer</label>
+          <input id="endStartOdometer" inputmode="decimal">
+        </div>
+        <div>
+          <label>End Odometer</label>
+          <input id="endOdometer" inputmode="decimal">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Work Span</label>
+          <select id="workSpan" onchange="toggleWorkSpan()">
+            <option>Single-day</option>
+            <option>Multi-day</option>
+          </select>
+        </div>
+        <div>
+          <label>Pay Type</label>
+          <select id="endPayType" onchange="updatePayEstimate()">
+            <option>Day rate</option>
+            <option>Hourly</option>
+            <option>No pay tracking</option>
+            <option>Unknown</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="workSpanDates">
+        <div>
+          <label>Work Start Date</label>
+          <input id="workStartDate" type="date" onchange="updatePayEstimate()">
+        </div>
+        <div>
+          <label>Work End Date</label>
+          <input id="workEndDate" type="date" onchange="updatePayEstimate()">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Billable Days</label>
+          <input id="billableDays" inputmode="decimal" placeholder="Example: 1" oninput="updatePayEstimate()">
+        </div>
+        <div>
+          <label>Rate</label>
+          <input id="endRate" inputmode="decimal" placeholder="Optional" oninput="updatePayEstimate()">
+        </div>
+      </div>
+      <div class="estimate-box" id="payEstimateBox">Estimated pay: —</div>
+      <label>Status</label>
+      <select id="endStatus">
+        <option>Complete</option>
+        <option>Return needed</option>
+        <option>Delayed</option>
+        <option>Issue</option>
+      </select>
+      <label>Work Performed</label>
+      <textarea id="workPerformed" placeholder="What got done?"></textarea>
+      <label>Notes</label>
+      <textarea id="endNotes" placeholder="Issues, follow-up, reminders"></textarea>
+      <label>Ready For Report?</label>
+      <select id="readyForReport">
+        <option>No</option>
+        <option>Yes</option>
+      </select>
+      <div class="actions">
+        <button class="btn" onclick="endWork()">Save Work Log</button>
+        <button class="btn secondary" onclick="showView('homeView')">Cancel</button>
+      </div>
+    </section>
+
+    <section id="receiptView" class="card hidden">
+      <div class="section-head">
+        <h2 class="section-title">Add Receipt</h2>
+        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+      </div>
+      <p class="tiny">AI receipt reader is planned for a later build. For now, Bandito asks confirmation questions so bad receipt data does not get saved blindly.</p>
+      <label>Receipt Photo</label>
+      <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment">
+      <div class="mini-panel" id="receiptAiPanel">
+        AI plan: upload receipt → AI reads vendor/date/total/category → you confirm anything sketchy → save.
+      </div>
+      <div class="row">
+        <div>
+          <label>Receipt Date</label>
+          <input id="receiptDate" type="date">
+        </div>
+        <div>
+          <label>Amount</label>
+          <input id="receiptAmount" inputmode="decimal" placeholder="0.00">
+        </div>
+      </div>
+      <label>Vendor</label>
+      <input id="receiptVendor" placeholder="Store / vendor">
+      <label>Category</label>
+      <select id="receiptCategory">
+        <option>Materials</option>
+        <option>Fuel</option>
+        <option>Tools</option>
+        <option>Meals</option>
+        <option>Parking/Tolls</option>
+        <option>Supplies</option>
+        <option>Other</option>
+      </select>
+      <div class="row">
+        <div>
+          <label>Reimbursable?</label>
+          <select id="receiptReimbursable">
+            <option>Unknown</option>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+        </div>
+        <div>
+          <label>Paid By</label>
+          <select id="receiptPaidBy">
+            <option>Personal card</option>
+            <option>Cash</option>
+            <option>Company card</option>
+            <option>Client</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <label>Company / Site</label>
+      <input id="receiptClient" list="clientList" placeholder="Client / company">
+      <input id="receiptSite" placeholder="Site / project" style="margin-top:8px;">
+      <label>Notes</label>
+      <textarea id="receiptNotes"></textarea>
+      <div class="actions">
+        <button class="btn secondary" onclick="reviewReceiptFields()">Review Fields</button>
+        <button class="btn" onclick="saveReceiptForm()">Save Receipt</button>
+        <button class="btn secondary" onclick="showView('homeView')">Cancel</button>
+      </div>
+    </section>
+
+    <section id="mileageView" class="card hidden">
+      <div class="section-head">
+        <h2 class="section-title">Add Mileage</h2>
+        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+      </div>
+      <label>Company / Client</label>
+      <input id="mileageClient" list="clientList">
+      <label>Project / Site</label>
+      <input id="mileageSite">
+      <label>Trip Date</label>
+      <input id="mileageDate" type="date">
+      <div class="row">
+        <div>
+          <label>Start Odometer</label>
+          <input id="mileageStart" inputmode="decimal">
+        </div>
+        <div>
+          <label>End Odometer</label>
+          <input id="mileageEnd" inputmode="decimal">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>From</label>
+          <input id="mileageFrom" placeholder="Start location">
+        </div>
+        <div>
+          <label>To</label>
+          <input id="mileageTo" placeholder="End location">
+        </div>
+      </div>
+      <label>Purpose</label>
+      <input id="mileagePurpose" value="Business/job travel">
+      <label>Reimbursed?</label>
+      <select id="mileageReimbursed">
+        <option>Unknown</option>
+        <option>Yes</option>
+        <option>No</option>
+      </select>
+      <label>Notes</label>
+      <textarea id="mileageNotes"></textarea>
+      <div class="actions">
+        <button class="btn" onclick="saveMileageForm()">Save Mileage</button>
+        <button class="btn secondary" onclick="showView('homeView')">Cancel</button>
+      </div>
+    </section>
+
+    <section id="noteView" class="card hidden">
+      <div class="section-head">
+        <h2 class="section-title">Add Note / Photo</h2>
+        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+      </div>
+      <label>Photo / File</label>
+      <input id="noteFile" type="file" accept="image/*,application/pdf" capture="environment">
+      <label>Type</label>
+      <select id="noteType">
+        <option>Note</option>
+        <option>Photo proof</option>
+        <option>Issue</option>
+        <option>Delay</option>
+        <option>Safety concern</option>
+      </select>
+      <label>Company / Site</label>
+      <input id="noteClient" list="clientList" placeholder="Client / company">
+      <input id="noteSite" placeholder="Site / project" style="margin-top:8px;">
+      <label>Note Date</label>
+      <input id="noteDate" type="date">
+      <label>Note</label>
+      <textarea id="noteText" placeholder="What happened?"></textarea>
+      <div class="actions">
+        <button class="btn" onclick="saveNoteForm()">Save Note</button>
+        <button class="btn secondary" onclick="showView('homeView')">Cancel</button>
+      </div>
+    </section>
+
+    <section id="taxView" class="card hidden">
+      <div class="section-head">
+        <h2 class="section-title">Tax Helper</h2>
+        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+      </div>
+      <p class="tiny">Reminder/helper only. This does not replace a CPA or tax preparer.</p>
+      <label>Review Date</label>
+      <input id="taxDate" type="date">
+      <label>Type</label>
+      <select id="taxType">
+        <option>Quarterly review</option>
+        <option>Receipt review</option>
+        <option>Mileage review</option>
+        <option>Tax payment note</option>
+        <option>CPA export note</option>
+      </select>
+      <label>Amount</label>
+      <input id="taxAmount" inputmode="decimal" placeholder="Optional">
+      <label>Notes</label>
+      <textarea id="taxNotes" placeholder="Example: Review mileage and receipts before tax deadline."></textarea>
+      <div class="actions">
+        <button class="btn" onclick="saveTaxForm()">Save Tax Note</button>
+        <button class="btn secondary" onclick="showView('homeView')">Cancel</button>
+      </div>
+    </section>
+
+    <datalist id="clientList"></datalist>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyM4acSDZT7L6q_I7UQDfMc4xZiCFGXlw9B9pPPawGQSQtTCvtQZFNxbsAQ3z7vFBcPVQ/exec';
+    const QUEUE_KEY = 'banditoTaxitoQueue_v020';
+    const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
+    const UI_VERSION = 'v0.2.0';
+    let appState = { clients: [], settings: {}, weeklyReview: {} };
+
+    document.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    function init() {
+      setDefaultDates();
+      updateOnlineStatus();
+      updateQueuePill();
+      renderActiveSession();
+
+      apiGet('initialData')
+        .then(function(data) {
+          appState = data || appState;
+          document.getElementById('versionPill').textContent = UI_VERSION + ' GH';
+          document.getElementById('onlinePill').textContent = 'Backend OK';
+          renderClients(appState.clients || []);
+          applyDefaultSettings();
+          renderWeeklyReview(appState.weeklyReview || {});
+        })
+        .catch(function(err) {
+          document.getElementById('onlinePill').textContent = navigator.onLine ? 'Backend check failed' : 'Offline';
+          toast('Could not load backend. Offline queue available.');
+          console.error(err);
+        });
+    }
+
+    function apiGet(action, params) {
+      params = params || {};
+      return new Promise(function(resolve, reject) {
+        const callbackName = '__btApiCallback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        const script = document.createElement('script');
+        const query = new URLSearchParams(Object.assign({}, params, {
+          action: action,
+          callback: callbackName,
+          _: Date.now()
+        }));
+        const timeout = window.setTimeout(function() {
+          cleanup();
+          reject(new Error('Backend timed out'));
+        }, 12000);
+
+        function cleanup() {
+          window.clearTimeout(timeout);
+          try { delete window[callbackName]; } catch (err) { window[callbackName] = undefined; }
+          if (script && script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[callbackName] = function(data) {
+          cleanup();
+          if (data && data.ok === false) reject(new Error(data.message || 'Backend error'));
+          else resolve(data || {});
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error('Backend script load failed'));
+        };
+        script.src = GAS_API_URL + '?' + query.toString();
+        document.head.appendChild(script);
+      });
+    }
+
+    function postToGas(action, payload) {
+      // Cross-origin Apps Script writes are sent through a hidden form to avoid CORS blocking.
+      // The response cannot be read directly from GitHub Pages, so the UI confirms the send,
+      // then refreshes read-only data through JSONP.
+      return new Promise(function(resolve) {
+        const frameName = 'btGasPostFrame_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        const iframe = document.createElement('iframe');
+        iframe.name = frameName;
+        iframe.style.display = 'none';
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = GAS_API_URL;
+        form.target = frameName;
+        form.style.display = 'none';
+
+        addHidden(form, 'action', action);
+        addHidden(form, 'payload', JSON.stringify(payload || {}));
+
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        form.submit();
+
+        window.setTimeout(function() {
+          if (form.parentNode) form.parentNode.removeChild(form);
+          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+          resolve({ ok: true, sent: true });
+        }, 1200);
+      });
+    }
+
+    function addHidden(form, name, value) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    }
+
+    function showView(id) {
+      const views = ['homeView', 'startWorkView', 'endWorkView', 'receiptView', 'mileageView', 'noteView', 'taxView'];
+      views.forEach(function(viewId) {
+        document.getElementById(viewId).classList.toggle('hidden', viewId !== id);
+      });
+
+      if (id === 'endWorkView') fillEndFromActiveSession();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startWork() {
+      const payload = {
+        client: val('startClient'),
+        site: val('startSite'),
+        workDate: val('startWorkDate'),
+        startTime: val('startTime'),
+        startOdometer: val('startOdometer'),
+        notes: val('startNotes'),
+        payType: val('startPayType') || defaultPayType(),
+        rate: val('startRate') || defaultRate(),
+        status: 'Started',
+        readyForReport: 'No'
+      };
+
+      if (!payload.client) payload.client = defaultClient();
+      if (!payload.site) {
+        toast('Project/site is required.');
+        return;
+      }
+
+      localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+      renderActiveSession();
+      toast('Work session started. Vámonos.');
+      showView('homeView');
+    }
+
+    function endWork() {
+      const active = getActiveSession() || {};
+      const payload = {
+        client: val('endClient') || active.client,
+        site: val('endSite') || active.site,
+        workDate: val('endWorkDate') || active.workDate,
+        startTime: active.startTime || '',
+        endTime: val('endTime'),
+        status: val('endStatus'),
+        workPerformed: val('workPerformed'),
+        notes: combineNotes(active.notes, val('endNotes')),
+        startOdometer: val('endStartOdometer') || active.startOdometer,
+        endOdometer: val('endOdometer'),
+        readyForReport: val('readyForReport'),
+        payType: val('endPayType') || active.payType || defaultPayType(),
+        workSpan: val('workSpan'),
+        workStartDate: val('workStartDate') || val('endWorkDate') || active.workDate,
+        workEndDate: val('workEndDate') || val('endWorkDate') || active.workDate,
+        billableDays: val('billableDays') || calculateBillableDaysClient(val('workStartDate'), val('workEndDate')),
+        rate: val('endRate') || active.rate || defaultRate()
+      };
+
+      if (!payload.client) payload.client = defaultClient();
+      if (!payload.site || !payload.endTime) {
+        toast('Project/site and end time are required.');
+        return;
+      }
+
+      submitOrQueue('workLog', payload, 'Work log sent.');
+      localStorage.removeItem(SESSION_KEY);
+      renderActiveSession();
+      clearEndForm();
+      showView('homeView');
+    }
+
+    function saveReceiptForm() {
+      const fileInput = document.getElementById('receiptFile');
+      const payload = {
+        client: val('receiptClient'),
+        site: val('receiptSite'),
+        receiptDate: val('receiptDate'),
+        vendor: val('receiptVendor'),
+        amount: val('receiptAmount'),
+        category: val('receiptCategory'),
+        reimbursable: val('receiptReimbursable'),
+        paidBy: val('receiptPaidBy'),
+        notes: val('receiptNotes'),
+        aiStatus: fileInput.files.length ? 'User confirmed / AI reader planned' : 'Manual entry'
+      };
+
+      if (!completeReceiptMissingFields(payload, fileInput)) return;
+
+      readOptionalFile(fileInput, function(filePayload) {
+        if (filePayload) payload.file = filePayload;
+        submitOrQueue('receipt', payload, 'Receipt sent.');
+        clearReceiptForm();
+        showView('homeView');
+      });
+    }
+
+    function saveMileageForm() {
+      const payload = {
+        client: val('mileageClient'),
+        site: val('mileageSite'),
+        tripDate: val('mileageDate'),
+        startOdometer: val('mileageStart'),
+        endOdometer: val('mileageEnd'),
+        from: val('mileageFrom'),
+        to: val('mileageTo'),
+        purpose: val('mileagePurpose'),
+        reimbursed: val('mileageReimbursed'),
+        notes: val('mileageNotes')
+      };
+
+      if (!payload.tripDate || !payload.startOdometer || !payload.endOdometer) {
+        toast('Trip date and odometer fields are required.');
+        return;
+      }
+
+      submitOrQueue('mileage', payload, 'Mileage sent.');
+      clearMileageForm();
+      showView('homeView');
+    }
+
+    function saveNoteForm() {
+      const fileInput = document.getElementById('noteFile');
+      const payload = {
+        client: val('noteClient'),
+        site: val('noteSite'),
+        noteDate: val('noteDate'),
+        type: val('noteType'),
+        note: val('noteText'),
+        status: 'Open'
+      };
+
+      if (!payload.note && !fileInput.files.length) {
+        toast('Add a note or photo.');
+        return;
+      }
+
+      readOptionalFile(fileInput, function(filePayload) {
+        if (filePayload) payload.file = filePayload;
+        submitOrQueue('notePhoto', payload, 'Note/photo sent.');
+        clearNoteForm();
+        showView('homeView');
+      });
+    }
+
+    function saveTaxForm() {
+      const payload = {
+        eventDate: val('taxDate'),
+        type: val('taxType'),
+        amount: val('taxAmount'),
+        notes: val('taxNotes'),
+        status: 'Open'
+      };
+
+      if (!payload.eventDate && !payload.notes) {
+        toast('Add a review date or note.');
+        return;
+      }
+
+      submitOrQueue('taxNote', payload, 'Tax note sent.');
+      clearTaxForm();
+      showView('homeView');
+    }
+
+    function submitOrQueue(type, payload, successMessage) {
+      if (!navigator.onLine) {
+        queueItem(type, payload);
+        toast('Offline. Saved to queue.');
+        return;
+      }
+
+      postToGas('save', { type: type, payload: payload })
+        .then(function() {
+          toast(successMessage || 'Sent to backend.');
+          window.setTimeout(refreshWeeklyReview, 3000);
+        })
+        .catch(function(err) {
+          queueItem(type, payload);
+          toast('Send failed. Added to offline queue.');
+          console.error(err);
+        });
+    }
+
+    function syncQueue() {
+      const queue = getQueue();
+      if (!queue.length) {
+        updateQueuePill();
+        return;
+      }
+
+      if (!navigator.onLine) {
+        toast('Still offline. Queue not synced.');
+        return;
+      }
+
+      postToGas('syncQueuedItems', queue)
+        .then(function() {
+          localStorage.setItem(QUEUE_KEY, JSON.stringify([]));
+          updateQueuePill();
+          toast('Offline queue sent.');
+          window.setTimeout(refreshWeeklyReview, 3500);
+        })
+        .catch(function(err) {
+          toast('Queue send failed. Nothing deleted.');
+          console.error(err);
+        });
+    }
+
+    function queueItem(type, payload) {
+      const queue = getQueue();
+      queue.push({ type: type, payload: payload, queuedAt: new Date().toISOString() });
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+      updateQueuePill();
+    }
+
+    function getQueue() {
+      try {
+        return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function refreshWeeklyReview() {
+      apiGet('weeklyReview')
+        .then(function(data) {
+          renderWeeklyReview((data && data.weeklyReview) || data || {});
+        })
+        .catch(function(err) {
+          toast('Could not refresh review.');
+          console.error(err);
+        });
+    }
+
+    function renderWeeklyReview(data) {
+      data = data || {};
+      const items = [
+        { label: 'Work logs this week', value: data.workLogs || 0, type: 'good' },
+        { label: 'Missing end time', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'good' },
+        { label: 'Missing work notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'good' },
+        { label: 'Receipts missing photo/file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'good' },
+        { label: 'Receipts missing amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'good' },
+        { label: 'Mileage logs missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'good' }
+      ];
+
+      document.getElementById('reviewList').innerHTML = items.map(function(item) {
+        return '<div class="review-item ' + item.type + '"><span>' + item.label + '</span><span class="count">' + item.value + '</span></div>';
+      }).join('');
+    }
+
+    function renderClients(clients) {
+      const html = (clients || []).map(function(client) {
+        return '<option value="' + escapeHtml(client.name) + '"></option>';
+      }).join('');
+      document.getElementById('clientList').innerHTML = html;
+    }
+
+    function getActiveSession() {
+      try {
+        return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function renderActiveSession() {
+      const active = getActiveSession();
+      const card = document.getElementById('activeSessionCard');
+      const text = document.getElementById('activeSessionText');
+
+      if (!active) {
+        card.classList.add('hidden');
+        text.textContent = '';
+        return;
+      }
+
+      card.classList.remove('hidden');
+      text.textContent = active.client + ' — ' + active.site + ' — Started: ' + prettyDateTime(active.startTime);
+    }
+
+    function fillEndFromActiveSession() {
+      const active = getActiveSession();
+      setDefaultDates();
+      document.getElementById('endTime').value = toDateTimeLocal(new Date());
+
+      if (!active) return;
+      document.getElementById('endClient').value = active.client || '';
+      document.getElementById('endSite').value = active.site || '';
+      document.getElementById('endWorkDate').value = active.workDate || today();
+      document.getElementById('endStartOdometer').value = active.startOdometer || '';
+      document.getElementById('endPayType').value = active.payType || defaultPayType();
+      document.getElementById('endRate').value = active.rate || defaultRate();
+      document.getElementById('workStartDate').value = active.workDate || today();
+      document.getElementById('workEndDate').value = active.workDate || today();
+      if (!val('billableDays')) document.getElementById('billableDays').value = '1';
+      updatePayEstimate();
+    }
+
+    function clearActiveSession() {
+      localStorage.removeItem(SESSION_KEY);
+      renderActiveSession();
+      toast('Active session cleared.');
+    }
+
+    function readOptionalFile(input, callback) {
+      const file = input.files && input.files[0];
+      if (!file) {
+        callback(null);
+        return;
+      }
+
+      if (file.type && file.type.indexOf('image/') === 0) {
+        compressImageFile(file, callback);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        callback({
+          name: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          base64Data: event.target.result
+        });
+      };
+      reader.onerror = function() {
+        toast('File read failed. Save without file or retry.');
+        callback(null);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function compressImageFile(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const maxSide = 1600;
+          let width = img.width;
+          let height = img.height;
+          if (Math.max(width, height) > maxSide) {
+            const scale = maxSide / Math.max(width, height);
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          callback({
+            name: file.name.replace(/\.[^.]+$/, '') + '.jpg',
+            mimeType: 'image/jpeg',
+            base64Data: canvas.toDataURL('image/jpeg', 0.72)
+          });
+        };
+        img.onerror = function() {
+          callback({ name: file.name, mimeType: file.type || 'image/jpeg', base64Data: event.target.result });
+        };
+        img.src = event.target.result;
+      };
+      reader.onerror = function() {
+        toast('Image read failed. Save without file or retry.');
+        callback(null);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function applyDefaultSettings() {
+      const company = defaultClient();
+      const rate = defaultRate();
+      const payType = defaultPayType();
+      ['startClient', 'endClient', 'receiptClient', 'mileageClient', 'noteClient'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el && !el.value && company) el.value = company;
+      });
+      ['startRate', 'endRate'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el && !el.value && rate) el.value = rate;
+      });
+      ['startPayType', 'endPayType'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el && payType) el.value = payType;
+      });
+      updatePayEstimate();
+    }
+
+    function defaultClient() {
+      const settings = appState.settings || {};
+      if (settings.defaultClientCompany) return settings.defaultClientCompany;
+      if (settings.defaultClient) return settings.defaultClient;
+      if ((appState.clients || []).length === 1) return appState.clients[0].name || '';
+      return '';
+    }
+
+    function defaultPayType() {
+      return (appState.settings && appState.settings.defaultPayType) || 'Day rate';
+    }
+
+    function defaultRate() {
+      return (appState.settings && appState.settings.defaultRate) || '';
+    }
+
+    function toggleWorkSpan() {
+      const single = val('workSpan') === 'Single-day';
+      if (single) {
+        const workDate = val('endWorkDate') || today();
+        document.getElementById('workStartDate').value = workDate;
+        document.getElementById('workEndDate').value = workDate;
+        if (!val('billableDays')) document.getElementById('billableDays').value = '1';
+      }
+      updatePayEstimate();
+    }
+
+    function updatePayEstimate() {
+      const box = document.getElementById('payEstimateBox');
+      if (!box) return;
+      const type = val('endPayType') || defaultPayType();
+      const rate = numberVal('endRate') || numberVal('startRate') || numberValFromSetting('defaultRate');
+      let days = numberVal('billableDays');
+      if (!days) days = calculateBillableDaysClient(val('workStartDate'), val('workEndDate'));
+      const hours = estimateHoursClient();
+      let estimate = '';
+      if (type.toLowerCase().indexOf('day') !== -1 && rate && days) estimate = rate * days;
+      if (type.toLowerCase().indexOf('hour') !== -1 && rate && hours) estimate = rate * hours;
+      box.textContent = estimate ? 'Estimated pay: $' + estimate.toFixed(2) : 'Estimated pay: —';
+    }
+
+    function calculateBillableDaysClient(startDate, endDate) {
+      if (!startDate && !endDate) return '';
+      const start = new Date(startDate || endDate);
+      const end = new Date(endDate || startDate);
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return '';
+      const startOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const endOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      const days = Math.floor((endOnly.getTime() - startOnly.getTime()) / 86400000) + 1;
+      return days > 0 ? days : '';
+    }
+
+    function estimateHoursClient() {
+      const active = getActiveSession() || {};
+      const start = active.startTime ? new Date(active.startTime) : null;
+      const end = val('endTime') ? new Date(val('endTime')) : null;
+      if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) return '';
+      const hours = (end.getTime() - start.getTime()) / 36e5;
+      return hours >= 0 ? hours : '';
+    }
+
+    function reviewReceiptFields() {
+      const missing = getReceiptMissingFields({
+        receiptDate: val('receiptDate'),
+        vendor: val('receiptVendor'),
+        amount: val('receiptAmount'),
+        category: val('receiptCategory'),
+        file: document.getElementById('receiptFile').files.length
+      });
+      const panel = document.getElementById('receiptAiPanel');
+      if (!missing.length) {
+        panel.textContent = 'Receipt looks complete. Save when ready.';
+        toast('Receipt fields look complete.');
+        return;
+      }
+      panel.textContent = 'Check before save: ' + missing.join(', ') + '. AI reader will handle this automatically in a later build.';
+      toast('Receipt needs review.');
+    }
+
+    function completeReceiptMissingFields(payload, fileInput) {
+      if (!payload.amount && !fileInput.files.length) {
+        toast('Add an amount or receipt photo.');
+        return false;
+      }
+
+      if (!payload.amount && fileInput.files.length) {
+        const amount = prompt('Amount unreadable/missing. Enter total amount or leave blank:');
+        if (amount !== null) payload.amount = String(amount || '').trim();
+      }
+      if (!payload.vendor && fileInput.files.length) {
+        const vendor = prompt('Vendor unreadable/missing. Enter vendor or leave blank:');
+        if (vendor !== null) payload.vendor = String(vendor || '').trim();
+      }
+      if (!payload.receiptDate && fileInput.files.length) {
+        const date = prompt('Receipt date unreadable/missing. Enter YYYY-MM-DD or leave blank:', today());
+        if (date !== null) payload.receiptDate = String(date || '').trim();
+      }
+
+      const missing = getReceiptMissingFields(payload);
+      if (missing.length) {
+        return confirm('Still missing: ' + missing.join(', ') + '. Save anyway?');
+      }
+      return true;
+    }
+
+    function getReceiptMissingFields(data) {
+      const missing = [];
+      if (!data.receiptDate) missing.push('date');
+      if (!data.vendor) missing.push('vendor');
+      if (!data.amount) missing.push('amount');
+      if (!data.category) missing.push('category');
+      return missing;
+    }
+
+    function numberVal(id) {
+      const raw = val(id).replace(/[^0-9.-]/g, '');
+      const num = Number(raw);
+      return raw === '' || isNaN(num) ? '' : num;
+    }
+
+    function numberValFromSetting(key) {
+      const raw = String((appState.settings && appState.settings[key]) || '').replace(/[^0-9.-]/g, '');
+      const num = Number(raw);
+      return raw === '' || isNaN(num) ? '' : num;
+    }
+
+    function setDefaultDates() {
+      const dateFields = ['startWorkDate', 'endWorkDate', 'workStartDate', 'workEndDate', 'receiptDate', 'mileageDate', 'noteDate', 'taxDate'];
+      dateFields.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el && !el.value) el.value = today();
+      });
+
+      const startTime = document.getElementById('startTime');
+      if (startTime && !startTime.value) startTime.value = toDateTimeLocal(new Date());
+      const endTime = document.getElementById('endTime');
+      if (endTime) endTime.addEventListener('input', updatePayEstimate, { once: true });
+      if (!val('billableDays')) document.getElementById('billableDays').value = '1';
+      updatePayEstimate();
+    }
+
+    function updateOnlineStatus() {
+      const online = navigator.onLine;
+      document.getElementById('onlinePill').textContent = online ? 'Online' : 'Offline';
+      if (online && getQueue().length) syncQueue();
+    }
+
+    function updateQueuePill() {
+      document.getElementById('queuePill').textContent = 'Queue: ' + getQueue().length;
+    }
+
+    function clearEndForm() {
+      ['workPerformed', 'endNotes', 'endOdometer'].forEach(function(id) { document.getElementById(id).value = ''; });
+    }
+
+    function clearReceiptForm() {
+      ['receiptFile', 'receiptAmount', 'receiptVendor', 'receiptClient', 'receiptSite', 'receiptNotes'].forEach(function(id) { document.getElementById(id).value = ''; });
+    }
+
+    function clearMileageForm() {
+      ['mileageClient', 'mileageSite', 'mileageStart', 'mileageEnd', 'mileageFrom', 'mileageTo', 'mileageNotes'].forEach(function(id) { document.getElementById(id).value = ''; });
+    }
+
+    function clearNoteForm() {
+      ['noteFile', 'noteClient', 'noteSite', 'noteText'].forEach(function(id) { document.getElementById(id).value = ''; });
+    }
+
+    function clearTaxForm() {
+      ['taxAmount', 'taxNotes'].forEach(function(id) { document.getElementById(id).value = ''; });
+    }
+
+    function val(id) {
+      const el = document.getElementById(id);
+      return el ? String(el.value || '').trim() : '';
+    }
+
+    function today() {
+      const d = new Date();
+      const offset = d.getTimezoneOffset();
+      const local = new Date(d.getTime() - offset * 60000);
+      return local.toISOString().slice(0, 10);
+    }
+
+    function toDateTimeLocal(date) {
+      const offset = date.getTimezoneOffset();
+      const local = new Date(date.getTime() - offset * 60000);
+      return local.toISOString().slice(0, 16);
+    }
+
+    function prettyDateTime(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (isNaN(date.getTime())) return value;
+      return date.toLocaleString();
+    }
+
+    function combineNotes(a, b) {
+      return [a, b].filter(Boolean).join(' | ');
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function toast(message) {
+      const el = document.getElementById('toast');
+      el.textContent = message;
+      el.style.display = 'block';
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(function() {
+        el.style.display = 'none';
+      }, 3200);
+    }
+  </script>
+</body>
+</html>
