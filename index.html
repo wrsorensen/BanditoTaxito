@@ -135,6 +135,10 @@
     .header-logbook {
       position: relative;
       z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
       flex: 0 0 auto;
       min-height: 42px;
       padding: 9px 12px;
@@ -186,19 +190,20 @@
       margin: 2px 2px 8px;
     }
 
-   .dashboard-heading h2 {
-    margin: 0;
-    color: #fff8eb;
-    font-size: 18px;
-    line-height: 1.15;
+    .dashboard-heading h2 {
+      margin: 0;
+      color: #fff8eb;
+      font-size: 18px;
+      line-height: 1.15;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
     }
 
-.section-title {
-  margin: 0;
-  color: var(--primary-dark);
-  font-size: 18px;
-  line-height: 1.15;
-}}
+    .section-title {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 18px;
+      line-height: 1.15;
+    }
 
     .dashboard-heading p {
       margin: 0;
@@ -244,11 +249,40 @@
     .btn:active,
     .home-btn:active { transform: translateY(1px); }
 
+    .ui-icon {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
+      background-color: currentColor;
+      -webkit-mask: var(--icon-url) center / contain no-repeat;
+      mask: var(--icon-url) center / contain no-repeat;
+    }
+
+    .icon-receipt { --icon-url: url('assets/icons/icon-receipt.svg'); }
+    .icon-mileage { --icon-url: url('assets/icons/icon-mileage.svg'); }
+    .icon-note-photo { --icon-url: url('assets/icons/icon-note-photo.svg'); }
+    .icon-tax { --icon-url: url('assets/icons/icon-tax.svg'); }
+    .icon-start-work { --icon-url: url('assets/icons/icon-start-work.svg'); }
+    .icon-end-work { --icon-url: url('assets/icons/icon-end-work.svg'); }
+    .icon-logbook { --icon-url: url('assets/icons/icon-logbook.svg'); }
+
     .tool-icon {
       display: block;
-      margin-bottom: 5px;
-      font-size: 21px;
-      line-height: 1;
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+
+    .header-icon {
+      width: 18px;
+      height: 18px;
+      flex-basis: 18px;
+    }
+
+    .work-icon {
+      width: 22px;
+      height: 22px;
+      flex-basis: 22px;
     }
 
     .tool-label {
@@ -290,6 +324,10 @@
     }
 
     .work-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       min-height: 54px;
       padding: 10px 11px;
       border: 1px solid rgba(156, 47, 34, 0.38);
@@ -562,10 +600,10 @@
             <div class="brand-kicker">Receipts • Miles • 1099 Records</div>
           </div>
         </div>
-        <button class="header-logbook" onclick="showView('logbookView')">📒 Logbook</button>
+        <button class="header-logbook" onclick="showView('logbookView')"><span class="ui-icon header-icon icon-logbook" aria-hidden="true"></span><span>Logbook</span></button>
       </div>
       <div class="status-row">
-        <div class="pill" id="versionPill">v0.2.2</div>
+        <div class="pill" id="versionPill">v0.2.3</div>
         <div class="pill" id="onlinePill">Checking connection</div>
         <div class="pill" id="queuePill">Queue: 0</div>
       </div>
@@ -590,19 +628,19 @@
 
       <div class="quick-grid">
         <button class="tool-btn primary-tool" onclick="showView('receiptView')">
-          <span class="tool-icon">🧾</span>
+          <span class="ui-icon tool-icon icon-receipt" aria-hidden="true"></span>
           <span class="tool-label">Add Receipt</span>
         </button>
         <button class="tool-btn primary-tool" onclick="showView('mileageView')">
-          <span class="tool-icon">🛻</span>
+          <span class="ui-icon tool-icon icon-mileage" aria-hidden="true"></span>
           <span class="tool-label">Add Mileage</span>
         </button>
         <button class="tool-btn" onclick="showView('noteView')">
-          <span class="tool-icon">📸</span>
+          <span class="ui-icon tool-icon icon-note-photo" aria-hidden="true"></span>
           <span class="tool-label">Note / Photo</span>
         </button>
         <button class="tool-btn" onclick="showView('taxView')">
-          <span class="tool-icon">🌵</span>
+          <span class="ui-icon tool-icon icon-tax" aria-hidden="true"></span>
           <span class="tool-label">Tax Helper</span>
         </button>
       </div>
@@ -613,8 +651,8 @@
           <span>Optional work log</span>
         </div>
         <div class="work-row">
-          <button class="work-btn" onclick="showView('startWorkView')">📍 Start Work</button>
-          <button class="work-btn end" onclick="showView('endWorkView')">🏁 End Work</button>
+          <button class="work-btn" onclick="showView('startWorkView')"><span class="ui-icon work-icon icon-start-work" aria-hidden="true"></span><span>Start Work</span></button>
+          <button class="work-btn end" onclick="showView('endWorkView')"><span class="ui-icon work-icon icon-end-work" aria-hidden="true"></span><span>End Work</span></button>
         </div>
       </div>
 
@@ -969,7 +1007,7 @@
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyM4acSDZT7L6q_I7UQDfMc4xZiCFGXlw9B9pPPawGQSQtTCvtQZFNxbsAQ3z7vFBcPVQ/exec';
     const QUEUE_KEY = 'banditoTaxitoQueue_v020';
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
-    const UI_VERSION = 'v0.2.2';
+    const UI_VERSION = 'v0.2.3';
     let appState = { clients: [], settings: {}, weeklyReview: {}, logbook: {} };
 
     document.addEventListener('DOMContentLoaded', init);
