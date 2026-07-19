@@ -33,7 +33,7 @@
     body {
       margin: 0;
       min-height: 100vh;
-     background:
+      background:
         linear-gradient(180deg, rgba(17, 16, 13, 0.58) 0%, rgba(31, 23, 17, 0.36) 44%, rgba(18, 63, 61, 0.48) 100%),
         var(--asset-parchment),
         var(--bg);
@@ -156,9 +156,46 @@
       z-index: 1;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 36px;
+      margin-top: 8px;
+    }
+
+    .connection-indicators {
+      display: flex;
+      align-items: center;
       gap: 6px;
       flex-wrap: wrap;
-      margin-top: 9px;
+    }
+
+    .header-settings {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid rgba(248, 223, 170, 0.52);
+      border-radius: 50%;
+      background: rgba(255, 248, 235, 0.12);
+      color: #fff8eb;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .pill {
@@ -229,6 +266,7 @@
     .tool-btn:active,
     .work-btn:active,
     .header-logbook:active,
+    .header-settings:active,
     .btn:active,
     .home-btn:active { transform: translateY(1px); }
 
@@ -276,7 +314,7 @@
     }
 
     .work-card {
-      padding: 11px;
+      padding: 10px;
       background: linear-gradient(180deg, rgba(255, 247, 230, 0.91), rgba(239, 226, 202, 0.86));
     }
 
@@ -285,12 +323,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .work-card-head h2 {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
     }
 
     .work-card-head span {
@@ -309,17 +347,17 @@
     .work-btn {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 54px;
-      padding: 10px 11px;
+      justify-content: flex-start;
+      gap: 10px;
+      min-height: 48px;
+      padding: 8px 13px;
       border: 1px solid rgba(156, 47, 34, 0.38);
       border-radius: 14px;
       background: rgba(255, 248, 234, 0.88);
       color: var(--primary-dark);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 900;
-      text-align: center;
+      text-align: left;
     }
 
     .work-btn.end { background: rgba(247, 231, 216, 0.86); }
@@ -437,7 +475,7 @@
     .review-item.good { background: rgba(237, 247, 234, 0.88); border-color: #bfe6cd; }
     .count { flex: 0 0 auto; font-size: 15px; font-weight: 900; }
     /* Dashboard-only western glass treatment */
-    #homeView > .card:not(.active-session),
+    #homeView .dashboard-module.card:not(.active-session),
     #homeView .tool-btn {
       border-color: rgba(248, 223, 170, 0.62);
       background: rgba(31, 24, 18, 0.06);
@@ -492,6 +530,56 @@
       background: rgba(70, 122, 69, 0.38);
       border-color: rgba(191, 230, 205, 0.72);
       color: #fff8eb;
+    }
+
+
+    #homeView .review-item.neutral {
+      background: rgba(255, 248, 234, 0.12);
+      border-color: rgba(248, 223, 170, 0.46);
+      color: #fff8eb;
+    }
+
+    .dashboard-modules {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dashboard-module {
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: transform 150ms ease, opacity 150ms ease, box-shadow 150ms ease;
+    }
+
+    .dashboard-module.drag-armed {
+      outline: 2px solid rgba(248, 223, 170, 0.78);
+      outline-offset: 2px;
+    }
+
+    .dashboard-module.dragging {
+      z-index: 40;
+      margin: 0 !important;
+      pointer-events: none;
+      opacity: 0.96;
+      transform: scale(1.015) rotate(-0.25deg);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+      transition: none;
+    }
+
+    .dashboard-module-placeholder {
+      flex: 0 0 auto;
+      border: 2px dashed rgba(248, 223, 170, 0.68);
+      border-radius: var(--radius);
+      background: rgba(17, 16, 13, 0.16);
+    }
+
+    body.dashboard-dragging {
+      overflow: hidden;
+      cursor: grabbing;
+    }
+
+    body.dashboard-dragging .dashboard-module:not(.dragging) {
+      transition: transform 140ms ease;
     }
     .tiny,
     .logbook-note {
@@ -595,26 +683,6 @@
 
     body.modal-open { overflow: hidden; }
 
-    .dashboard-controls {
-      display: flex;
-      justify-content: flex-end;
-      margin: 0 2px 8px;
-    }
-
-    .customize-btn {
-      min-height: 34px;
-      padding: 7px 11px;
-      border: 1px solid rgba(248, 223, 170, 0.48);
-      border-radius: 999px;
-      background: rgba(17, 16, 13, 0.54);
-      color: #fff8eb;
-      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.20);
-      font-size: 11px;
-      font-weight: 900;
-      cursor: pointer;
-      -webkit-backdrop-filter: blur(7px);
-      backdrop-filter: blur(7px);
-    }
 
     .settings-overlay {
       position: fixed;
@@ -713,6 +781,14 @@
       margin-top: 14px;
     }
 
+    .settings-version {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      text-align: center;
+    }
+
     .toast {
       position: fixed;
       left: 12px;
@@ -736,6 +812,7 @@
       .hero { padding: 11px; }
       .brand-mark { width: 72px; height: 72px; flex-basis: 72px; border-radius: 17px; }
       .header-logbook { padding: 8px 10px; font-size: 11px; }
+      .header-settings { width: 34px; height: 34px; flex-basis: 34px; }
       .row { grid-template-columns: 1fr; }
     }
 
@@ -761,9 +838,14 @@
         <button class="header-logbook" onclick="showView('logbookView')"><span class="ui-icon header-icon icon-logbook" aria-hidden="true"></span><span>Logbook</span></button>
       </div>
       <div class="status-row">
-        <div class="pill" id="versionPill">v0.2.5b</div>
-        <div class="pill" id="onlinePill">Checking connection</div>
-        <div class="pill" id="queuePill">Queue: 0</div>
+        <div class="connection-indicators">
+          <div class="pill hidden" id="onlinePill">Checking connection</div>
+          <div class="pill hidden" id="queuePill">Queue: 0</div>
+        </div>
+        <button class="header-settings" type="button" onclick="openDashboardSettings()" aria-label="Customize dashboard">
+          <span aria-hidden="true">⚙</span>
+          <span class="sr-only">Customize dashboard</span>
+        </button>
       </div>
     </header>
 
@@ -779,49 +861,49 @@
         </div>
       </div>
 
-      <div class="dashboard-controls">
-        <button class="customize-btn" onclick="openDashboardSettings()">Customize dashboard</button>
-      </div>
+      <div class="dashboard-modules" id="dashboardModules">
+        <section class="dashboard-module quick-actions-module" id="quickActionsModule" data-dashboard-module="quickActions" aria-label="Main actions">
+          <div class="quick-grid" id="quickActions">
+            <button class="tool-btn primary-tool" data-dashboard-tool="receipt" onclick="showView('receiptView')">
+              <span class="ui-icon tool-icon icon-receipt" aria-hidden="true"></span>
+              <span class="tool-label">Receipt</span>
+            </button>
+            <button class="tool-btn primary-tool" data-dashboard-tool="mileage" onclick="showView('mileageView')">
+              <span class="ui-icon tool-icon icon-mileage" aria-hidden="true"></span>
+              <span class="tool-label">Mileage</span>
+            </button>
+            <button class="tool-btn" data-dashboard-tool="notePhoto" onclick="showView('noteView')">
+              <span class="ui-icon tool-icon icon-note-photo" aria-hidden="true"></span>
+              <span class="tool-label">Note / Photo</span>
+            </button>
+            <button class="tool-btn" data-dashboard-tool="taxHelper" onclick="showView('taxView')">
+              <span class="ui-icon tool-icon icon-tax" aria-hidden="true"></span>
+              <span class="tool-label">Tax Helper</span>
+            </button>
+          </div>
+        </section>
 
-      <div class="quick-grid" id="quickActions">
-        <button class="tool-btn primary-tool" data-dashboard-tool="receipt" onclick="showView('receiptView')">
-          <span class="ui-icon tool-icon icon-receipt" aria-hidden="true"></span>
-          <span class="tool-label">Receipt</span>
-        </button>
-        <button class="tool-btn primary-tool" data-dashboard-tool="mileage" onclick="showView('mileageView')">
-          <span class="ui-icon tool-icon icon-mileage" aria-hidden="true"></span>
-          <span class="tool-label">Mileage</span>
-        </button>
-        <button class="tool-btn" data-dashboard-tool="notePhoto" onclick="showView('noteView')">
-          <span class="ui-icon tool-icon icon-note-photo" aria-hidden="true"></span>
-          <span class="tool-label">Note / Photo</span>
-        </button>
-        <button class="tool-btn" data-dashboard-tool="taxHelper" onclick="showView('taxView')">
-          <span class="ui-icon tool-icon icon-tax" aria-hidden="true"></span>
-          <span class="tool-label">Tax Helper</span>
-        </button>
-      </div>
+        <section class="card work-card dashboard-module" id="workSessionModule" data-dashboard-module="workSession" aria-label="Work Session">
+          <div class="work-card-head">
+            <h2>Work Session</h2>
+            <span>Optional work log</span>
+          </div>
+          <div class="work-row">
+            <button class="work-btn" onclick="showView('startWorkView')"><span class="ui-icon work-icon icon-start-work" aria-hidden="true"></span><span>Start Work</span></button>
+            <button class="work-btn end" onclick="showView('endWorkView')"><span class="ui-icon work-icon icon-end-work" aria-hidden="true"></span><span>End Work</span></button>
+          </div>
+        </section>
 
-      <div class="card work-card" id="workSessionModule">
-        <div class="work-card-head">
-          <h2>Work Session</h2>
-          <span>Optional work log</span>
-        </div>
-        <div class="work-row">
-          <button class="work-btn" onclick="showView('startWorkView')"><span class="ui-icon work-icon icon-start-work" aria-hidden="true"></span><span>Start Work</span></button>
-          <button class="work-btn end" onclick="showView('endWorkView')"><span class="ui-icon work-icon icon-end-work" aria-hidden="true"></span><span>End Work</span></button>
-        </div>
-      </div>
-
-      <div class="card" id="weeklyReviewModule">
-        <div class="section-head">
-          <h2 class="section-title">Weekly Review</h2>
-          <button class="home-btn" onclick="refreshWeeklyReview()">Refresh</button>
-        </div>
-        <div id="reviewList" class="review-list"></div>
-        <div class="actions compact-actions">
-          <button class="btn secondary compact" id="syncQueueButton" onclick="syncQueue()">Sync Offline Queue</button>
-        </div>
+        <section class="card dashboard-module" id="weeklyReviewModule" data-dashboard-module="weeklyReview" aria-label="Weekly Review">
+          <div class="section-head">
+            <h2 class="section-title">Weekly Review</h2>
+            <button class="home-btn" onclick="refreshWeeklyReview()">Refresh</button>
+          </div>
+          <div id="reviewList" class="review-list"></div>
+          <div class="actions compact-actions">
+            <button class="btn secondary compact" id="syncQueueButton" onclick="syncQueue()">Sync Offline Queue</button>
+          </div>
+        </section>
       </div>
     </main>
 
@@ -1166,7 +1248,7 @@
         </div>
         <button class="settings-close" type="button" onclick="closeDashboardSettings()" aria-label="Close dashboard settings">×</button>
       </div>
-      <p class="settings-note">Choose what appears on this device. Hidden tools stay available in the app and can be turned back on anytime.</p>
+      <p class="settings-note">Choose what appears on this device. On the dashboard, hold a module and drag it to change the order.</p>
       <div class="settings-list">
         <label class="settings-option"><span>Receipt</span><input type="checkbox" data-dashboard-pref="receipt"></label>
         <label class="settings-option"><span>Mileage</span><input type="checkbox" data-dashboard-pref="mileage"></label>
@@ -1180,6 +1262,7 @@
         <button class="btn secondary" type="button" onclick="resetDashboardPreferences()">Reset</button>
         <button class="btn secondary" type="button" onclick="closeDashboardSettings()">Cancel</button>
       </div>
+      <div class="settings-version" id="settingsVersion">Bandito Taxito</div>
     </div>
   </div>
 
@@ -1190,7 +1273,9 @@
     const QUEUE_KEY = 'banditoTaxitoQueue_v020';
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
-    const UI_VERSION = 'v0.2.5b';
+    const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
+    const UI_VERSION = 'v0.2.6';
+    const DEFAULT_DASHBOARD_ORDER = ['quickActions', 'workSession', 'weeklyReview'];
     const DEFAULT_DASHBOARD_PREFS = {
       receipt: true,
       mileage: true,
@@ -1200,6 +1285,10 @@
       weeklyReview: true
     };
     let appState = { clients: [], settings: {}, weeklyReview: {}, logbook: {} };
+    let backendOkay = false;
+    let dashboardPress = null;
+    let dashboardDrag = null;
+    let suppressDashboardClickUntil = 0;
 
     document.addEventListener('DOMContentLoaded', init);
     window.addEventListener('online', updateOnlineStatus);
@@ -1213,19 +1302,27 @@
       updateOnlineStatus();
       updateQueuePill();
       renderActiveSession();
-      loadDashboardPreferences();
+      loadDashboardLayout();
+      enableDashboardReordering();
+      const settingsVersion = document.getElementById('settingsVersion');
+      if (settingsVersion) settingsVersion.textContent = 'Bandito Taxito ' + UI_VERSION;
 
       apiGet('initialData')
         .then(function(data) {
           appState = data || appState;
-          document.getElementById('versionPill').textContent = UI_VERSION + ' GH';
-          document.getElementById('onlinePill').textContent = 'Backend OK';
+          backendOkay = true;
+          updateOnlineStatus();
           renderClients(appState.clients || []);
           applyDefaultSettings();
           renderWeeklyReview(appState.weeklyReview || {});
         })
         .catch(function(err) {
-          document.getElementById('onlinePill').textContent = navigator.onLine ? 'Backend check failed' : 'Offline';
+          backendOkay = false;
+          const onlinePill = document.getElementById('onlinePill');
+          if (onlinePill) {
+            onlinePill.textContent = navigator.onLine ? 'Connection issue' : 'Offline';
+            onlinePill.classList.remove('hidden');
+          }
           toast('Could not load backend. Offline queue available.');
           console.error(err);
         });
@@ -1312,6 +1409,48 @@
       }
     }
 
+    function getDashboardOrder() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(DASHBOARD_ORDER_KEY) || '[]');
+        const valid = Array.isArray(saved) ? saved.filter(function(key) {
+          return DEFAULT_DASHBOARD_ORDER.indexOf(key) !== -1;
+        }) : [];
+        DEFAULT_DASHBOARD_ORDER.forEach(function(key) {
+          if (valid.indexOf(key) === -1) valid.push(key);
+        });
+        return valid;
+      } catch (err) {
+        return DEFAULT_DASHBOARD_ORDER.slice();
+      }
+    }
+
+    function applyDashboardOrder(order) {
+      const container = document.getElementById('dashboardModules');
+      if (!container) return;
+      const normalized = Array.isArray(order) ? order.slice() : DEFAULT_DASHBOARD_ORDER.slice();
+      DEFAULT_DASHBOARD_ORDER.forEach(function(key) {
+        if (normalized.indexOf(key) === -1) normalized.push(key);
+      });
+      normalized.forEach(function(key) {
+        const module = container.querySelector('[data-dashboard-module="' + key + '"]');
+        if (module) container.appendChild(module);
+      });
+    }
+
+    function saveDashboardOrder() {
+      const container = document.getElementById('dashboardModules');
+      if (!container) return;
+      const order = Array.from(container.querySelectorAll('[data-dashboard-module]')).map(function(module) {
+        return module.getAttribute('data-dashboard-module');
+      });
+      localStorage.setItem(DASHBOARD_ORDER_KEY, JSON.stringify(order));
+    }
+
+    function loadDashboardLayout() {
+      applyDashboardOrder(getDashboardOrder());
+      applyDashboardPreferences(getDashboardPreferences());
+    }
+
     function loadDashboardPreferences() {
       applyDashboardPreferences(getDashboardPreferences());
     }
@@ -1330,11 +1469,12 @@
       if (reviewModule) reviewModule.classList.toggle('hidden', prefs.weeklyReview === false);
 
       const quickActions = document.getElementById('quickActions');
-      if (quickActions) {
+      const quickActionsModule = document.getElementById('quickActionsModule');
+      if (quickActions && quickActionsModule) {
         const hasVisibleAction = Array.from(quickActions.querySelectorAll('[data-dashboard-tool]')).some(function(element) {
           return !element.classList.contains('hidden');
         });
-        quickActions.classList.toggle('hidden', !hasVisibleAction);
+        quickActionsModule.classList.toggle('hidden', !hasVisibleAction);
       }
     }
 
@@ -1376,10 +1516,193 @@
 
     function resetDashboardPreferences() {
       localStorage.removeItem(DASHBOARD_PREFS_KEY);
+      localStorage.removeItem(DASHBOARD_ORDER_KEY);
       const prefs = Object.assign({}, DEFAULT_DASHBOARD_PREFS);
       setDashboardPreferenceInputs(prefs);
+      applyDashboardOrder(DEFAULT_DASHBOARD_ORDER);
       applyDashboardPreferences(prefs);
       toast('Dashboard reset.');
+    }
+
+    function enableDashboardReordering() {
+      const container = document.getElementById('dashboardModules');
+      if (!container || container.dataset.reorderReady === 'true') return;
+      container.dataset.reorderReady = 'true';
+
+      container.addEventListener('touchstart', onDashboardTouchStart, { passive: true });
+      container.addEventListener('touchmove', onDashboardTouchMove, { passive: false });
+      container.addEventListener('touchend', onDashboardTouchEnd, { passive: false });
+      container.addEventListener('touchcancel', cancelDashboardPress, { passive: true });
+      container.addEventListener('mousedown', onDashboardMouseDown);
+      container.addEventListener('contextmenu', function(event) {
+        if (event.target.closest('[data-dashboard-module]')) event.preventDefault();
+      });
+      document.addEventListener('mousemove', onDashboardMouseMove);
+      document.addEventListener('mouseup', onDashboardMouseUp);
+      document.addEventListener('click', function(event) {
+        if (Date.now() < suppressDashboardClickUntil && event.target.closest('[data-dashboard-module]')) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }, true);
+    }
+
+    function onDashboardTouchStart(event) {
+      if (event.touches.length !== 1 || dashboardDrag) return;
+      const module = event.target.closest('[data-dashboard-module]');
+      if (!module || module.classList.contains('hidden')) return;
+      const touch = event.touches[0];
+      startDashboardPress(module, touch.clientX, touch.clientY, 'touch');
+      if (dashboardPress) dashboardPress.touchId = touch.identifier;
+    }
+
+    function onDashboardTouchMove(event) {
+      if (dashboardDrag) {
+        const touch = Array.from(event.touches).find(function(item) {
+          return item.identifier === dashboardDrag.touchId;
+        }) || event.touches[0];
+        if (!touch) return;
+        event.preventDefault();
+        moveDashboardDrag(touch.clientY);
+        return;
+      }
+      if (!dashboardPress || !event.touches.length) return;
+      const touch = event.touches[0];
+      if (Math.abs(touch.clientX - dashboardPress.startX) > 10 || Math.abs(touch.clientY - dashboardPress.startY) > 10) {
+        cancelDashboardPress();
+      }
+    }
+
+    function onDashboardTouchEnd(event) {
+      if (dashboardDrag) {
+        event.preventDefault();
+        finishDashboardDrag();
+        return;
+      }
+      cancelDashboardPress();
+    }
+
+    function onDashboardMouseDown(event) {
+      if (event.button !== 0 || dashboardDrag) return;
+      const module = event.target.closest('[data-dashboard-module]');
+      if (!module || module.classList.contains('hidden')) return;
+      startDashboardPress(module, event.clientX, event.clientY, 'mouse');
+    }
+
+    function onDashboardMouseMove(event) {
+      if (dashboardDrag && dashboardDrag.input === 'mouse') {
+        event.preventDefault();
+        moveDashboardDrag(event.clientY);
+        return;
+      }
+      if (!dashboardPress || dashboardPress.input !== 'mouse') return;
+      if (Math.abs(event.clientX - dashboardPress.startX) > 8 || Math.abs(event.clientY - dashboardPress.startY) > 8) {
+        cancelDashboardPress();
+      }
+    }
+
+    function onDashboardMouseUp() {
+      if (dashboardDrag && dashboardDrag.input === 'mouse') {
+        finishDashboardDrag();
+        return;
+      }
+      cancelDashboardPress();
+    }
+
+    function startDashboardPress(module, clientX, clientY, input) {
+      cancelDashboardPress();
+      module.classList.add('drag-armed');
+      dashboardPress = {
+        module: module,
+        startX: clientX,
+        startY: clientY,
+        input: input,
+        timer: window.setTimeout(function() {
+          beginDashboardDrag(module, clientY, input);
+        }, 520)
+      };
+    }
+
+    function cancelDashboardPress() {
+      if (!dashboardPress) return;
+      window.clearTimeout(dashboardPress.timer);
+      if (dashboardPress.module) dashboardPress.module.classList.remove('drag-armed');
+      dashboardPress = null;
+    }
+
+    function beginDashboardDrag(module, clientY, input) {
+      if (!dashboardPress || dashboardPress.module !== module) return;
+      const rect = module.getBoundingClientRect();
+      const computed = window.getComputedStyle(module);
+      const placeholder = document.createElement('div');
+      placeholder.className = 'dashboard-module-placeholder';
+      placeholder.style.height = rect.height + 'px';
+      placeholder.style.marginBottom = computed.marginBottom;
+      module.parentNode.insertBefore(placeholder, module);
+
+      module.classList.remove('drag-armed');
+      module.classList.add('dragging');
+      module.setAttribute('aria-grabbed', 'true');
+      module.style.position = 'fixed';
+      module.style.left = rect.left + 'px';
+      module.style.top = rect.top + 'px';
+      module.style.width = rect.width + 'px';
+      module.style.height = rect.height + 'px';
+
+      dashboardDrag = {
+        module: module,
+        placeholder: placeholder,
+        container: document.getElementById('dashboardModules'),
+        offsetY: clientY - rect.top,
+        input: input,
+        touchId: dashboardPress ? dashboardPress.touchId : null
+      };
+      dashboardPress = null;
+      document.body.classList.add('dashboard-dragging');
+      suppressDashboardClickUntil = Date.now() + 900;
+      if (navigator.vibrate) navigator.vibrate(18);
+    }
+
+    function moveDashboardDrag(clientY) {
+      if (!dashboardDrag) return;
+      const state = dashboardDrag;
+      const top = Math.max(6, Math.min(window.innerHeight - state.module.offsetHeight - 6, clientY - state.offsetY));
+      state.module.style.top = top + 'px';
+
+      const siblings = Array.from(state.container.querySelectorAll('[data-dashboard-module]')).filter(function(module) {
+        return module !== state.module && !module.classList.contains('hidden');
+      });
+      let placed = false;
+      siblings.forEach(function(sibling) {
+        if (placed) return;
+        const rect = sibling.getBoundingClientRect();
+        if (clientY < rect.top + rect.height / 2) {
+          state.container.insertBefore(state.placeholder, sibling);
+          placed = true;
+        }
+      });
+      if (!placed) state.container.appendChild(state.placeholder);
+
+      if (clientY < 72) window.scrollBy(0, -12);
+      if (clientY > window.innerHeight - 72) window.scrollBy(0, 12);
+    }
+
+    function finishDashboardDrag() {
+      if (!dashboardDrag) return;
+      const state = dashboardDrag;
+      state.container.insertBefore(state.module, state.placeholder);
+      state.placeholder.remove();
+      state.module.classList.remove('dragging', 'drag-armed');
+      state.module.removeAttribute('aria-grabbed');
+      ['position', 'left', 'top', 'width', 'height'].forEach(function(property) {
+        state.module.style[property] = '';
+      });
+      document.body.classList.remove('dashboard-dragging');
+      dashboardDrag = null;
+      dashboardPress = null;
+      suppressDashboardClickUntil = Date.now() + 500;
+      saveDashboardOrder();
+      toast('Dashboard order saved.');
     }
 
     function showView(id) {
@@ -1622,12 +1945,12 @@
     function renderWeeklyReview(data) {
       data = data || {};
       const items = [
-        { label: 'Work logs', value: data.workLogs || 0, type: 'good' },
-        { label: 'Missing end', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'good' },
-        { label: 'Missing notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'good' },
-        { label: 'Receipt file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'good' },
-        { label: 'Receipt amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'good' },
-        { label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'good' }
+        { label: 'Work logs', value: data.workLogs || 0, type: data.workLogs ? 'good' : 'neutral' },
+        { label: 'Missing end', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'neutral' },
+        { label: 'Missing notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'neutral' },
+        { label: 'Receipt file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'neutral' },
+        { label: 'Receipt amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'neutral' },
+        { label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'neutral' }
       ];
 
       document.getElementById('reviewList').innerHTML = items.map(function(item) {
@@ -2035,7 +2358,18 @@
 
     function updateOnlineStatus() {
       const online = navigator.onLine;
-      document.getElementById('onlinePill').textContent = online ? 'Online' : 'Offline';
+      const pill = document.getElementById('onlinePill');
+      if (pill) {
+        if (!online) {
+          pill.textContent = 'Offline';
+          pill.classList.remove('hidden');
+        } else if (backendOkay) {
+          pill.classList.add('hidden');
+        } else {
+          pill.textContent = 'Checking connection';
+          pill.classList.remove('hidden');
+        }
+      }
       if (online && getQueue().length) syncQueue();
     }
 
