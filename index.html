@@ -182,35 +182,11 @@
 
     .hidden { display: none !important; }
 
-    .dashboard-heading {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 2px 2px 8px;
-    }
-
-    .dashboard-heading h2 {
-      margin: 0;
-      color: #fff8eb;
-      font-size: 18px;
-      line-height: 1.15;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
-    }
-
     .section-title {
       margin: 0;
       color: var(--primary-dark);
       font-size: 18px;
       line-height: 1.15;
-    }
-
-    .dashboard-heading p {
-      margin: 0;
-      color: #f6ead2;
-      font-size: 11px;
-      font-weight: 700;
-      text-align: right;
     }
 
     .quick-grid {
@@ -603,7 +579,7 @@
         <button class="header-logbook" onclick="showView('logbookView')"><span class="ui-icon header-icon icon-logbook" aria-hidden="true"></span><span>Logbook</span></button>
       </div>
       <div class="status-row">
-        <div class="pill" id="versionPill">v0.2.3</div>
+        <div class="pill" id="versionPill">v0.2.4</div>
         <div class="pill" id="onlinePill">Checking connection</div>
         <div class="pill" id="queuePill">Queue: 0</div>
       </div>
@@ -621,20 +597,16 @@
         </div>
       </div>
 
-      <div class="dashboard-heading">
-        <h2>Quick Add</h2>
-        <p>Keep the paper trail clean.</p>
-      </div>
-
       <div class="quick-grid">
         <button class="tool-btn primary-tool" onclick="showView('receiptView')">
           <span class="ui-icon tool-icon icon-receipt" aria-hidden="true"></span>
-          <span class="tool-label">Add Receipt</span>
+          <span class="tool-label">Receipt</span>
         </button>
         <button class="tool-btn primary-tool" onclick="showView('mileageView')">
           <span class="ui-icon tool-icon icon-mileage" aria-hidden="true"></span>
-          <span class="tool-label">Add Mileage</span>
+          <span class="tool-label">Mileage</span>
         </button>
+        
         <button class="tool-btn" onclick="showView('noteView')">
           <span class="ui-icon tool-icon icon-note-photo" aria-hidden="true"></span>
           <span class="tool-label">Note / Photo</span>
@@ -1007,7 +979,7 @@
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyM4acSDZT7L6q_I7UQDfMc4xZiCFGXlw9B9pPPawGQSQtTCvtQZFNxbsAQ3z7vFBcPVQ/exec';
     const QUEUE_KEY = 'banditoTaxitoQueue_v020';
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
-    const UI_VERSION = 'v0.2.3';
+    const UI_VERSION = 'v0.2.4';
     let appState = { clients: [], settings: {}, weeklyReview: {}, logbook: {} };
 
     document.addEventListener('DOMContentLoaded', init);
