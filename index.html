@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123f3d">
+  <title>Bandito Taxito</title>
   <link rel="icon" href="assets/app-icon-v1.png">
   <style>
     :root {
@@ -22,8 +25,6 @@
       --soft-red: #fff1ef;
       --soft-yellow: #fff7e3;
       --radius: 18px;
-      --asset-emblem: url('assets/main-emblem-v1.png');
-      --asset-dog: url('assets/dog-mascot-v1.png');
       --asset-parchment: url('assets/parchment-bg-v1.png');
     }
 
@@ -31,10 +32,11 @@
 
     body {
       margin: 0;
+      min-height: 100vh;
       background:
-        linear-gradient(180deg, rgba(17, 16, 13, 0.88) 0%, rgba(31, 23, 17, 0.72) 42%, rgba(18, 63, 61, 0.82) 100%),
+        linear-gradient(180deg, rgba(17, 16, 13, 0.90) 0%, rgba(31, 23, 17, 0.76) 44%, rgba(18, 63, 61, 0.86) 100%),
         var(--asset-parchment),
-        #11100d;
+        var(--bg);
       background-size: cover;
       background-position: center top;
       color: var(--ink);
@@ -42,394 +44,266 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    button, input, select, textarea { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
     .app {
+      width: 100%;
       max-width: 760px;
       margin: 0 auto;
-      padding: 14px;
+      padding: 10px 10px 24px;
     }
 
     .hero {
       position: relative;
       overflow: hidden;
-      background:
-        linear-gradient(135deg, rgba(18, 63, 61, 0.96), rgba(40, 22, 15, 0.98) 52%, rgba(156, 47, 34, 0.92)),
-        radial-gradient(circle at 90% 15%, rgba(197, 154, 69, 0.34), transparent 28%);
+      margin-bottom: 10px;
+      padding: 13px;
       color: #fff8eb;
-      border: 1px solid rgba(197, 154, 69, 0.62);
-      border-radius: 24px;
-      padding: 16px;
-      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34);
-      margin-bottom: 14px;
+      border: 1px solid rgba(197, 154, 69, 0.64);
+      border-radius: 22px;
+      background:
+        linear-gradient(135deg, rgba(18, 63, 61, 0.98), rgba(40, 22, 15, 0.98) 56%, rgba(156, 47, 34, 0.93));
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.30);
     }
 
     .hero::after {
       content: "";
       position: absolute;
-      right: -54px;
-      bottom: -80px;
-      width: 170px;
-      height: 170px;
-      border: 26px solid rgba(255, 248, 235, 0.07);
+      right: -30px;
+      bottom: -42px;
+      width: 128px;
+      height: 128px;
+      border: 20px solid rgba(255, 248, 235, 0.055);
       border-radius: 50%;
       pointer-events: none;
     }
 
-
-    .brand-lockup {
+    .hero-top {
       position: relative;
       z-index: 1;
       display: flex;
       align-items: center;
-      gap: 13px;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand-lockup {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 11px;
     }
 
     .brand-mark {
-      width: 78px;
-      height: 78px;
-      flex: 0 0 78px;
-      border-radius: 19px;
-      object-fit: cover;
-      border: 2px solid rgba(197, 154, 69, 0.82);
-      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.34);
-      background: #11100d;
-    }
-
-    .brand-copy {
-      min-width: 0;
-    }
-
-    .brand-kicker {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 6px 9px;
-      border-radius: 999px;
-      background: rgba(197, 154, 69, 0.16);
-      border: 1px solid rgba(197, 154, 69, 0.38);
-      color: #f8dfaa;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .mascot-panel {
-      margin-top: 13px;
-      display: grid;
-      grid-template-columns: 82px 1fr;
-      gap: 12px;
-      align-items: center;
-      padding: 10px;
-      border-radius: 18px;
-      background:
-        linear-gradient(135deg, rgba(18, 63, 61, 0.94), rgba(40, 22, 15, 0.95));
-      border: 1px solid rgba(197, 154, 69, 0.55);
-      color: #fff8eb;
-      overflow: hidden;
-    }
-
-    .mascot-img {
       width: 82px;
       height: 82px;
-      object-fit: contain;
-      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.38));
+      flex: 0 0 82px;
+      object-fit: cover;
+      border-radius: 19px;
+      border: 2px solid rgba(248, 223, 170, 0.88);
+      background: #11100d;
+      box-shadow: 0 9px 20px rgba(0, 0, 0, 0.34);
     }
 
-    .mascot-title {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 900;
-      color: #f8dfaa;
-    }
-
-    .mascot-copy {
-      margin: 5px 0 0;
-      color: #f6ead2;
-      font-size: 13px;
-      line-height: 1.35;
-      font-weight: 750;
-    }
+    .brand-copy { min-width: 0; }
 
     .eyebrow {
-      font-size: 12px;
+      margin-bottom: 4px;
+      color: #f8dfaa;
+      font-size: 10px;
+      font-weight: 900;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      opacity: 0.86;
-      margin-bottom: 5px;
     }
 
     h1 {
       margin: 0;
-      font-size: 29px;
-      line-height: 1.05;
+      font-size: clamp(24px, 7vw, 31px);
+      line-height: 1;
+      letter-spacing: -0.03em;
     }
 
-    .sub {
-      display: none;
-    }
-
-    .status-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 14px;
-    }
-
-    .pill {
-      background: rgba(255, 248, 235, 0.15);
-      border: 1px solid rgba(255, 248, 235, 0.24);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 12px;
+    .brand-kicker {
+      margin-top: 6px;
+      color: #f6ead2;
+      font-size: 11px;
       font-weight: 800;
+      line-height: 1.25;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin: 12px 0;
-    }
-
-    .big-btn {
-      border: 1px solid rgba(197, 154, 69, 0.54);
-      border-radius: var(--radius);
-      padding: 18px 12px;
-      background:
-        linear-gradient(180deg, rgba(255, 248, 234, 0.98), rgba(244, 234, 216, 0.98));
-      color: var(--ink);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
-      font-size: 16px;
+    .header-logbook {
+      position: relative;
+      z-index: 2;
+      flex: 0 0 auto;
+      min-height: 42px;
+      padding: 9px 12px;
+      border: 1px solid rgba(248, 223, 170, 0.52);
+      border-radius: 999px;
+      background: rgba(255, 248, 235, 0.12);
+      color: #fff8eb;
+      font-size: 12px;
       font-weight: 900;
-      text-align: left;
-      min-height: 82px;
       cursor: pointer;
     }
 
-    .big-btn:active {
-      transform: translateY(1px);
+    .status-row {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 9px;
     }
 
-    .big-btn span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      margin-top: 6px;
-    }
-
-    .big-btn.primary {
-      background:
-        linear-gradient(180deg, rgba(255, 246, 232, 0.98), rgba(255, 241, 223, 0.98));
-      border: 1px solid rgba(156, 47, 34, 0.40);
-      box-shadow: inset 0 0 0 1px rgba(197, 154, 69, 0.24), 0 8px 20px rgba(0, 0, 0, 0.18);
+    .pill {
+      padding: 4px 8px;
+      border: 1px solid rgba(255, 248, 235, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 248, 235, 0.10);
+      color: #f6ead2;
+      font-size: 10px;
+      font-weight: 800;
     }
 
     .card {
-      background:
-        linear-gradient(180deg, rgba(255, 248, 234, 0.97), rgba(244, 234, 216, 0.97));
+      margin-bottom: 10px;
+      padding: 13px;
       border: 1px solid rgba(197, 154, 69, 0.50);
       border-radius: var(--radius);
-      padding: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 9px 22px rgba(0, 0, 0, 0.16);
+      background: linear-gradient(180deg, rgba(255, 248, 234, 0.98), rgba(244, 234, 216, 0.98));
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
 
     .hidden { display: none !important; }
 
+    .dashboard-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 2px 2px 8px;
+    }
+
+    .dashboard-heading h2,
     .section-title {
-      margin: 0 0 10px 0;
-      font-size: 18px;
-    }
-
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 800;
-      margin: 12px 0 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 13px;
-      padding: 13px;
-      font-size: 16px;
-      background: #fff;
-      color: var(--ink);
-    }
-
-    textarea { min-height: 92px; resize: vertical; }
-
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 999px;
-      padding: 12px 16px;
-      font-size: 15px;
-      font-weight: 800;
-      background: var(--primary);
-      color: white;
-    }
-
-    .btn.secondary {
-      background: #efe2ca;
-      color: var(--ink);
-    }
-
-    .btn.danger {
-      background: var(--red);
-    }
-
-    .review-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .review-item {
-      border-radius: 14px;
-      padding: 11px;
-      border: 1px solid var(--line);
-      background: #fff;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 14px;
-    }
-
-    .review-item.bad { background: var(--soft-red); border-color: #ffc6c1; }
-    .review-item.warn { background: var(--soft-yellow); border-color: #f0d59a; }
-    .review-item.good { background: #edf7ea; border-color: #bfe6cd; }
-
-    .logbook-note {
-      margin: 0 0 10px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.45;
-    }
-
-    .logbook-section {
-      margin-top: 14px;
-    }
-
-    .logbook-heading {
-      margin: 0 0 8px;
-      font-size: 15px;
+      margin: 0;
       color: var(--primary-dark);
+      font-size: 18px;
+      line-height: 1.15;
     }
 
-    .logbook-list {
+    .dashboard-heading p {
+      margin: 0;
+      color: #f6ead2;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .quick-grid {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-bottom: 10px;
+    }
+
+    .tool-btn,
+    .work-btn {
+      width: 100%;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .tool-btn {
+      min-height: 72px;
+      padding: 12px;
+      border: 1px solid rgba(197, 154, 69, 0.55);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255, 248, 234, 0.99), rgba(244, 234, 216, 0.99));
+      color: var(--ink);
+      box-shadow: 0 7px 16px rgba(0, 0, 0, 0.14);
+    }
+
+    .tool-btn.primary-tool {
+      border-color: rgba(156, 47, 34, 0.44);
+      background: linear-gradient(180deg, #fff9ef, #fff1df);
+      box-shadow: inset 0 0 0 1px rgba(197, 154, 69, 0.18), 0 7px 16px rgba(0, 0, 0, 0.14);
+    }
+
+    .tool-btn:active,
+    .work-btn:active,
+    .header-logbook:active,
+    .btn:active,
+    .home-btn:active { transform: translateY(1px); }
+
+    .tool-icon {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .tool-label {
+      display: block;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.12;
+    }
+
+    .work-card {
+      padding: 11px;
+      background: linear-gradient(180deg, rgba(255, 247, 230, 0.98), rgba(239, 226, 202, 0.98));
+    }
+
+    .work-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .work-card-head h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .work-card-head span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .work-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
-    .logbook-card {
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      background: #fff;
-      overflow: hidden;
-    }
-
-    .logbook-card summary {
-      min-height: 50px;
-      padding: 11px 12px;
-      cursor: pointer;
-      list-style: none;
-    }
-
-    .logbook-card summary::-webkit-details-marker { display: none; }
-
-    .logbook-summary-main {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
+    .work-btn {
+      min-height: 54px;
+      padding: 10px 11px;
+      border: 1px solid rgba(156, 47, 34, 0.38);
+      border-radius: 14px;
+      background: #fff8ea;
+      color: var(--primary-dark);
       font-size: 14px;
       font-weight: 900;
+      text-align: center;
     }
 
-    .logbook-date {
-      white-space: nowrap;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .logbook-meta {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      line-height: 1.35;
-    }
-
-    .logbook-details {
-      border-top: 1px solid #efe2ca;
-      padding: 10px 12px 12px;
-      display: grid;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--ink);
-      line-height: 1.35;
-    }
-
-    .logbook-empty {
-      border: 1px dashed var(--line);
-      border-radius: 14px;
-      padding: 11px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-      background: #fffaf0;
-    }
-
-    .count {
-      font-weight: 900;
-    }
-
-    .toast {
-      position: fixed;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
-      max-width: 730px;
-      margin: 0 auto;
-      background: #111827;
-      color: white;
-      border-radius: 14px;
-      padding: 13px 14px;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-      display: none;
-      z-index: 9;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .tiny {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-    }
+    .work-btn.end { background: #f7e7d8; }
 
     .active-session {
+      padding: 12px;
+      border-color: #b7d5ae;
       background: #edf7ea;
-      border-color: #bfe6cd;
     }
+
+    .active-session .section-title { font-size: 16px; }
 
     .section-head {
       display: flex;
@@ -440,116 +314,252 @@
     }
 
     .home-btn {
+      min-height: 38px;
+      padding: 8px 11px;
       border: 0;
       border-radius: 999px;
-      padding: 9px 12px;
-      font-size: 13px;
-      font-weight: 900;
       background: #efe2ca;
       color: var(--ink);
+      font-size: 12px;
+      font-weight: 900;
       white-space: nowrap;
+      cursor: pointer;
     }
 
-    .mini-panel {
-      margin-top: 10px;
-      border-radius: 14px;
-      background: #fbf1df;
-      border: 1px dashed var(--line);
-      padding: 11px;
-      font-size: 13px;
+    label {
+      display: block;
+      margin: 11px 0 5px;
       color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    textarea { min-height: 92px; resize: vertical; }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .compact-actions { margin-top: 9px; }
+
+    .btn {
+      min-height: 40px;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--primary);
+      color: white;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: #efe2ca;
+      color: var(--ink);
+    }
+
+    .btn.danger { background: var(--red); }
+    .btn.compact { min-height: 36px; padding: 8px 11px; font-size: 11px; }
+
+    .review-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .review-item {
+      min-height: 44px;
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .review-item.bad { background: var(--soft-red); border-color: #ffc6c1; }
+    .review-item.warn { background: var(--soft-yellow); border-color: #f0d59a; }
+    .review-item.good { background: #edf7ea; border-color: #bfe6cd; }
+    .count { flex: 0 0 auto; font-size: 15px; font-weight: 900; }
+
+    .tiny,
+    .logbook-note {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
       line-height: 1.4;
     }
 
-    .estimate-box {
-      margin-top: 10px;
+    .logbook-note { margin: 0 0 8px; }
+    .logbook-section { margin-top: 14px; }
+
+    .logbook-heading {
+      margin: 0 0 7px;
+      color: var(--primary-dark);
+      font-size: 14px;
+    }
+
+    .logbook-list { display: grid; gap: 7px; }
+
+    .logbook-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
       border-radius: 14px;
-      padding: 11px;
-      background: var(--soft-primary);
-      border: 1px solid #e5b98e;
-      font-size: 14px;
-      font-weight: 800;
+      background: #fff;
     }
 
-
-
-    .today-card {
-      background: #fff7ea;
-      border: 1px solid #e5c7a1;
+    .logbook-card summary {
+      min-height: 49px;
+      padding: 10px 11px;
+      cursor: pointer;
+      list-style: none;
     }
 
-    .today-line {
-      margin: 0;
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.45;
-      font-weight: 700;
-    }
+    .logbook-card summary::-webkit-details-marker { display: none; }
 
-    .badge-row {
+    .logbook-summary-main {
       display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 10px;
-    }
-
-    .badge {
-      border-radius: 999px;
-      padding: 6px 9px;
-      background: #f1dfbe;
-      border: 1px solid #e1c397;
-      color: #4a2f1b;
-      font-size: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 9px;
+      font-size: 13px;
       font-weight: 900;
     }
 
-    .badge.green {
-      background: #edf7ea;
-      border-color: #bed8b5;
-      color: #2f5b30;
+    .logbook-date {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
-    .badge.orange {
-      background: #fff1df;
-      border-color: #e5b98e;
-      color: #8a421b;
+    .logbook-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.3;
     }
 
-    @media (max-width: 520px) {
-      .grid { grid-template-columns: 1fr; }
+    .logbook-details {
+      display: grid;
+      gap: 5px;
+      padding: 9px 11px 11px;
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.35;
+      border-top: 1px solid #ead9bc;
+    }
+
+    .logbook-empty {
+      padding: 10px;
+      border: 1px dashed var(--line);
+      border-radius: 13px;
+      background: #fffaf0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mini-panel,
+    .estimate-box {
+      margin-top: 9px;
+      padding: 10px;
+      border-radius: 13px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .mini-panel {
+      border: 1px dashed var(--line);
+      background: #fbf1df;
+      color: var(--muted);
+    }
+
+    .estimate-box {
+      border: 1px solid #e5b98e;
+      background: var(--soft-primary);
+      font-weight: 800;
+    }
+
+    .toast {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 9;
+      display: none;
+      max-width: 730px;
+      margin: 0 auto;
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: #111827;
+      color: white;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 440px) {
+      .app { padding-left: 8px; padding-right: 8px; }
+      .hero { padding: 11px; }
+      .brand-mark { width: 72px; height: 72px; flex-basis: 72px; border-radius: 17px; }
+      .header-logbook { padding: 8px 10px; font-size: 11px; }
+      .dashboard-heading p { display: none; }
       .row { grid-template-columns: 1fr; }
-      h1 { font-size: 25px; }
-      .big-btn { min-height: 72px; }
-      .brand-mark {
-        width: 66px;
-        height: 66px;
-        flex-basis: 66px;
-        border-radius: 16px;
-      }
-      .brand-lockup { align-items: flex-start; }
-      .mascot-panel {
-        grid-template-columns: 68px 1fr;
-      }
-      .mascot-img {
-        width: 68px;
-        height: 68px;
-      }
+    }
+
+    @media (max-width: 350px) {
+      .brand-mark { width: 64px; height: 64px; flex-basis: 64px; }
+      .header-logbook { padding: 8px; }
+      .quick-grid, .review-list { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header class="hero">
-      <div class="brand-lockup">
-        <img class="brand-mark" src="assets/main-emblem-v1.png" alt="Bandito Taxito emblem">
-        <div class="brand-copy">
-          <div class="eyebrow">Keep the receipts, amigo.</div>
-          <h1>Bandito Taxito</h1>
-          <div class="brand-kicker">1099 Tracker • Miles • Receipts</div>
+      <div class="hero-top">
+        <div class="brand-lockup">
+          <img class="brand-mark" src="assets/main-emblem-v1.png" alt="Bandito Taxito emblem">
+          <div class="brand-copy">
+            <div class="eyebrow">Keep the receipts, amigo.</div>
+            <h1>Bandito Taxito</h1>
+            <div class="brand-kicker">Receipts • Miles • 1099 Records</div>
+          </div>
         </div>
+        <button class="header-logbook" onclick="showView('logbookView')">📒 Logbook</button>
       </div>
       <div class="status-row">
-        <div class="pill" id="versionPill">v0.2.1</div>
+        <div class="pill" id="versionPill">v0.2.2</div>
         <div class="pill" id="onlinePill">Checking connection</div>
         <div class="pill" id="queuePill">Queue: 0</div>
       </div>
@@ -557,48 +567,59 @@
 
     <main id="homeView">
       <div id="activeSessionCard" class="card active-session hidden">
-        <h2 class="section-title">Active Work Session</h2>
+        <div class="section-head">
+          <h2 class="section-title">Active Work Session</h2>
+          <button class="home-btn" onclick="showView('endWorkView')">End Work</button>
+        </div>
         <div id="activeSessionText" class="tiny"></div>
-        <div class="actions">
-          <button class="btn" onclick="showView('endWorkView')">End Work</button>
-          <button class="btn secondary" onclick="clearActiveSession()">Clear</button>
+        <div class="actions compact-actions">
+          <button class="btn secondary compact" onclick="clearActiveSession()">Clear Session</button>
         </div>
       </div>
 
-      <div class="card today-card">
-        <h2 class="section-title">Today</h2>
-        <p class="today-line">No clutter. Log the work, grab the miles, keep the receipts.</p>
-        <div class="badge-row">
-          <span class="badge green">Mobile first</span>
-          <span class="badge orange">Receipts</span>
-          <span class="badge">Mileage</span>
-          <span class="badge">Tax stash</span>
-        </div>
-        <div class="mascot-panel">
-          <img class="mascot-img" src="assets/dog-mascot-v1.png" alt="Bandito Taxito dog mascot">
-          <div>
-            <p class="mascot-title">3 legs. All heart. All hustle.</p>
-            <p class="mascot-copy">Your rugged little paper-trail watchdog. Track it, write it, don’t lose the damn receipt.</p>
-          </div>
-        </div>
+      <div class="dashboard-heading">
+        <h2>Quick Add</h2>
+        <p>Keep the paper trail clean.</p>
       </div>
 
-      <div class="grid">
-        <button class="big-btn primary" onclick="showView('startWorkView')">📍 Start Work <span>company, site, start odometer</span></button>
-        <button class="big-btn primary" onclick="showView('endWorkView')">🏁 End Work <span>close the log, amigo</span></button>
-        <button class="big-btn" onclick="showView('receiptView')">🧾 Add Receipt <span>snap it before it disappears</span></button>
-        <button class="big-btn" onclick="showView('mileageView')">🛻 Add Mileage <span>odometer run or correction</span></button>
-        <button class="big-btn" onclick="showView('noteView')">📸 Add Note / Photo <span>proof, issue, or reminder</span></button>
-        <button class="big-btn" onclick="showView('taxView')">🌵 Tax Helper <span>tax stash reminders</span></button>
-        <button class="big-btn" onclick="showView('logbookView')">📒 View Logbook <span>recent work, mileage, receipts</span></button>
+      <div class="quick-grid">
+        <button class="tool-btn primary-tool" onclick="showView('receiptView')">
+          <span class="tool-icon">🧾</span>
+          <span class="tool-label">Add Receipt</span>
+        </button>
+        <button class="tool-btn primary-tool" onclick="showView('mileageView')">
+          <span class="tool-icon">🛻</span>
+          <span class="tool-label">Add Mileage</span>
+        </button>
+        <button class="tool-btn" onclick="showView('noteView')">
+          <span class="tool-icon">📸</span>
+          <span class="tool-label">Note / Photo</span>
+        </button>
+        <button class="tool-btn" onclick="showView('taxView')">
+          <span class="tool-icon">🌵</span>
+          <span class="tool-label">Tax Helper</span>
+        </button>
+      </div>
+
+      <div class="card work-card">
+        <div class="work-card-head">
+          <h2>Work Session</h2>
+          <span>Optional work log</span>
+        </div>
+        <div class="work-row">
+          <button class="work-btn" onclick="showView('startWorkView')">📍 Start Work</button>
+          <button class="work-btn end" onclick="showView('endWorkView')">🏁 End Work</button>
+        </div>
       </div>
 
       <div class="card">
-        <h2 class="section-title">Weekly Review</h2>
+        <div class="section-head">
+          <h2 class="section-title">Weekly Review</h2>
+          <button class="home-btn" onclick="refreshWeeklyReview()">Refresh</button>
+        </div>
         <div id="reviewList" class="review-list"></div>
-        <div class="actions">
-          <button class="btn secondary" onclick="refreshWeeklyReview()">Refresh</button>
-          <button class="btn secondary" onclick="syncQueue()">Sync Offline Queue</button>
+        <div class="actions compact-actions">
+          <button class="btn secondary compact" id="syncQueueButton" onclick="syncQueue()">Sync Offline Queue</button>
         </div>
       </div>
     </main>
@@ -608,9 +629,9 @@
         <h2 class="section-title">Logbook</h2>
         <button class="home-btn" onclick="showView('homeView')">← Home</button>
       </div>
-      <p class="logbook-note">Read-only view of recent records saved to the backend Sheet. Editing stays in the Sheet for now.</p>
-      <div class="actions">
-        <button class="btn secondary" onclick="refreshLogbook()">Refresh Logbook</button>
+      <p class="logbook-note">Recent records saved to the backend Sheet. Editing stays in the Sheet for now.</p>
+      <div class="actions compact-actions">
+        <button class="btn secondary compact" onclick="refreshLogbook()">Refresh Logbook</button>
       </div>
       <p class="tiny" id="logbookStatus">Open this screen to load recent records.</p>
 
@@ -774,12 +795,10 @@
         <h2 class="section-title">Add Receipt</h2>
         <button class="home-btn" onclick="showView('homeView')">← Home</button>
       </div>
-      <p class="tiny">AI receipt reader is planned for a later build. For now, Bandito asks confirmation questions so bad receipt data does not get saved blindly.</p>
+      <p class="tiny">AI receipt reader is planned for a later build. Confirm the details before saving.</p>
       <label>Receipt Photo</label>
       <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment">
-      <div class="mini-panel" id="receiptAiPanel">
-        AI plan: upload receipt → AI reads vendor/date/total/category → you confirm anything sketchy → save.
-      </div>
+      <div class="mini-panel" id="receiptAiPanel">Upload a receipt, confirm the fields, and save.</div>
       <div class="row">
         <div>
           <label>Receipt Date</label>
@@ -944,7 +963,7 @@
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyM4acSDZT7L6q_I7UQDfMc4xZiCFGXlw9B9pPPawGQSQtTCvtQZFNxbsAQ3z7vFBcPVQ/exec';
     const QUEUE_KEY = 'banditoTaxitoQueue_v020';
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
-    const UI_VERSION = 'v0.2.1';
+    const UI_VERSION = 'v0.2.2';
     let appState = { clients: [], settings: {}, weeklyReview: {}, logbook: {} };
 
     document.addEventListener('DOMContentLoaded', init);
@@ -1010,9 +1029,6 @@
     }
 
     function postToGas(action, payload) {
-      // Cross-origin Apps Script writes are sent through a hidden form to avoid CORS blocking.
-      // The response cannot be read directly from GitHub Pages, so the UI confirms the send,
-      // then refreshes read-only data through JSONP.
       return new Promise(function(resolve) {
         const frameName = 'btGasPostFrame_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
         const iframe = document.createElement('iframe');
@@ -1236,6 +1252,7 @@
       const queue = getQueue();
       if (!queue.length) {
         updateQueuePill();
+        toast('Offline queue is empty.');
         return;
       }
 
@@ -1287,12 +1304,12 @@
     function renderWeeklyReview(data) {
       data = data || {};
       const items = [
-        { label: 'Work logs this week', value: data.workLogs || 0, type: 'good' },
-        { label: 'Missing end time', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'good' },
-        { label: 'Missing work notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'good' },
-        { label: 'Receipts missing photo/file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'good' },
-        { label: 'Receipts missing amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'good' },
-        { label: 'Mileage logs missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'good' }
+        { label: 'Work logs', value: data.workLogs || 0, type: 'good' },
+        { label: 'Missing end', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'good' },
+        { label: 'Missing notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'good' },
+        { label: 'Receipt file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'good' },
+        { label: 'Receipt amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'good' },
+        { label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'good' }
       ];
 
       document.getElementById('reviewList').innerHTML = items.map(function(item) {
@@ -1705,7 +1722,14 @@
     }
 
     function updateQueuePill() {
-      document.getElementById('queuePill').textContent = 'Queue: ' + getQueue().length;
+      const count = getQueue().length;
+      const pill = document.getElementById('queuePill');
+      const button = document.getElementById('syncQueueButton');
+      if (pill) {
+        pill.textContent = 'Queue: ' + count;
+        pill.classList.toggle('hidden', count === 0);
+      }
+      if (button) button.classList.toggle('hidden', count === 0);
     }
 
     function clearEndForm() {
