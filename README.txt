@@ -1,33 +1,32 @@
-Bandito Taxito v0.2.1 — Logbook Viewer
+Bandito Taxito v0.2.2 — Mobile / Dashboard Cleanup
 
-Changed files only:
+REPLACE
+- Replace the repository root index.html with the included index.html.
+
+DO NOT TOUCH
 - Code.gs
-- index.html
-- README.txt
+- appsscript.json
+- assets/
+- docs/
+- releases/
+- backend Sheet schema
+- billable/pay logic
 
-What changed:
-- Adds read-only Logbook screen to the GitHub frontend.
-- Adds API action `logbook` / `getLogbook` to GAS backend.
-- Shows recent Work Logs, Mileage, Receipts, and Notes/Photos from the Sheet.
-- Keeps records read-only; no edit/delete workflow yet.
-- Does not change billable-day/pay calculations.
-- Does not change Sheet headers.
-- Does not change assets/docs/releases/appsscript.json.
+CHANGES
+- Receipts and mileage are now the first dashboard actions.
+- Quick tools are smaller and cleaner.
+- Start Work and End Work stay on one mobile row.
+- Logbook is available from the header.
+- Weekly Review is more compact.
+- Zero-count offline queue controls stay hidden.
+- Removed the bulky Today/mascot copy card and extra dashboard clutter.
+- Updated frontend version to v0.2.2.
 
-Upload to GitHub root:
-- Replace Code.gs
-- Replace index.html
-
-Apps Script:
-- Replace Code.gs only.
-- Deploy new Web App version.
-
-Deploy note:
-v0.2.1 — Logbook viewer
-
-Test:
-1. Open https://wrsorensen.github.io/BanditoTaxito/
-2. Confirm Backend OK.
-3. Tap View Logbook.
-4. Confirm recent Work Log test appears.
-5. Optional: add another Start/End Work record, then refresh Logbook.
+TEST
+1. Open the app on a phone-width screen.
+2. Confirm Receipt, Mileage, Note/Photo, and Tax Helper open.
+3. Confirm Start Work and End Work remain side-by-side.
+4. Confirm Logbook opens from the header and loads records.
+5. Confirm Weekly Review loads.
+6. Confirm Start/End Work, receipt, mileage, and note saves still reach the backend.
+7. Confirm no assets are missing.
