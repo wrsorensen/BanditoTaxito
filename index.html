@@ -54,89 +54,63 @@
       padding: 10px 10px 38px;
     }
 
-    .hero {
+    .brand-header {
+      margin-bottom: 12px;
+    }
+
+    .brand-stage {
       position: relative;
+      width: min(100%, 520px);
+      height: 250px;
+      margin: 0 auto;
       overflow: hidden;
-      margin-bottom: 10px;
-      padding: 13px;
-      color: #fff8eb;
-      border: 1px solid rgba(197, 154, 69, 0.64);
-      border-radius: 22px;
-      background:
-        linear-gradient(135deg, rgba(18, 63, 61, 0.98), rgba(40, 22, 15, 0.98) 56%, rgba(156, 47, 34, 0.93));
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.30);
     }
 
-    .hero::after {
-      content: "";
+    .brand-logo {
       position: absolute;
-      right: -30px;
-      bottom: -42px;
-      width: 128px;
-      height: 128px;
-      border: 20px solid rgba(255, 248, 235, 0.055);
-      border-radius: 50%;
-      pointer-events: none;
+      left: 50%;
+      top: 62%;
+      width: min(165%, 760px);
+      max-width: none;
+      height: auto;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.42));
     }
 
-    .hero-top {
-      position: relative;
-      z-index: 1;
+    .header-shortcuts {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      justify-content: flex-end;
+      gap: 8px;
+      margin: 0 3px 10px;
     }
 
-    .brand-lockup {
-      min-width: 0;
-      display: flex;
+    .shortcut-button {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: inline-flex;
       align-items: center;
-      gap: 11px;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid rgba(248, 223, 170, 0.70);
+      border-radius: 14px;
+      background: rgba(17, 16, 13, 0.52);
+      color: #f8dfaa;
+      box-shadow: 0 7px 16px rgba(0, 0, 0, 0.22);
+      cursor: pointer;
     }
 
-    .brand-mark {
-      width: 82px;
-      height: 82px;
-      flex: 0 0 82px;
-      object-fit: cover;
-      border-radius: 19px;
-      border: 2px solid rgba(248, 223, 170, 0.88);
-      background: #11100d;
-      box-shadow: 0 9px 20px rgba(0, 0, 0, 0.34);
+    .shortcut-button:active { transform: translateY(1px); }
+
+    .shortcut-button .ui-icon,
+    .shortcut-button .header-svg {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+      color: #f8dfaa;
     }
 
-    .brand-copy { min-width: 0; }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(23px, 6.8vw, 30px);
-      line-height: 1;
-      letter-spacing: -0.03em;
-    }
-
-    .brand-kicker {
-      margin-top: 6px;
-      color: #f6ead2;
-      font-size: 10.5px;
-      font-weight: 800;
-      line-height: 1.25;
-    }
-
-    .hero-shortcut-row {
-      position: relative;
-      z-index: 1;
-      margin-top: 9px;
-    }
-
-    .header-logbook {
-      width: 100%;
-      justify-content: flex-start;
-      padding: 8px 11px;
-      text-align: left;
-    }
-
-    .action-copy,
     .tool-copy,
     .work-copy {
       min-width: 0;
@@ -144,14 +118,12 @@
       gap: 2px;
     }
 
-    .action-label,
     .work-label {
       font-size: 12px;
       font-weight: 900;
       line-height: 1.1;
     }
 
-    .action-helper,
     .tool-helper,
     .work-helper {
       display: block;
@@ -159,46 +131,6 @@
       font-weight: 800;
       line-height: 1.15;
       opacity: 0.78;
-    }
-
-    .header-actions {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex: 0 0 auto;
-    }
-
-    .header-action {
-      min-height: 38px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 8px 10px;
-      border: 1px solid rgba(248, 223, 170, 0.56);
-      border-radius: 12px;
-      background: rgba(17, 16, 13, 0.28);
-      color: #fff8eb;
-      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
-      font-size: 11px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .header-settings {
-      width: 38px;
-      padding: 0;
-      flex: 0 0 38px;
-    }
-
-    .header-action .ui-icon,
-    .header-svg {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 18px;
-      color: #f8dfaa;
     }
 
     .header-svg,
@@ -211,9 +143,13 @@
     }
 
     .status-row {
-      position: relative;
-      z-index: 1;
-      margin-top: 8px;
+      margin: 0 3px 8px;
+    }
+
+    .brand-header .pill {
+      border-color: rgba(248, 223, 170, 0.54);
+      background: rgba(17, 16, 13, 0.64);
+      color: #fff8eb;
     }
 
     .connection-indicators {
@@ -395,57 +331,92 @@
 
     .active-session .section-title { font-size: 16px; }
 
-    .bandito-status-card {
-      display: grid;
-      grid-template-columns: 82px minmax(0, 1fr);
-      align-items: center;
-      gap: 12px;
-      min-height: 102px;
+    .review-card {
+      padding: 0;
       overflow: hidden;
-      color: #fff8eb;
-      border-color: rgba(248, 223, 170, 0.68);
-      background: linear-gradient(135deg, rgba(18, 63, 61, 0.96), rgba(40, 22, 15, 0.96) 62%, rgba(156, 47, 34, 0.90));
     }
 
-    .bandito-status-card[data-state="warning"] {
-      border-color: rgba(255, 199, 150, 0.78);
-      background: linear-gradient(135deg, rgba(85, 38, 24, 0.97), rgba(40, 22, 15, 0.97) 60%, rgba(156, 47, 34, 0.96));
+    .review-toggle {
+      width: 100%;
+      min-height: 76px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 13px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
     }
 
-    .bandito-status-image {
-      width: 82px;
-      height: 82px;
-      object-fit: contain;
-      object-position: center;
-      filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.24));
+    .review-summary-copy {
+      min-width: 0;
     }
 
-    .bandito-status-eyebrow {
-      color: #f8dfaa;
-      font-size: 9px;
-      font-weight: 900;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-    }
-
-    .bandito-status-title {
-      margin: 3px 0 0;
-      color: #fff8eb;
-      font-size: 18px;
-      line-height: 1.05;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.72);
-    }
-
-    .bandito-status-text {
-      margin: 5px 0 0;
-      color: #f6ead2;
+    .review-summary-text {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
       font-size: 11px;
       font-weight: 800;
       line-height: 1.3;
     }
 
+    .review-status-tag {
+      min-width: 58px;
+      padding: 6px 9px;
+      border: 1px solid rgba(248, 223, 170, 0.62);
+      border-radius: 999px;
+      background: rgba(17, 16, 13, 0.30);
+      color: #f8dfaa;
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .review-status-tag[data-state="clean"] {
+      border-color: rgba(187, 224, 183, 0.68);
+      background: rgba(70, 122, 69, 0.38);
+      color: #eff8e9;
+    }
+
+    .review-status-tag[data-state="warning"] {
+      border-color: rgba(248, 190, 133, 0.78);
+      background: rgba(156, 47, 34, 0.48);
+      color: #fff0df;
+    }
+
+    .review-chevron {
+      width: 18px;
+      height: 18px;
+      color: #f8dfaa;
+      transition: transform 150ms ease;
+    }
+
+    .review-card.review-open .review-chevron {
+      transform: rotate(180deg);
+    }
+
+    .review-body {
+      padding: 0 13px 13px;
+      border-top: 1px solid rgba(248, 223, 170, 0.36);
+    }
+
+    .review-body-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 12px;
+      margin-bottom: 10px;
+    }
+
     .module-subtext {
-      margin: -2px 0 10px;
+      margin: 0;
       color: var(--muted);
       font-size: 11px;
       font-weight: 800;
@@ -618,7 +589,8 @@
 
     #homeView .tool-helper,
     #homeView .work-helper,
-    #homeView #weeklyReviewModule .module-subtext {
+    #homeView #weeklyReviewModule .module-subtext,
+    #homeView #weeklyReviewModule .review-summary-text {
       color: #f6ead2;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.72);
     }
@@ -1072,43 +1044,38 @@
 
     @media (max-width: 440px) {
       .app { padding-left: 8px; padding-right: 8px; }
-      .hero { padding: 11px; }
-      .brand-mark { width: 64px; height: 64px; flex-basis: 64px; border-radius: 16px; }
-      .brand-lockup { gap: 9px; }
-      .header-action { min-height: 36px; padding: 7px 9px; }
-      .header-settings { width: 36px; flex-basis: 36px; }
-      .bandito-status-card { grid-template-columns: 72px minmax(0, 1fr); min-height: 92px; }
-      .bandito-status-image { width: 72px; height: 72px; }
+      .brand-stage { height: 250px; }
+      .brand-logo { width: 165%; top: 62%; }
+      .shortcut-button { width: 44px; height: 44px; flex-basis: 44px; }
+      .tool-btn { min-height: 76px; padding: 13px; }
+      .tool-label { font-size: 17px; }
+      .tool-helper { font-size: 11.5px; line-height: 1.2; }
+      .review-toggle { min-height: 80px; }
       .row { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 350px) {
-      .brand-mark { width: 56px; height: 56px; flex-basis: 56px; }
+      .brand-stage { height: 235px; }
+      .brand-logo { width: 165%; top: 62%; }
+      .review-toggle { grid-template-columns: minmax(0, 1fr) auto; }
+      .review-chevron { display: none; }
       .quick-grid, .review-list, .settings-status-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <header class="hero">
-      <div class="hero-top">
-        <div class="brand-lockup">
-          <img class="brand-mark" src="assets/app-icon-v2.png" alt="Bandito Taxito three-legged dog icon">
-          <div class="brand-copy">
-            <h1>Bandito Taxito</h1>
-            <div class="brand-kicker">No loose ends, hombre.</div>
-          </div>
-        </div>
-        <div class="header-actions">
-          <button class="header-action header-settings" type="button" onclick="openSettings()" aria-label="Open Settings">
-            <svg class="header-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h2"></path><path d="M10 17h10"></path><circle cx="8" cy="17" r="2"></circle></svg>
-          </button>
-        </div>
+    <header class="brand-header">
+      <h1 class="sr-only">Bandito Taxito</h1>
+      <div class="brand-stage">
+        <img class="brand-logo" src="assets/main-emblem-v2.png" alt="Bandito Taxito dog and outlaw emblem">
       </div>
-      <div class="hero-shortcut-row">
-        <button class="header-action header-logbook" type="button" onclick="showView('logbookView')" aria-label="Open Logbook — Check the record">
+      <div class="header-shortcuts" aria-label="App shortcuts">
+        <button class="shortcut-button" type="button" onclick="showView('logbookView')" aria-label="Open Logbook" title="Logbook">
           <span class="ui-icon icon-logbook" aria-hidden="true"></span>
-          <span class="action-copy"><span class="action-label">Logbook</span><span class="action-helper">Check the record.</span></span>
+        </button>
+        <button class="shortcut-button" type="button" onclick="openSettings()" aria-label="Open Settings" title="Settings">
+          <svg class="header-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h2"></path><path d="M10 17h10"></path><circle cx="8" cy="17" r="2"></circle></svg>
         </button>
       </div>
       <div class="status-row hidden" id="headerStatusRow">
@@ -1130,15 +1097,6 @@
           <button class="btn secondary compact" onclick="clearActiveSession()">Clear Session</button>
         </div>
       </div>
-
-      <section class="card bandito-status-card" id="banditoStatusCard" data-state="loading" aria-live="polite">
-        <img class="bandito-status-image" id="banditoStatusImage" src="assets/dog-status-clean-v1.png" alt="Three-legged Bandito dog checking the trail">
-        <div>
-          <div class="bandito-status-eyebrow">Trail Status</div>
-          <h2 class="bandito-status-title" id="banditoStatusTitle">Checking the trail...</h2>
-          <p class="bandito-status-text" id="banditoStatusText">Bandito is checking your records.</p>
-        </div>
-      </section>
 
       <div class="dashboard-modules" id="dashboardModules">
         <section class="dashboard-module quick-actions-module" id="quickActionsModule" data-dashboard-module="quickActions" aria-label="Main actions">
@@ -1172,18 +1130,27 @@
           </div>
         </section>
 
-        <section class="card dashboard-module" id="weeklyReviewModule" data-dashboard-module="weeklyReview" aria-label="Bandito Review">
-          <div class="section-head">
-            <h2 class="section-title">Bandito Review</h2>
-            <button class="module-action-btn" type="button" onclick="refreshWeeklyReview()">
-              <svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>
-              <span>Refresh</span>
-            </button>
-          </div>
-          <p class="module-subtext">A quick scan for anything that could cost you.</p>
-          <div id="reviewList" class="review-list"></div>
-          <div class="actions compact-actions">
-            <button class="btn secondary compact" id="syncQueueButton" onclick="syncQueue()">Sync Offline Queue</button>
+        <section class="card dashboard-module review-card" id="weeklyReviewModule" data-dashboard-module="weeklyReview" aria-label="Bandito Review">
+          <button class="review-toggle" id="banditoReviewToggle" type="button" onclick="toggleBanditoReview()" aria-expanded="false" aria-controls="banditoReviewBody">
+            <span class="review-summary-copy">
+              <span class="section-title">Bandito Review</span>
+              <span class="review-summary-text" id="banditoReviewSummary">Checking the trail...</span>
+            </span>
+            <span class="review-status-tag" id="banditoReviewTag" data-state="loading">Checking</span>
+            <svg class="inline-svg review-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+          </button>
+          <div class="review-body hidden" id="banditoReviewBody">
+            <div class="review-body-head">
+              <p class="module-subtext">A quick scan for anything that could cost you.</p>
+              <button class="module-action-btn" type="button" onclick="refreshWeeklyReview()">
+                <svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>
+                <span>Refresh</span>
+              </button>
+            </div>
+            <div id="reviewList" class="review-list"></div>
+            <div class="actions compact-actions">
+              <button class="btn secondary compact" id="syncQueueButton" onclick="syncQueue()">Sync Offline Queue</button>
+            </div>
           </div>
         </section>
       </div>
@@ -1634,7 +1601,7 @@
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
-    const UI_VERSION = 'v0.2.8';
+    const UI_VERSION = 'v0.2.9';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -2368,32 +2335,42 @@
       return LOADING_LINES[Math.floor(Math.random() * LOADING_LINES.length)];
     }
 
-    function setBanditoLoadingState() {
-      const card = document.getElementById('banditoStatusCard');
-      const image = document.getElementById('banditoStatusImage');
-      const title = document.getElementById('banditoStatusTitle');
-      const text = document.getElementById('banditoStatusText');
-      if (card) card.dataset.state = 'loading';
-      if (image) {
-        image.src = 'assets/dog-status-clean-v1.png';
-        image.alt = 'Three-legged Bandito dog checking the trail';
-      }
-      if (title) title.textContent = randomLoadingLine();
-      if (text) text.textContent = 'Bandito is checking your records.';
+    function toggleBanditoReview() {
+      const card = document.getElementById('weeklyReviewModule');
+      const body = document.getElementById('banditoReviewBody');
+      const toggle = document.getElementById('banditoReviewToggle');
+      if (!card || !body || !toggle) return;
+      const willOpen = body.classList.contains('hidden');
+      body.classList.toggle('hidden', !willOpen);
+      card.classList.toggle('review-open', willOpen);
+      toggle.setAttribute('aria-expanded', String(willOpen));
     }
 
-    function renderBanditoStatus(hasTrouble) {
-      const card = document.getElementById('banditoStatusCard');
-      const image = document.getElementById('banditoStatusImage');
-      const title = document.getElementById('banditoStatusTitle');
-      const text = document.getElementById('banditoStatusText');
-      if (card) card.dataset.state = hasTrouble ? 'warning' : 'clean';
-      if (image) {
-        image.src = hasTrouble ? 'assets/dog-status-warning-v1.png' : 'assets/dog-status-clean-v1.png';
-        image.alt = hasTrouble ? 'Three-legged Bandito dog warning about records' : 'Three-legged Bandito dog with a clean record';
+    function setBanditoLoadingState() {
+      const tag = document.getElementById('banditoReviewTag');
+      const summary = document.getElementById('banditoReviewSummary');
+      if (tag) {
+        tag.dataset.state = 'loading';
+        tag.textContent = 'Checking';
       }
-      if (title) title.textContent = hasTrouble ? 'Bandito found trouble.' : 'No loose ends.';
-      if (text) text.textContent = hasTrouble ? 'Review the items below.' : 'Keep Stackin’.';
+      if (summary) summary.textContent = randomLoadingLine();
+    }
+
+    function renderBanditoReviewStatus(troubleCount) {
+      const tag = document.getElementById('banditoReviewTag');
+      const summary = document.getElementById('banditoReviewSummary');
+      const hasTrouble = troubleCount > 0;
+      if (tag) {
+        tag.dataset.state = hasTrouble ? 'warning' : 'clean';
+        tag.textContent = hasTrouble
+          ? troubleCount + ' issue' + (troubleCount === 1 ? '' : 's')
+          : 'Clear';
+      }
+      if (summary) {
+        summary.textContent = hasTrouble
+          ? 'Bandito found trouble. Review the items below.'
+          : 'No loose ends. Keep Stackin’.';
+      }
     }
 
     function renderWeeklyReview(data) {
@@ -2420,7 +2397,7 @@
       ].reduce(function(total, value) {
         return total + (Number(value) || 0);
       }, 0);
-      renderBanditoStatus(troubleCount > 0);
+      renderBanditoReviewStatus(troubleCount);
     }
 
     function refreshLogbook() {
