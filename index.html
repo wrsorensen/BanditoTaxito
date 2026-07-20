@@ -108,18 +108,9 @@
 
     .brand-copy { min-width: 0; }
 
-    .eyebrow {
-      margin-bottom: 4px;
-      color: #f8dfaa;
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
     h1 {
       margin: 0;
-      font-size: clamp(24px, 7vw, 31px);
+      font-size: clamp(23px, 6.8vw, 30px);
       line-height: 1;
       letter-spacing: -0.03em;
     }
@@ -127,38 +118,63 @@
     .brand-kicker {
       margin-top: 6px;
       color: #f6ead2;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
       line-height: 1.25;
     }
 
-    .header-logbook {
+    .header-actions {
       position: relative;
       z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+    }
+
+    .header-action {
+      min-height: 38px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 7px;
-      flex: 0 0 auto;
-      min-height: 42px;
-      padding: 9px 12px;
-      border: 1px solid rgba(248, 223, 170, 0.52);
-      border-radius: 999px;
-      background: rgba(255, 248, 235, 0.12);
+      padding: 8px 10px;
+      border: 1px solid rgba(248, 223, 170, 0.56);
+      border-radius: 12px;
+      background: rgba(17, 16, 13, 0.28);
       color: #fff8eb;
-      font-size: 12px;
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
+      font-size: 11px;
       font-weight: 900;
       cursor: pointer;
+    }
+
+    .header-settings {
+      width: 38px;
+      padding: 0;
+      flex: 0 0 38px;
+    }
+
+    .header-action .ui-icon,
+    .header-svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      color: #f8dfaa;
+    }
+
+    .header-svg,
+    .inline-svg {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .status-row {
       position: relative;
       z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      min-height: 36px;
       margin-top: 8px;
     }
 
@@ -167,23 +183,6 @@
       align-items: center;
       gap: 6px;
       flex-wrap: wrap;
-    }
-
-    .header-settings {
-      width: 36px;
-      height: 36px;
-      flex: 0 0 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      border: 1px solid rgba(248, 223, 170, 0.52);
-      border-radius: 50%;
-      background: rgba(255, 248, 235, 0.12);
-      color: #fff8eb;
-      font-size: 18px;
-      line-height: 1;
-      cursor: pointer;
     }
 
     .sr-only {
@@ -265,8 +264,8 @@
 
     .tool-btn:active,
     .work-btn:active,
-    .header-logbook:active,
-    .header-settings:active,
+    .header-action:active,
+    .module-action-btn:active,
     .btn:active,
     .home-btn:active { transform: translateY(1px); }
 
@@ -288,23 +287,16 @@
     .icon-end-work { --icon-url: url('assets/icons/icon-end-work.svg'); }
     .icon-logbook { --icon-url: url('assets/icons/icon-logbook.svg'); }
 
-    .tool-icon {
-      display: inline-block;
-      margin-bottom: 0;
-      color: var(--primary);
-    }
-
-    .header-icon {
-      width: 18px;
-      height: 18px;
-      flex-basis: 18px;
-    }
-
+    .tool-icon,
     .work-icon {
+      display: inline-block;
       width: 22px;
       height: 22px;
-      flex-basis: 22px;
+      flex: 0 0 22px;
+      margin-bottom: 0;
     }
+
+    .tool-icon { color: var(--primary); }
 
     .tool-label {
       display: block;
@@ -329,13 +321,6 @@
     .work-card-head h2 {
       margin: 0;
       font-size: 15px;
-    }
-
-    .work-card-head span {
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 800;
-      text-align: right;
     }
 
     .work-row {
@@ -389,6 +374,36 @@
       font-weight: 900;
       white-space: nowrap;
       cursor: pointer;
+    }
+
+
+    .module-action-btn {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid rgba(248, 223, 170, 0.56);
+      border-radius: 11px;
+      background: rgba(17, 16, 13, 0.32);
+      color: #fff8eb;
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.16);
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .module-action-btn .inline-svg {
+      width: 16px;
+      height: 16px;
+      color: #f8dfaa;
+    }
+
+    #logbookView .module-action-btn {
+      border-color: rgba(156, 47, 34, 0.34);
+      background: var(--primary-dark);
     }
 
     label {
@@ -490,13 +505,14 @@
       background: rgba(156, 47, 34, 0.09);
     }
 
-    #homeView .tool-icon {
+    #homeView .tool-icon,
+    #homeView .work-icon,
+    #homeView .module-action-btn .inline-svg {
       color: #f8dfaa;
     }
 
     #homeView .tool-label,
     #homeView .work-card-head h2,
-    #homeView .work-card-head span,
     #homeView #weeklyReviewModule .section-title {
       color: #fff8eb;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.82);
@@ -692,28 +708,37 @@
       align-items: end;
       justify-items: center;
       padding: 14px;
-      background: rgba(17, 16, 13, 0.68);
+      background: rgba(17, 16, 13, 0.70);
       -webkit-backdrop-filter: blur(4px);
       backdrop-filter: blur(4px);
     }
 
     .settings-sheet {
       width: min(100%, 520px);
-      max-height: 86vh;
+      max-height: 88vh;
       overflow: auto;
       padding: 16px;
       border: 1px solid rgba(197, 154, 69, 0.72);
       border-radius: 22px;
-      background: linear-gradient(180deg, rgba(255, 248, 234, 0.98), rgba(239, 226, 202, 0.96));
-      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.40);
+      background: linear-gradient(180deg, rgba(255, 248, 234, 0.99), rgba(239, 226, 202, 0.98));
+      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.42);
     }
+
+    .settings-panel { min-height: 260px; }
 
     .settings-head {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       margin-bottom: 8px;
+    }
+
+    .settings-head-main {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .settings-head h2 {
@@ -722,10 +747,14 @@
       font-size: 19px;
     }
 
-    .settings-close {
+    .settings-close,
+    .settings-back {
       width: 36px;
       height: 36px;
       flex: 0 0 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border: 0;
       border-radius: 50%;
       background: #ead8b9;
@@ -735,12 +764,79 @@
       cursor: pointer;
     }
 
+    .settings-back {
+      font-size: 17px;
+    }
+
     .settings-note {
-      margin: 0 0 10px;
+      margin: 0 0 12px;
       color: var(--muted);
       font-size: 12px;
       font-weight: 700;
       line-height: 1.4;
+    }
+
+    .settings-menu {
+      display: grid;
+      gap: 8px;
+    }
+
+    .settings-menu-btn {
+      width: 100%;
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 11px;
+      border: 1px solid rgba(212, 179, 125, 0.72);
+      border-radius: 14px;
+      background: rgba(255, 251, 242, 0.86);
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .settings-menu-icon {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: #ead8b9;
+      color: var(--primary);
+    }
+
+    .settings-menu-icon .inline-svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .settings-menu-copy {
+      min-width: 0;
+      flex: 1;
+      display: grid;
+      gap: 2px;
+    }
+
+    .settings-menu-title {
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .settings-menu-meta {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .settings-chevron {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 20px;
+      font-weight: 900;
     }
 
     .settings-list {
@@ -781,12 +877,74 @@
       margin-top: 14px;
     }
 
-    .settings-version {
-      margin-top: 12px;
+    .settings-status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .settings-status-card {
+      min-height: 76px;
+      padding: 11px;
+      border: 1px solid rgba(212, 179, 125, 0.72);
+      border-radius: 14px;
+      background: rgba(255, 251, 242, 0.86);
+    }
+
+    .settings-status-label {
       color: var(--muted);
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .settings-status-value {
+      margin-top: 7px;
+      color: var(--primary-dark);
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .settings-placeholder {
+      padding: 14px;
+      border: 1px dashed rgba(197, 154, 69, 0.78);
+      border-radius: 14px;
+      background: rgba(255, 251, 242, 0.72);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .settings-about {
+      display: grid;
+      justify-items: center;
+      gap: 9px;
+      padding: 12px 8px 4px;
       text-align: center;
+    }
+
+    .settings-about img {
+      width: 76px;
+      height: 76px;
+      object-fit: cover;
+      border: 2px solid rgba(197, 154, 69, 0.72);
+      border-radius: 18px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .settings-about-title {
+      color: var(--primary-dark);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .settings-version {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
     }
 
     .toast {
@@ -810,16 +968,18 @@
     @media (max-width: 440px) {
       .app { padding-left: 8px; padding-right: 8px; }
       .hero { padding: 11px; }
-      .brand-mark { width: 72px; height: 72px; flex-basis: 72px; border-radius: 17px; }
-      .header-logbook { padding: 8px 10px; font-size: 11px; }
-      .header-settings { width: 34px; height: 34px; flex-basis: 34px; }
+      .brand-mark { width: 64px; height: 64px; flex-basis: 64px; border-radius: 16px; }
+      .brand-lockup { gap: 9px; }
+      .header-action { min-height: 36px; padding: 7px 9px; }
+      .header-settings { width: 36px; flex-basis: 36px; }
       .row { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 350px) {
-      .brand-mark { width: 64px; height: 64px; flex-basis: 64px; }
-      .header-logbook { padding: 8px; }
-      .quick-grid, .review-list { grid-template-columns: 1fr; }
+      .brand-mark { width: 56px; height: 56px; flex-basis: 56px; }
+      .header-logbook { width: 36px; padding: 0; }
+      .header-logbook .action-label { display: none; }
+      .quick-grid, .review-list, .settings-status-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -830,22 +990,25 @@
         <div class="brand-lockup">
           <img class="brand-mark" src="assets/main-emblem-v1.png" alt="Bandito Taxito emblem">
           <div class="brand-copy">
-            <div class="eyebrow">Keep the receipts, amigo.</div>
             <h1>Bandito Taxito</h1>
             <div class="brand-kicker">Receipts • Miles • 1099 Records</div>
           </div>
         </div>
-        <button class="header-logbook" onclick="showView('logbookView')"><span class="ui-icon header-icon icon-logbook" aria-hidden="true"></span><span>Logbook</span></button>
+        <div class="header-actions">
+          <button class="header-action header-logbook" type="button" onclick="showView('logbookView')" aria-label="Open Logbook">
+            <span class="ui-icon icon-logbook" aria-hidden="true"></span>
+            <span class="action-label">Logbook</span>
+          </button>
+          <button class="header-action header-settings" type="button" onclick="openSettings()" aria-label="Open Settings">
+            <svg class="header-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h2"></path><path d="M10 17h10"></path><circle cx="8" cy="17" r="2"></circle></svg>
+          </button>
+        </div>
       </div>
-      <div class="status-row">
+      <div class="status-row hidden" id="headerStatusRow">
         <div class="connection-indicators">
           <div class="pill hidden" id="onlinePill">Checking connection</div>
           <div class="pill hidden" id="queuePill">Queue: 0</div>
         </div>
-        <button class="header-settings" type="button" onclick="openDashboardSettings()" aria-label="Customize dashboard">
-          <span aria-hidden="true">⚙</span>
-          <span class="sr-only">Customize dashboard</span>
-        </button>
       </div>
     </header>
 
@@ -886,7 +1049,6 @@
         <section class="card work-card dashboard-module" id="workSessionModule" data-dashboard-module="workSession" aria-label="Work Session">
           <div class="work-card-head">
             <h2>Work Session</h2>
-            <span>Optional work log</span>
           </div>
           <div class="work-row">
             <button class="work-btn" onclick="showView('startWorkView')"><span class="ui-icon work-icon icon-start-work" aria-hidden="true"></span><span>Start Work</span></button>
@@ -897,7 +1059,10 @@
         <section class="card dashboard-module" id="weeklyReviewModule" data-dashboard-module="weeklyReview" aria-label="Weekly Review">
           <div class="section-head">
             <h2 class="section-title">Weekly Review</h2>
-            <button class="home-btn" onclick="refreshWeeklyReview()">Refresh</button>
+            <button class="module-action-btn" type="button" onclick="refreshWeeklyReview()">
+              <svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>
+              <span>Refresh</span>
+            </button>
           </div>
           <div id="reviewList" class="review-list"></div>
           <div class="actions compact-actions">
@@ -914,7 +1079,10 @@
       </div>
       <p class="logbook-note">Recent records saved to the backend Sheet. Editing stays in the Sheet for now.</p>
       <div class="actions compact-actions">
-        <button class="btn secondary compact" onclick="refreshLogbook()">Refresh Logbook</button>
+        <button class="module-action-btn" type="button" onclick="refreshLogbook()">
+          <svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>
+          <span>Refresh Logbook</span>
+        </button>
       </div>
       <p class="tiny" id="logbookStatus">Open this screen to load recent records.</p>
 
@@ -1240,29 +1408,104 @@
     <datalist id="clientList"></datalist>
   </div>
 
-  <div id="dashboardSettings" class="settings-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="dashboardSettingsTitle" onclick="closeDashboardSettingsFromBackdrop(event)">
+  <div id="appSettings" class="settings-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" onclick="closeSettingsFromBackdrop(event)">
     <div class="settings-sheet">
-      <div class="settings-head">
-        <div>
-          <h2 id="dashboardSettingsTitle">Customize Dashboard</h2>
+      <section class="settings-panel" data-settings-panel="home">
+        <div class="settings-head">
+          <div class="settings-head-main"><h2 id="settingsTitle">Settings</h2></div>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
         </div>
-        <button class="settings-close" type="button" onclick="closeDashboardSettings()" aria-label="Close dashboard settings">×</button>
-      </div>
-      <p class="settings-note">Choose what appears on this device. On the dashboard, hold a module and drag it to change the order.</p>
-      <div class="settings-list">
-        <label class="settings-option"><span>Receipt</span><input type="checkbox" data-dashboard-pref="receipt"></label>
-        <label class="settings-option"><span>Mileage</span><input type="checkbox" data-dashboard-pref="mileage"></label>
-        <label class="settings-option"><span>Note / Photo</span><input type="checkbox" data-dashboard-pref="notePhoto"></label>
-        <label class="settings-option"><span>Tax Helper</span><input type="checkbox" data-dashboard-pref="taxHelper"></label>
-        <label class="settings-option"><span>Work Session</span><input type="checkbox" data-dashboard-pref="workSession"></label>
-        <label class="settings-option"><span>Weekly Review</span><input type="checkbox" data-dashboard-pref="weeklyReview"></label>
-      </div>
-      <div class="settings-actions">
-        <button class="btn" type="button" onclick="saveDashboardPreferences()">Save</button>
-        <button class="btn secondary" type="button" onclick="resetDashboardPreferences()">Reset</button>
-        <button class="btn secondary" type="button" onclick="closeDashboardSettings()">Cancel</button>
-      </div>
-      <div class="settings-version" id="settingsVersion">Bandito Taxito</div>
+        <p class="settings-note">Choose how Bandito Taxito looks and works on this device.</p>
+        <div class="settings-menu">
+          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('dashboard')">
+            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg></span>
+            <span class="settings-menu-copy"><span class="settings-menu-title">Customize Dashboard</span><span class="settings-menu-meta" id="settingsDashboardMeta">Show, hide, and reset modules</span></span>
+            <span class="settings-chevron" aria-hidden="true">›</span>
+          </button>
+          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('appearance')">
+            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.42 1.42"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg></span>
+            <span class="settings-menu-copy"><span class="settings-menu-title">Appearance</span><span class="settings-menu-meta">Western theme and branding controls</span></span>
+            <span class="settings-chevron" aria-hidden="true">›</span>
+          </button>
+          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('data')">
+            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9"></path><path d="m16 3 4 4-4 4"></path><path d="M4 17h9"></path><path d="m8 13-4 4 4 4"></path></svg></span>
+            <span class="settings-menu-copy"><span class="settings-menu-title">Data &amp; Sync</span><span class="settings-menu-meta" id="settingsDataMeta">Connection and offline queue</span></span>
+            <span class="settings-chevron" aria-hidden="true">›</span>
+          </button>
+          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('about')">
+            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg></span>
+            <span class="settings-menu-copy"><span class="settings-menu-title">About Bandito Taxito</span><span class="settings-menu-meta" id="settingsMenuVersion">App details</span></span>
+            <span class="settings-chevron" aria-hidden="true">›</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-panel hidden" data-settings-panel="dashboard">
+        <div class="settings-head">
+          <div class="settings-head-main">
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">‹</button>
+            <h2>Customize Dashboard</h2>
+          </div>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+        </div>
+        <p class="settings-note">Choose what appears. On the dashboard, hold a module and drag it to change the order.</p>
+        <div class="settings-list">
+          <label class="settings-option"><span>Receipt</span><input type="checkbox" data-dashboard-pref="receipt"></label>
+          <label class="settings-option"><span>Mileage</span><input type="checkbox" data-dashboard-pref="mileage"></label>
+          <label class="settings-option"><span>Note / Photo</span><input type="checkbox" data-dashboard-pref="notePhoto"></label>
+          <label class="settings-option"><span>Tax Helper</span><input type="checkbox" data-dashboard-pref="taxHelper"></label>
+          <label class="settings-option"><span>Work Session</span><input type="checkbox" data-dashboard-pref="workSession"></label>
+          <label class="settings-option"><span>Weekly Review</span><input type="checkbox" data-dashboard-pref="weeklyReview"></label>
+        </div>
+        <div class="settings-actions">
+          <button class="btn" type="button" onclick="saveDashboardPreferences()">Save</button>
+          <button class="btn secondary" type="button" onclick="resetDashboardPreferences()">Reset Dashboard</button>
+        </div>
+      </section>
+
+      <section class="settings-panel hidden" data-settings-panel="appearance">
+        <div class="settings-head">
+          <div class="settings-head-main">
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">‹</button>
+            <h2>Appearance</h2>
+          </div>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+        </div>
+        <p class="settings-note">The current look is Western Night.</p>
+        <div class="settings-placeholder"><strong>Brand controls are next.</strong><br>Background intensity, alternate artwork, and mascot moments will be added during the branding build.</div>
+      </section>
+
+      <section class="settings-panel hidden" data-settings-panel="data">
+        <div class="settings-head">
+          <div class="settings-head-main">
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">‹</button>
+            <h2>Data &amp; Sync</h2>
+          </div>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+        </div>
+        <p class="settings-note">Check the backend connection and anything waiting in the offline queue.</p>
+        <div class="settings-status-grid">
+          <div class="settings-status-card"><div class="settings-status-label">Connection</div><div class="settings-status-value" id="settingsConnectionValue">Checking</div></div>
+          <div class="settings-status-card"><div class="settings-status-label">Offline Queue</div><div class="settings-status-value" id="settingsQueueValue">0 waiting</div></div>
+        </div>
+        <div class="settings-actions"><button class="btn secondary" type="button" onclick="syncQueueFromSettings()">Sync Queue Now</button></div>
+      </section>
+
+      <section class="settings-panel hidden" data-settings-panel="about">
+        <div class="settings-head">
+          <div class="settings-head-main">
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">‹</button>
+            <h2>About</h2>
+          </div>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+        </div>
+        <div class="settings-about">
+          <img src="assets/main-emblem-v1.png" alt="Bandito Taxito emblem">
+          <div class="settings-about-title">Bandito Taxito</div>
+          <div class="settings-version" id="settingsAboutVersion">Version</div>
+          <p class="settings-note">A fast 1099 tracker for receipts, mileage, tax records, and optional work logs.</p>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -1274,7 +1517,7 @@
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
-    const UI_VERSION = 'v0.2.6';
+    const UI_VERSION = 'v0.2.7';
     const DEFAULT_DASHBOARD_ORDER = ['quickActions', 'workSession', 'weeklyReview'];
     const DEFAULT_DASHBOARD_PREFS = {
       receipt: true,
@@ -1294,7 +1537,7 @@
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
     document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') closeDashboardSettings();
+      if (event.key === 'Escape') closeSettings();
     });
 
     function init() {
@@ -1304,14 +1547,14 @@
       renderActiveSession();
       loadDashboardLayout();
       enableDashboardReordering();
-      const settingsVersion = document.getElementById('settingsVersion');
-      if (settingsVersion) settingsVersion.textContent = 'Bandito Taxito ' + UI_VERSION;
+      updateSettingsSummaries();
 
       apiGet('initialData')
         .then(function(data) {
           appState = data || appState;
           backendOkay = true;
           updateOnlineStatus();
+          updateSettingsSummaries();
           renderClients(appState.clients || []);
           applyDefaultSettings();
           renderWeeklyReview(appState.weeklyReview || {});
@@ -1323,6 +1566,8 @@
             onlinePill.textContent = navigator.onLine ? 'Connection issue' : 'Offline';
             onlinePill.classList.remove('hidden');
           }
+          updateHeaderStatusVisibility();
+          updateSettingsSummaries();
           toast('Could not load backend. Offline queue available.');
           console.error(err);
         });
@@ -1485,22 +1730,70 @@
       });
     }
 
-    function openDashboardSettings() {
+    function openSettings() {
       setDashboardPreferenceInputs(getDashboardPreferences());
-      const overlay = document.getElementById('dashboardSettings');
+      updateSettingsSummaries();
+      showSettingsPanel('home');
+      const overlay = document.getElementById('appSettings');
       if (!overlay) return;
       overlay.classList.remove('hidden');
       document.body.classList.add('modal-open');
     }
 
-    function closeDashboardSettings() {
-      const overlay = document.getElementById('dashboardSettings');
+    function closeSettings() {
+      const overlay = document.getElementById('appSettings');
       if (overlay) overlay.classList.add('hidden');
       document.body.classList.remove('modal-open');
     }
 
-    function closeDashboardSettingsFromBackdrop(event) {
-      if (event && event.target && event.target.id === 'dashboardSettings') closeDashboardSettings();
+    function closeSettingsFromBackdrop(event) {
+      if (event && event.target && event.target.id === 'appSettings') closeSettings();
+    }
+
+    function showSettingsPanel(name) {
+      document.querySelectorAll('[data-settings-panel]').forEach(function(panel) {
+        panel.classList.toggle('hidden', panel.getAttribute('data-settings-panel') !== name);
+      });
+      if (name === 'dashboard') setDashboardPreferenceInputs(getDashboardPreferences());
+      updateSettingsSummaries();
+      const sheet = document.querySelector('#appSettings .settings-sheet');
+      if (sheet) sheet.scrollTop = 0;
+    }
+
+    function updateSettingsSummaries() {
+      const prefs = getDashboardPreferences();
+      const visibleCount = Object.keys(DEFAULT_DASHBOARD_PREFS).filter(function(key) {
+        return prefs[key] !== false;
+      }).length;
+      const dashboardMeta = document.getElementById('settingsDashboardMeta');
+      if (dashboardMeta) dashboardMeta.textContent = visibleCount + ' of 6 tools shown';
+
+      const queueCount = getQueue().length;
+      const connectionText = !navigator.onLine ? 'Offline' : (backendOkay ? 'Connected' : 'Checking');
+      const connectionValue = document.getElementById('settingsConnectionValue');
+      const queueValue = document.getElementById('settingsQueueValue');
+      const dataMeta = document.getElementById('settingsDataMeta');
+      const menuVersion = document.getElementById('settingsMenuVersion');
+      const aboutVersion = document.getElementById('settingsAboutVersion');
+      if (connectionValue) connectionValue.textContent = connectionText;
+      if (queueValue) queueValue.textContent = queueCount + ' waiting';
+      if (dataMeta) dataMeta.textContent = connectionText + ' • ' + queueCount + ' queued';
+      if (menuVersion) menuVersion.textContent = UI_VERSION;
+      if (aboutVersion) aboutVersion.textContent = 'Version ' + UI_VERSION;
+    }
+
+    function updateHeaderStatusVisibility() {
+      const row = document.getElementById('headerStatusRow');
+      if (!row) return;
+      const hasVisiblePill = Array.from(row.querySelectorAll('.pill')).some(function(pill) {
+        return !pill.classList.contains('hidden');
+      });
+      row.classList.toggle('hidden', !hasVisiblePill);
+    }
+
+    function syncQueueFromSettings() {
+      syncQueue();
+      window.setTimeout(updateSettingsSummaries, 1400);
     }
 
     function saveDashboardPreferences() {
@@ -1510,7 +1803,8 @@
       });
       localStorage.setItem(DASHBOARD_PREFS_KEY, JSON.stringify(prefs));
       applyDashboardPreferences(prefs);
-      closeDashboardSettings();
+      updateSettingsSummaries();
+      showSettingsPanel('home');
       toast('Dashboard updated.');
     }
 
@@ -1521,6 +1815,7 @@
       setDashboardPreferenceInputs(prefs);
       applyDashboardOrder(DEFAULT_DASHBOARD_ORDER);
       applyDashboardPreferences(prefs);
+      updateSettingsSummaries();
       toast('Dashboard reset.');
     }
 
@@ -1906,6 +2201,7 @@
         .then(function() {
           localStorage.setItem(QUEUE_KEY, JSON.stringify([]));
           updateQueuePill();
+          updateSettingsSummaries();
           toast('Offline queue sent.');
           window.setTimeout(refreshWeeklyReview, 3500);
           if (!document.getElementById('logbookView').classList.contains('hidden')) window.setTimeout(refreshLogbook, 4000);
@@ -2370,6 +2666,8 @@
           pill.classList.remove('hidden');
         }
       }
+      updateHeaderStatusVisibility();
+      updateSettingsSummaries();
       if (online && getQueue().length) syncQueue();
     }
 
@@ -2382,6 +2680,8 @@
         pill.classList.toggle('hidden', count === 0);
       }
       if (button) button.classList.toggle('hidden', count === 0);
+      updateHeaderStatusVisibility();
+      updateSettingsSummaries();
     }
 
     function clearEndForm() {
