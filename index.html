@@ -25,7 +25,7 @@
       --soft-red: #fff1ef;
       --soft-yellow: #fff7e3;
       --radius: 18px;
-      --asset-parchment: url('assets/parchment-bg-v1.png');
+      --asset-parchment: url('assets/parchment-bg-v2.png');
     }
 
     * { box-sizing: border-box; }
@@ -37,8 +37,10 @@
         linear-gradient(180deg, rgba(17, 16, 13, 0.58) 0%, rgba(31, 23, 17, 0.36) 44%, rgba(18, 63, 61, 0.48) 100%),
         var(--asset-parchment),
         var(--bg);
-      background-size: cover;
-      background-position: center top;
+      background-size: cover, cover, auto;
+      background-position: center, center top, center;
+      background-repeat: no-repeat, no-repeat, repeat;
+      background-attachment: fixed, fixed, fixed;
       color: var(--ink);
       font-family: Arial, Helvetica, sans-serif;
       -webkit-font-smoothing: antialiased;
@@ -61,37 +63,38 @@
     .brand-header-main {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 48px;
-      align-items: center;
+      align-items: start;
       gap: 10px;
-      margin: 0 3px 8px;
+      margin: 0 3px 5px;
     }
 
     .brand-stage {
       position: relative;
       width: min(100%, 560px);
-      height: 220px;
+      height: 170px;
       overflow: hidden;
     }
 
     .brand-logo {
       position: absolute;
       left: 34%;
-      top: 64%;
-      width: min(155%, 620px);
+      top: 60%;
+      width: min(112%, 560px);
       max-width: none;
       height: auto;
       opacity: 1;
       transform: translate(-50%, -50%);
-      filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.42));
+      filter: drop-shadow(0 9px 13px rgba(0, 0, 0, 0.40));
     }
 
     .header-shortcuts {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 8px;
       margin: 0;
+      padding-top: 5px;
     }
 
     .shortcut-button {
@@ -566,6 +569,13 @@
     .review-item.warn { background: rgba(255, 247, 227, 0.88); border-color: #f0d59a; }
     .review-item.good { background: rgba(237, 247, 234, 0.88); border-color: #bfe6cd; }
     .count { flex: 0 0 auto; font-size: 15px; font-weight: 900; }
+
+    .review-item.needs-review .count {
+      color: #ff9f91;
+      font-size: 16px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.78);
+    }
+
     /* Dashboard-only western glass treatment */
     #homeView .dashboard-module.card:not(.active-session),
     #homeView .tool-btn {
@@ -1051,15 +1061,22 @@
       font-weight: 700;
     }
 
+    @media (min-width: 761px) {
+      body {
+        background-size: cover, auto 100vh, auto;
+      }
+    }
+
     @media (max-width: 440px) {
       .app { padding: 6px 8px 38px; }
       .brand-header-main {
         grid-template-columns: minmax(0, 1fr) 46px;
         gap: 8px;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
       }
-      .brand-stage { height: 180px; }
-      .brand-logo { left: 40%; top: 64%; width: min(155%, 620px); }
+      .brand-stage { height: 135px; }
+      .brand-logo { left: 39%; top: 60%; width: min(112%, 560px); }
+      .header-shortcuts { padding-top: 3px; }
       .shortcut-button { width: 46px; height: 46px; flex-basis: 46px; }
       .tool-btn { min-height: 76px; padding: 13px; }
       .tool-label { font-size: 17px; }
@@ -1070,8 +1087,8 @@
 
     @media (max-width: 350px) {
       .brand-header-main { grid-template-columns: minmax(0, 1fr) 44px; gap: 7px; }
-      .brand-stage { height: 160px; }
-      .brand-logo { left: 40%; top: 64%; width: 160%; }
+      .brand-stage { height: 122px; }
+      .brand-logo { left: 39%; top: 60%; width: 116%; }
       .shortcut-button { width: 44px; height: 44px; flex-basis: 44px; }
       .review-toggle { grid-template-columns: minmax(0, 1fr) auto; }
       .review-chevron { display: none; }
@@ -1088,11 +1105,11 @@
           <img class="brand-logo" src="assets/main-emblem-v2.png" alt="Bandito Taxito dog and outlaw emblem">
         </div>
         <div class="header-shortcuts" aria-label="App shortcuts">
-          <button class="shortcut-button" type="button" onclick="showView('logbookView')" aria-label="Open Logbook" title="Logbook">
-            <span class="ui-icon icon-logbook" aria-hidden="true"></span>
-          </button>
           <button class="shortcut-button" type="button" onclick="openSettings()" aria-label="Open Settings" title="Settings">
             <svg class="header-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h2"></path><path d="M10 17h10"></path><circle cx="8" cy="17" r="2"></circle></svg>
+          </button>
+          <button class="shortcut-button" type="button" onclick="showView('logbookView')" aria-label="Open Logbook" title="Logbook">
+            <span class="ui-icon icon-logbook" aria-hidden="true"></span>
           </button>
         </div>
       </div>
@@ -1619,7 +1636,7 @@
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
-    const UI_VERSION = 'v0.2.10';
+    const UI_VERSION = 'v0.2.11';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -2368,6 +2385,7 @@
       const tag = document.getElementById('banditoReviewTag');
       const summary = document.getElementById('banditoReviewSummary');
       if (tag) {
+        tag.classList.remove('hidden');
         tag.dataset.state = 'loading';
         tag.textContent = 'Checking';
       }
@@ -2379,10 +2397,11 @@
       const summary = document.getElementById('banditoReviewSummary');
       const hasTrouble = troubleCount > 0;
       if (tag) {
+        tag.classList.toggle('hidden', !hasTrouble);
         tag.dataset.state = hasTrouble ? 'warning' : 'clean';
         tag.textContent = hasTrouble
           ? troubleCount + ' issue' + (troubleCount === 1 ? '' : 's')
-          : 'Clear';
+          : '';
       }
       if (summary) {
         summary.textContent = hasTrouble
@@ -2394,16 +2413,17 @@
     function renderWeeklyReview(data) {
       data = data || {};
       const items = [
-        { label: 'Work logs', value: data.workLogs || 0, type: data.workLogs ? 'good' : 'neutral' },
-        { label: 'Missing end', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'neutral' },
-        { label: 'Missing notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'neutral' },
-        { label: 'Receipt file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'neutral' },
-        { label: 'Receipt amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'neutral' },
-        { label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'neutral' }
+        { label: 'Work logs', value: data.workLogs || 0, type: data.workLogs ? 'good' : 'neutral', needsReview: false },
+        { label: 'Missing end', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'neutral', needsReview: Number(data.missingEndTime) > 0 },
+        { label: 'Missing notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'neutral', needsReview: Number(data.missingWorkNotes) > 0 },
+        { label: 'Receipt file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'neutral', needsReview: Number(data.missingReceiptFile) > 0 },
+        { label: 'Receipt amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'neutral', needsReview: Number(data.missingReceiptAmount) > 0 },
+        { label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'neutral', needsReview: Number(data.missingMileage) > 0 }
       ];
 
       document.getElementById('reviewList').innerHTML = items.map(function(item) {
-        return '<div class="review-item ' + item.type + '"><span>' + item.label + '</span><span class="count">' + item.value + '</span></div>';
+        const reviewClass = item.needsReview ? ' needs-review' : '';
+        return '<div class="review-item ' + item.type + reviewClass + '"><span>' + item.label + '</span><span class="count">' + item.value + '</span></div>';
       }).join('');
 
       const troubleCount = [
