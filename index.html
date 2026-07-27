@@ -728,6 +728,17 @@
 
     .logbook-card summary::-webkit-details-marker { display: none; }
 
+    .logbook-card summary {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-y;
+    }
+
+    .logbook-card.long-press-armed {
+      outline: 2px solid rgba(156, 47, 34, 0.68);
+      outline-offset: 2px;
+    }
+
     .logbook-summary-main {
       display: flex;
       align-items: flex-start;
@@ -1043,6 +1054,86 @@
       font-weight: 800;
     }
 
+    .logbook-control-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      align-items: end;
+      justify-items: center;
+      padding: 14px;
+      background: rgba(17, 16, 13, 0.74);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+
+    .logbook-control-sheet {
+      width: min(100%, 520px);
+      max-height: 88vh;
+      overflow: auto;
+      padding: 16px;
+      border: 1px solid rgba(197, 154, 69, 0.76);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255, 248, 234, 0.99), rgba(239, 226, 202, 0.99));
+      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.44);
+    }
+
+    .logbook-control-title {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 19px;
+      line-height: 1.15;
+    }
+
+    .logbook-control-meta {
+      margin: 6px 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .logbook-action-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .logbook-action-button {
+      width: 100%;
+      min-height: 50px;
+      padding: 11px 13px;
+      border: 1px solid rgba(212, 179, 125, 0.74);
+      border-radius: 14px;
+      background: rgba(255, 251, 242, 0.92);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 900;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .logbook-action-button.danger {
+      border-color: rgba(181, 58, 45, 0.44);
+      background: var(--soft-red);
+      color: #8d241b;
+    }
+
+    .logbook-edit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 9px;
+    }
+
+    .logbook-edit-field.full { grid-column: 1 / -1; }
+
+    .logbook-delete-copy {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
     .toast {
       position: fixed;
       left: 12px;
@@ -1082,6 +1173,7 @@
       .tool-label { font-size: 17px; }
       .tool-helper { font-size: 11.5px; line-height: 1.2; }
       .review-toggle { min-height: 80px; }
+      .logbook-edit-grid { grid-template-columns: 1fr; }
       .row { grid-template-columns: 1fr; }
     }
 
@@ -1196,7 +1288,7 @@
         <h2 class="section-title">Logbook</h2>
         <button class="home-btn" onclick="showView('homeView')">← Home</button>
       </div>
-      <p class="logbook-note">Recent records saved to the backend Sheet. Editing stays in the Sheet for now.</p>
+      <p class="logbook-note">Tap an entry to view details. Hold an entry for Edit or Delete.</p>
       <div class="actions compact-actions">
         <button class="module-action-btn" type="button" onclick="refreshLogbook()">
           <svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>
@@ -1628,6 +1720,62 @@
     </div>
   </div>
 
+  <div id="logbookControls" class="logbook-control-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="logbookControlTitle" onclick="closeLogbookControlsFromBackdrop(event)">
+    <div class="logbook-control-sheet">
+      <section data-logbook-control-panel="actions">
+        <h2 class="logbook-control-title" id="logbookControlTitle">Record controls</h2>
+        <p class="logbook-control-meta" id="logbookControlMeta"></p>
+        <div class="logbook-action-list">
+          <button class="logbook-action-button" type="button" onclick="openLogbookEdit()">Edit</button>
+          <button class="logbook-action-button danger" type="button" onclick="openLogbookDelete()">Delete</button>
+          <button class="logbook-action-button" type="button" onclick="closeLogbookControls()">Cancel</button>
+        </div>
+      </section>
+
+      <section class="hidden" data-logbook-control-panel="edit">
+        <div class="settings-head">
+          <div class="settings-head-main">
+            <button class="settings-back" type="button" onclick="showLogbookControlPanel('actions')" aria-label="Back to record controls">‹</button>
+            <h2>Edit Record</h2>
+          </div>
+          <button class="settings-close" type="button" onclick="closeLogbookControls()" aria-label="Close record controls">×</button>
+        </div>
+        <p class="settings-note">Uploaded receipt and note files stay unchanged.</p>
+        <form id="logbookEditForm" onsubmit="saveLogbookEdit(event)">
+          <div class="logbook-edit-grid">
+            <div class="logbook-edit-field" data-logbook-edit-field="client"><label for="logbookEditClient">Client</label><input id="logbookEditClient"></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="site"><label for="logbookEditSite">Site / Project</label><input id="logbookEditSite"></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="date"><label for="logbookEditDate">Date</label><input id="logbookEditDate" type="date"></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="status"><label for="logbookEditStatus">Status</label><input id="logbookEditStatus"></div>
+            <div class="logbook-edit-field full" data-logbook-edit-field="workPerformed"><label for="logbookEditWorkPerformed">Work Performed</label><textarea id="logbookEditWorkPerformed"></textarea></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="vendor"><label for="logbookEditVendor">Vendor</label><input id="logbookEditVendor"></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="amount"><label for="logbookEditAmount">Amount</label><input id="logbookEditAmount" inputmode="decimal"></div>
+            <div class="logbook-edit-field full" data-logbook-edit-field="category"><label for="logbookEditCategory">Category</label><select id="logbookEditCategory"><option>Materials</option><option>Fuel</option><option>Tools</option><option>Meals</option><option>Parking/Tolls</option><option>Supplies</option><option>Other</option></select></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="from"><label for="logbookEditFrom">From</label><input id="logbookEditFrom"></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="to"><label for="logbookEditTo">To</label><input id="logbookEditTo"></div>
+            <div class="logbook-edit-field full" data-logbook-edit-field="purpose"><label for="logbookEditPurpose">Purpose</label><input id="logbookEditPurpose"></div>
+            <div class="logbook-edit-field full" data-logbook-edit-field="noteType"><label for="logbookEditNoteType">Type</label><input id="logbookEditNoteType"></div>
+            <div class="logbook-edit-field full" data-logbook-edit-field="note"><label for="logbookEditNote">Note</label><textarea id="logbookEditNote"></textarea></div>
+            <div class="logbook-edit-field full" data-logbook-edit-field="notes"><label for="logbookEditNotes">Notes</label><textarea id="logbookEditNotes"></textarea></div>
+          </div>
+          <div class="actions">
+            <button class="btn" id="logbookEditSaveButton" type="submit">Save Changes</button>
+            <button class="btn secondary" type="button" onclick="showLogbookControlPanel('actions')">Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="hidden" data-logbook-control-panel="delete">
+        <h2 class="logbook-control-title">Delete this record?</h2>
+        <p class="logbook-delete-copy">This will hide it from the Logbook but keep it recoverable.</p>
+        <div class="actions">
+          <button class="btn secondary" type="button" onclick="showLogbookControlPanel('actions')">Cancel</button>
+          <button class="btn danger" id="logbookDeleteButton" type="button" onclick="confirmLogbookDelete()">Delete Record</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -1636,7 +1784,7 @@
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
-    const UI_VERSION = 'v0.2.11';
+    const UI_VERSION = 'v0.2.12';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -1658,12 +1806,19 @@
     let dashboardPress = null;
     let dashboardDrag = null;
     let suppressDashboardClickUntil = 0;
+    let logbookPress = null;
+    let selectedLogbookEntry = null;
+    let logbookEntryMap = {};
+    let suppressLogbookToggleUntil = 0;
 
     document.addEventListener('DOMContentLoaded', init);
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
     document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') closeSettings();
+      if (event.key === 'Escape') {
+        closeSettings();
+        closeLogbookControls();
+      }
     });
 
     function init() {
@@ -1673,6 +1828,7 @@
       renderActiveSession();
       loadDashboardLayout();
       enableDashboardReordering();
+      enableLogbookEntryControls();
       updateSettingsSummaries();
       setBanditoLoadingState();
 
@@ -2457,6 +2613,7 @@
 
     function renderLogbook(data) {
       data = data || {};
+      logbookEntryMap = {};
       renderLogbookGroup('logbookWork', data.work || [], 'No work logs yet.');
       renderLogbookGroup('logbookMileage', data.mileage || [], 'No mileage records yet.');
       renderLogbookGroup('logbookReceipts', data.receipts || [], 'No receipt records yet.');
@@ -2479,14 +2636,228 @@
       const date = item.date || item.timestamp || '';
       const meta = logbookMeta(item);
       const details = logbookDetails(item);
+      const key = String(item.type || '') + ':' + String(item.id || '');
+      logbookEntryMap[key] = item;
 
-      return '<details class="logbook-card">' +
+      return '<details class="logbook-card" data-logbook-key="' + escapeAttr(key) + '">' +
         '<summary>' +
           '<div class="logbook-summary-main"><span>' + escapeHtml(title) + '</span><span class="logbook-date">' + escapeHtml(shortDate(date)) + '</span></div>' +
           '<div class="logbook-meta">' + escapeHtml(meta || 'Tap to view details') + '</div>' +
         '</summary>' +
         '<div class="logbook-details">' + details + '</div>' +
       '</details>';
+    }
+
+    function enableLogbookEntryControls() {
+      const view = document.getElementById('logbookView');
+      if (!view || view.dataset.entryControlsReady === 'true') return;
+      view.dataset.entryControlsReady = 'true';
+
+      view.addEventListener('pointerdown', function(event) {
+        const summary = event.target.closest('.logbook-card summary');
+        if (!summary || event.button > 0) return;
+        const card = summary.closest('.logbook-card');
+        if (!card || !card.dataset.logbookKey) return;
+        cancelLogbookPress();
+        card.classList.add('long-press-armed');
+        logbookPress = {
+          card: card,
+          key: card.dataset.logbookKey,
+          startX: event.clientX,
+          startY: event.clientY,
+          pointerId: event.pointerId,
+          timer: window.setTimeout(function() {
+            const key = logbookPress && logbookPress.key;
+            cancelLogbookPress();
+            if (!key) return;
+            suppressLogbookToggleUntil = Date.now() + 700;
+            openLogbookActions(key);
+            if (navigator.vibrate) navigator.vibrate(18);
+          }, 560)
+        };
+      });
+
+      view.addEventListener('pointermove', function(event) {
+        if (!logbookPress || event.pointerId !== logbookPress.pointerId) return;
+        if (Math.abs(event.clientX - logbookPress.startX) > 10 || Math.abs(event.clientY - logbookPress.startY) > 10) {
+          cancelLogbookPress();
+        }
+      });
+      view.addEventListener('pointerup', cancelLogbookPress);
+      view.addEventListener('pointercancel', cancelLogbookPress);
+      view.addEventListener('contextmenu', function(event) {
+        if (event.target.closest('.logbook-card summary')) event.preventDefault();
+      });
+      view.addEventListener('click', function(event) {
+        if (Date.now() < suppressLogbookToggleUntil && event.target.closest('.logbook-card summary')) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }, true);
+    }
+
+    function cancelLogbookPress() {
+      if (!logbookPress) return;
+      window.clearTimeout(logbookPress.timer);
+      if (logbookPress.card) logbookPress.card.classList.remove('long-press-armed');
+      logbookPress = null;
+    }
+
+    function openLogbookActions(key) {
+      const item = logbookEntryMap[key];
+      if (!item || !item.id) {
+        toast('This record cannot be edited yet.');
+        return;
+      }
+      selectedLogbookEntry = item;
+      const title = document.getElementById('logbookControlTitle');
+      const meta = document.getElementById('logbookControlMeta');
+      if (title) title.textContent = item.title || item.vendor || item.site || 'Record controls';
+      if (meta) meta.textContent = [labelForLogbookType(item.type), shortDate(item.date || item.timestamp), item.id].filter(Boolean).join(' • ');
+      showLogbookControlPanel('actions');
+      const overlay = document.getElementById('logbookControls');
+      if (overlay) overlay.classList.remove('hidden');
+      document.body.classList.add('modal-open');
+    }
+
+    function labelForLogbookType(type) {
+      return { work: 'Work Log', mileage: 'Mileage', receipt: 'Receipt', note: 'Note / Photo' }[type] || 'Record';
+    }
+
+    function closeLogbookControls() {
+      cancelLogbookPress();
+      const overlay = document.getElementById('logbookControls');
+      if (overlay) overlay.classList.add('hidden');
+      selectedLogbookEntry = null;
+      document.body.classList.remove('modal-open');
+    }
+
+    function closeLogbookControlsFromBackdrop(event) {
+      if (event && event.target && event.target.id === 'logbookControls') closeLogbookControls();
+    }
+
+    function showLogbookControlPanel(name) {
+      document.querySelectorAll('[data-logbook-control-panel]').forEach(function(panel) {
+        panel.classList.toggle('hidden', panel.getAttribute('data-logbook-control-panel') !== name);
+      });
+      const sheet = document.querySelector('#logbookControls .logbook-control-sheet');
+      if (sheet) sheet.scrollTop = 0;
+    }
+
+    function openLogbookEdit() {
+      const item = selectedLogbookEntry;
+      if (!item) return;
+      const fieldsByType = {
+        work: ['client', 'site', 'date', 'status', 'workPerformed', 'notes'],
+        mileage: ['client', 'site', 'date', 'from', 'to', 'purpose', 'notes'],
+        receipt: ['client', 'site', 'date', 'vendor', 'amount', 'category', 'notes'],
+        note: ['client', 'site', 'date', 'noteType', 'note', 'status']
+      };
+      const visibleFields = fieldsByType[item.type] || [];
+      document.querySelectorAll('[data-logbook-edit-field]').forEach(function(field) {
+        field.classList.toggle('hidden', visibleFields.indexOf(field.getAttribute('data-logbook-edit-field')) === -1);
+      });
+
+      setInputValue('logbookEditClient', item.client);
+      setInputValue('logbookEditSite', item.site);
+      setInputValue('logbookEditDate', shortDate(item.date));
+      setInputValue('logbookEditStatus', item.status);
+      setInputValue('logbookEditWorkPerformed', item.workPerformed);
+      setInputValue('logbookEditVendor', item.vendor);
+      setInputValue('logbookEditAmount', item.amount);
+      setSelectValueWithFallback('logbookEditCategory', item.category);
+      setInputValue('logbookEditFrom', item.from);
+      setInputValue('logbookEditTo', item.to);
+      setInputValue('logbookEditPurpose', item.purpose);
+      setInputValue('logbookEditNoteType', item.noteType);
+      setInputValue('logbookEditNote', item.note);
+      setInputValue('logbookEditNotes', item.notes);
+      showLogbookControlPanel('edit');
+    }
+
+    function setInputValue(id, value) {
+      const input = document.getElementById(id);
+      if (input) input.value = value === null || value === undefined ? '' : String(value);
+    }
+
+    function setSelectValueWithFallback(id, value) {
+      const select = document.getElementById(id);
+      if (!select) return;
+      value = value === null || value === undefined ? '' : String(value);
+      const found = Array.from(select.options).some(function(option) { return option.value === value; });
+      if (value && !found) select.add(new Option(value, value));
+      select.value = value || select.options[0].value;
+    }
+
+    function saveLogbookEdit(event) {
+      if (event) event.preventDefault();
+      const item = selectedLogbookEntry;
+      if (!item) return;
+      const updatesByType = {
+        work: {
+          client: val('logbookEditClient'), site: val('logbookEditSite'), date: val('logbookEditDate'),
+          status: val('logbookEditStatus'), workPerformed: val('logbookEditWorkPerformed'), notes: val('logbookEditNotes')
+        },
+        mileage: {
+          client: val('logbookEditClient'), site: val('logbookEditSite'), date: val('logbookEditDate'),
+          from: val('logbookEditFrom'), to: val('logbookEditTo'), purpose: val('logbookEditPurpose'), notes: val('logbookEditNotes')
+        },
+        receipt: {
+          client: val('logbookEditClient'), site: val('logbookEditSite'), date: val('logbookEditDate'),
+          vendor: val('logbookEditVendor'), amount: val('logbookEditAmount'), category: val('logbookEditCategory'), notes: val('logbookEditNotes')
+        },
+        note: {
+          client: val('logbookEditClient'), site: val('logbookEditSite'), date: val('logbookEditDate'),
+          noteType: val('logbookEditNoteType'), note: val('logbookEditNote'), status: val('logbookEditStatus')
+        }
+      };
+      const updates = updatesByType[item.type];
+      if (!updates) return;
+      setLogbookControlBusy(true);
+      apiGet('updateLogbookEntry', {
+        payload: JSON.stringify({ type: item.type, id: item.id, updates: updates, source: UI_VERSION + ' Logbook' })
+      }).then(function() {
+        finishLogbookMutation('Record updated.');
+      }).catch(function(err) {
+        setLogbookControlBusy(false);
+        toast('Could not update record.');
+        console.error(err);
+      });
+    }
+
+    function openLogbookDelete() {
+      if (!selectedLogbookEntry) return;
+      showLogbookControlPanel('delete');
+    }
+
+    function confirmLogbookDelete() {
+      const item = selectedLogbookEntry;
+      if (!item) return;
+      setLogbookControlBusy(true);
+      apiGet('softDeleteLogbookEntry', {
+        payload: JSON.stringify({ type: item.type, id: item.id, reason: 'Deleted from Logbook', source: UI_VERSION + ' Logbook' })
+      }).then(function() {
+        finishLogbookMutation('Record hidden. It remains recoverable.');
+      }).catch(function(err) {
+        setLogbookControlBusy(false);
+        toast('Could not delete record.');
+        console.error(err);
+      });
+    }
+
+    function setLogbookControlBusy(isBusy) {
+      ['logbookEditSaveButton', 'logbookDeleteButton'].forEach(function(id) {
+        const button = document.getElementById(id);
+        if (button) button.disabled = isBusy;
+      });
+    }
+
+    function finishLogbookMutation(message) {
+      setLogbookControlBusy(false);
+      closeLogbookControls();
+      toast(message);
+      showView('logbookView');
+      window.setTimeout(refreshWeeklyReview, 1200);
     }
 
     function logbookMeta(item) {
