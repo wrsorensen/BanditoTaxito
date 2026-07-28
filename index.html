@@ -798,6 +798,93 @@
       color: var(--muted);
     }
 
+    .receipt-ai-draft {
+      margin-top: 10px;
+      padding: 11px;
+      border: 1px solid rgba(197, 154, 69, 0.72);
+      border-radius: 14px;
+      background: rgba(255, 251, 242, 0.92);
+    }
+
+    .receipt-ai-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .receipt-ai-title {
+      color: var(--primary-dark);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .receipt-ai-confidence {
+      flex: 0 0 auto;
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: #efe2ca;
+      color: var(--primary-dark);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .receipt-ai-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .receipt-ai-item {
+      min-height: 54px;
+      padding: 8px 9px;
+      border: 1px solid rgba(212, 179, 125, 0.68);
+      border-radius: 11px;
+      background: #fff;
+    }
+
+    .receipt-ai-label {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .receipt-ai-value {
+      display: block;
+      margin-top: 4px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .receipt-ai-review {
+      margin-top: 8px;
+      padding: 8px 9px;
+      border: 1px solid #f0d59a;
+      border-radius: 11px;
+      background: var(--soft-yellow);
+      color: var(--primary-dark);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .receipt-field-missing {
+      border-color: var(--red) !important;
+      box-shadow: 0 0 0 2px rgba(181, 58, 45, 0.13);
+    }
+
+    .btn:disabled {
+      cursor: wait;
+      opacity: 0.58;
+    }
+
     .estimate-box {
       border: 1px solid #e5b98e;
       background: var(--soft-primary);
@@ -1174,7 +1261,7 @@
       .tool-helper { font-size: 11.5px; line-height: 1.2; }
       .review-toggle { min-height: 80px; }
       .logbook-edit-grid { grid-template-columns: 1fr; }
-      .row { grid-template-columns: 1fr; }
+      .row, .receipt-ai-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 350px) {
@@ -1457,10 +1544,29 @@
         <h2 class="section-title">Add Receipt</h2>
         <button class="home-btn" onclick="showView('homeView')">← Home</button>
       </div>
-      <p class="tiny">AI receipt reader is planned for a later build. Confirm the details before saving.</p>
+      <p class="tiny">AI creates a draft only. Review and edit every field before confirming. The selected receipt photo is sent to Google Gemini only when you tap Generate AI Draft.</p>
       <label>Receipt Photo</label>
-      <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment">
-      <div class="mini-panel" id="receiptAiPanel">Upload a receipt, confirm the fields, and save.</div>
+      <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment" onchange="handleReceiptFileChange()">
+      <div class="actions compact-actions">
+        <button class="btn" id="receiptAiButton" type="button" onclick="generateReceiptAiDraft()">Generate AI Draft</button>
+        <button class="btn secondary compact hidden" id="receiptAiDiscardButton" type="button" onclick="discardReceiptAiDraft()">Clear AI Draft</button>
+      </div>
+      <div class="mini-panel" id="receiptAiPanel" aria-live="polite">Choose a receipt photo, or continue with manual entry. PDF files can still be saved manually.</div>
+      <div class="receipt-ai-draft hidden" id="receiptAiDraft">
+        <div class="receipt-ai-head">
+          <div>
+            <div class="receipt-ai-title">AI Draft Suggestions</div>
+            <div class="tiny">Nothing below is saved until you apply, review, and confirm.</div>
+          </div>
+          <div class="receipt-ai-confidence" id="receiptAiConfidence">Confidence —</div>
+        </div>
+        <div class="receipt-ai-grid" id="receiptAiDraftGrid"></div>
+        <div class="receipt-ai-review hidden" id="receiptAiReview"></div>
+        <div class="actions compact-actions">
+          <button class="btn" type="button" onclick="applyReceiptAiDraft()">Apply Draft to Form</button>
+          <button class="btn secondary compact" type="button" onclick="discardReceiptAiDraft()">Discard</button>
+        </div>
+      </div>
       <div class="row">
         <div>
           <label>Receipt Date</label>
@@ -1510,7 +1616,7 @@
       <textarea id="receiptNotes"></textarea>
       <div class="actions">
         <button class="btn secondary" onclick="reviewReceiptFields()">Review Fields</button>
-        <button class="btn" onclick="saveReceiptForm()">Save Receipt</button>
+        <button class="btn" id="receiptSaveButton" onclick="saveReceiptForm()">Confirm &amp; Save</button>
         <button class="btn secondary" onclick="showView('homeView')">Cancel</button>
       </div>
     </section>
@@ -1784,7 +1890,7 @@
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
-    const UI_VERSION = 'v0.2.12';
+    const UI_VERSION = 'v0.3.0';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -1810,6 +1916,10 @@
     let selectedLogbookEntry = null;
     let logbookEntryMap = {};
     let suppressLogbookToggleUntil = 0;
+    let receiptAiDraftData = null;
+    let receiptAiDraftApplied = false;
+    let receiptAiRequestId = '';
+    let receiptAiPollTimer = null;
 
     document.addEventListener('DOMContentLoaded', init);
     window.addEventListener('online', updateOnlineStatus);
@@ -1918,6 +2028,30 @@
           resolve({ ok: true, sent: true });
         }, 1200);
       });
+    }
+
+    function postLongRunningToGas(action, payload) {
+      const frameName = 'btGasLongFrame_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+      const iframe = document.createElement('iframe');
+      iframe.name = frameName;
+      iframe.style.display = 'none';
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = GAS_API_URL;
+      form.target = frameName;
+      form.style.display = 'none';
+
+      addHidden(form, 'action', action);
+      addHidden(form, 'payload', JSON.stringify(payload || {}));
+      document.body.appendChild(iframe);
+      document.body.appendChild(form);
+      form.submit();
+
+      window.setTimeout(function() {
+        if (form.parentNode) form.parentNode.removeChild(form);
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      }, 90000);
     }
 
     function addHidden(form, name, value) {
@@ -2357,6 +2491,11 @@
 
     function saveReceiptForm() {
       const fileInput = document.getElementById('receiptFile');
+      if (receiptAiDraftData && !receiptAiDraftApplied) {
+        const saveManual = confirm('The AI draft has not been applied. Save the current form values as a manual receipt?');
+        if (!saveManual) return;
+      }
+
       const payload = {
         client: val('receiptClient'),
         site: val('receiptSite'),
@@ -2367,7 +2506,7 @@
         reimbursable: val('receiptReimbursable'),
         paidBy: val('receiptPaidBy'),
         notes: val('receiptNotes'),
-        aiStatus: fileInput.files.length ? 'User confirmed / AI reader planned' : 'Manual entry'
+        aiStatus: buildReceiptAiStatus()
       };
 
       if (!completeReceiptMissingFields(payload, fileInput)) return;
@@ -3127,6 +3266,251 @@
       return hours >= 0 ? hours : '';
     }
 
+    function handleReceiptFileChange() {
+      resetReceiptAiState(false);
+      const fileInput = document.getElementById('receiptFile');
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      const panel = document.getElementById('receiptAiPanel');
+      if (!panel) return;
+      if (!file) {
+        panel.textContent = 'Choose a receipt photo, or continue with manual entry. PDF files can still be saved manually.';
+      } else if (!String(file.type || '').startsWith('image/')) {
+        panel.textContent = 'AI draft currently supports receipt photos only. This file can still be saved manually.';
+      } else {
+        panel.textContent = 'Photo selected. Tap Generate AI Draft, or fill the receipt manually.';
+      }
+    }
+
+    function generateReceiptAiDraft() {
+      const fileInput = document.getElementById('receiptFile');
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      if (!navigator.onLine) {
+        toast('AI receipt reading requires an internet connection. Manual entry still works.');
+        return;
+      }
+      if (!file) {
+        toast('Choose a receipt photo first.');
+        return;
+      }
+      if (!String(file.type || '').startsWith('image/')) {
+        toast('AI draft currently supports receipt photos only. Save this file manually.');
+        return;
+      }
+
+      resetReceiptAiState(false);
+      setReceiptAiBusy(true, 'Preparing receipt photo...');
+      compressImageFile(file, function(filePayload) {
+        if (!filePayload || !filePayload.base64Data) {
+          showReceiptAiFailure('Could not prepare this photo. You can still enter the receipt manually.');
+          return;
+        }
+        if (filePayload.base64Data.length > 9000000) {
+          showReceiptAiFailure('This photo is too large for AI reading. Retake it closer or continue manually.');
+          return;
+        }
+
+        const requestId = makeReceiptAiRequestId();
+        receiptAiRequestId = requestId;
+        setReceiptAiBusy(true, 'Reading receipt... This may take several seconds.');
+        postLongRunningToGas('analyzeReceipt', {
+          requestId: requestId,
+          file: filePayload
+        });
+        pollReceiptAiDraft(requestId, 0);
+      });
+    }
+
+    function makeReceiptAiRequestId() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID().replace(/-/g, '');
+      }
+      return 'rcpt' + Date.now() + Math.random().toString(36).slice(2, 16);
+    }
+
+    function pollReceiptAiDraft(requestId, attempt) {
+      if (requestId !== receiptAiRequestId) return;
+      if (attempt >= 40) {
+        showReceiptAiFailure('AI reading timed out. Your photo and manual fields are still available.');
+        return;
+      }
+
+      apiGet('getReceiptDraft', { requestId: requestId })
+        .then(function(data) {
+          if (requestId !== receiptAiRequestId) return;
+          const state = data && data.state;
+          if (state === 'complete' && data.draft) {
+            receiptAiDraftData = data.draft;
+            receiptAiDraftApplied = false;
+            receiptAiRequestId = '';
+            setReceiptAiBusy(false, 'AI draft ready. Review it before applying.');
+            renderReceiptAiDraft(data.draft);
+            toast('AI receipt draft ready.');
+            return;
+          }
+          if (state === 'error') {
+            showReceiptAiFailure(data.message || 'AI could not read this receipt. Manual entry still works.');
+            return;
+          }
+          receiptAiPollTimer = window.setTimeout(function() {
+            pollReceiptAiDraft(requestId, attempt + 1);
+          }, 2000);
+        })
+        .catch(function(err) {
+          if (requestId !== receiptAiRequestId) return;
+          if (attempt < 4) {
+            receiptAiPollTimer = window.setTimeout(function() {
+              pollReceiptAiDraft(requestId, attempt + 1);
+            }, 2200);
+            return;
+          }
+          showReceiptAiFailure('Could not retrieve the AI draft. Manual entry still works.');
+          console.error(err);
+        });
+    }
+
+    function setReceiptAiBusy(isBusy, message) {
+      const button = document.getElementById('receiptAiButton');
+      const panel = document.getElementById('receiptAiPanel');
+      if (button) {
+        button.disabled = !!isBusy;
+        button.textContent = isBusy ? 'Reading Receipt...' : 'Generate AI Draft';
+      }
+      if (panel && message) panel.textContent = message;
+    }
+
+    function showReceiptAiFailure(message) {
+      receiptAiRequestId = '';
+      receiptAiDraftData = null;
+      receiptAiDraftApplied = false;
+      setReceiptAiBusy(false, message);
+      document.getElementById('receiptAiDraft').classList.add('hidden');
+      document.getElementById('receiptAiDiscardButton').classList.add('hidden');
+      toast(message);
+    }
+
+    function renderReceiptAiDraft(draft) {
+      const rows = [
+        ['Vendor', draft.vendor || 'Not found'],
+        ['Receipt date', draft.receiptDate || 'Not found'],
+        ['Total', draft.totalAmount ? '$' + Number(draft.totalAmount).toFixed(2) : 'Not found'],
+        ['Category', draft.category || 'Not found'],
+        ['Client', draft.client || 'Not found'],
+        ['Site / Project', draft.site || 'Not found'],
+        ['Reimbursable', draft.reimbursable || 'Unknown'],
+        ['Notes', draft.notes || 'No suggestion']
+      ];
+      const grid = document.getElementById('receiptAiDraftGrid');
+      grid.innerHTML = rows.map(function(row) {
+        return '<div class="receipt-ai-item"><span class="receipt-ai-label">' + escapeHtml(row[0]) + '</span><span class="receipt-ai-value">' + escapeHtml(row[1]) + '</span></div>';
+      }).join('');
+
+      document.getElementById('receiptAiConfidence').textContent = 'Confidence ' + (Number(draft.confidence) || 0) + '%';
+      const review = document.getElementById('receiptAiReview');
+      const missing = Array.isArray(draft.missingFields) ? draft.missingFields : [];
+      const messages = [];
+      if (draft.needsCpaReview) messages.push('Needs CPA Review: ' + (draft.cpaReviewReason || 'AI marked this receipt for review.'));
+      if (missing.length) messages.push('Missing or uncertain: ' + missing.join(', ') + '.');
+      review.textContent = messages.join(' ');
+      review.classList.toggle('hidden', !messages.length);
+
+      document.getElementById('receiptAiDraft').classList.remove('hidden');
+      document.getElementById('receiptAiDiscardButton').classList.remove('hidden');
+      markReceiptAiMissingFields(missing);
+    }
+
+    function applyReceiptAiDraft() {
+      const draft = receiptAiDraftData;
+      if (!draft) return;
+      const apply = confirm('Apply these AI suggestions to the receipt form? Review and edit every field before confirming the save.');
+      if (!apply) return;
+
+      setReceiptValueFromDraft('receiptVendor', draft.vendor);
+      setReceiptValueFromDraft('receiptDate', draft.receiptDate);
+      if (draft.totalAmount) setReceiptValueFromDraft('receiptAmount', Number(draft.totalAmount).toFixed(2));
+      setReceiptValueFromDraft('receiptCategory', draft.category);
+      setReceiptValueFromDraft('receiptClient', draft.client);
+      setReceiptValueFromDraft('receiptSite', draft.site);
+      setReceiptValueFromDraft('receiptReimbursable', draft.reimbursable || 'Unknown');
+
+      if (draft.notes) {
+        const notes = document.getElementById('receiptNotes');
+        const current = String(notes.value || '').trim();
+        notes.value = current && current !== draft.notes ? current + ' | AI draft: ' + draft.notes : draft.notes;
+      }
+
+      receiptAiDraftApplied = true;
+      document.getElementById('receiptAiPanel').textContent = draft.needsCpaReview
+        ? 'Draft applied. Review every field. This receipt is marked Needs CPA Review.'
+        : 'Draft applied. Review every field, then tap Confirm & Save.';
+      reviewReceiptFields();
+      toast('AI draft applied. Review before saving.');
+    }
+
+    function setReceiptValueFromDraft(id, value) {
+      if (value === null || value === undefined || String(value).trim() === '') return;
+      const el = document.getElementById(id);
+      if (el) el.value = String(value).trim();
+    }
+
+    function buildReceiptAiStatus() {
+      if (!receiptAiDraftData) return 'Manual entry';
+      if (!receiptAiDraftApplied) return 'Manual entry / AI draft not applied';
+      const draft = receiptAiDraftData;
+      const parts = ['AI draft confirmed', 'Confidence ' + (Number(draft.confidence) || 0) + '%'];
+      if (draft.needsCpaReview) parts.push('Needs CPA Review: ' + (draft.cpaReviewReason || 'Yes'));
+      return parts.join(' | ').slice(0, 500);
+    }
+
+    function discardReceiptAiDraft() {
+      const hadDraft = !!receiptAiDraftData || !!receiptAiRequestId;
+      resetReceiptAiState(false);
+      const panel = document.getElementById('receiptAiPanel');
+      if (panel) panel.textContent = 'AI draft cleared. Continue manually or generate a new draft.';
+      if (hadDraft) toast('AI draft cleared.');
+    }
+
+    function resetReceiptAiState(resetPanel) {
+      if (receiptAiPollTimer) window.clearTimeout(receiptAiPollTimer);
+      receiptAiPollTimer = null;
+      receiptAiRequestId = '';
+      receiptAiDraftData = null;
+      receiptAiDraftApplied = false;
+      const draft = document.getElementById('receiptAiDraft');
+      const discard = document.getElementById('receiptAiDiscardButton');
+      const button = document.getElementById('receiptAiButton');
+      if (draft) draft.classList.add('hidden');
+      if (discard) discard.classList.add('hidden');
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Generate AI Draft';
+      }
+      markReceiptAiMissingFields([]);
+      if (resetPanel) {
+        const panel = document.getElementById('receiptAiPanel');
+        if (panel) panel.textContent = 'Choose a receipt photo, or continue with manual entry. PDF files can still be saved manually.';
+      }
+    }
+
+    function markReceiptAiMissingFields(missing) {
+      const normalized = (missing || []).map(function(value) { return String(value || '').toLowerCase(); });
+      const fieldMap = {
+        receiptDate: ['receiptdate', 'date'],
+        receiptVendor: ['vendor'],
+        receiptAmount: ['totalamount', 'amount', 'total'],
+        receiptCategory: ['category'],
+        receiptClient: ['client'],
+        receiptSite: ['site', 'project'],
+        receiptNotes: ['notes'],
+        receiptReimbursable: ['reimbursable']
+      };
+      Object.keys(fieldMap).forEach(function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const shouldMark = fieldMap[id].some(function(key) { return normalized.indexOf(key) !== -1; });
+        el.classList.toggle('receipt-field-missing', shouldMark);
+      });
+    }
+
     function reviewReceiptFields() {
       const missing = getReceiptMissingFields({
         receiptDate: val('receiptDate'),
@@ -3135,14 +3519,42 @@
         category: val('receiptCategory'),
         file: document.getElementById('receiptFile').files.length
       });
+      getOutstandingReceiptAiMissingFields().forEach(function(field) {
+        if (missing.indexOf(field) === -1) missing.push(field);
+      });
       const panel = document.getElementById('receiptAiPanel');
       if (!missing.length) {
-        panel.textContent = 'Receipt looks complete. Save when ready.';
+        panel.textContent = receiptAiDraftApplied ? 'Receipt looks complete. Confirm & Save when ready.' : 'Receipt looks complete. Save when ready.';
+        markReceiptAiMissingFields([]);
         toast('Receipt fields look complete.');
         return;
       }
-      panel.textContent = 'Check before save: ' + missing.join(', ') + '. AI reader will handle this automatically in a later build.';
+      panel.textContent = 'Check before save: ' + missing.map(receiptMissingFieldLabel).join(', ') + '.';
+      markReceiptAiMissingFields(missing);
       toast('Receipt needs review.');
+    }
+
+    function getOutstandingReceiptAiMissingFields() {
+      if (!receiptAiDraftApplied || !receiptAiDraftData || !Array.isArray(receiptAiDraftData.missingFields)) return [];
+      return receiptAiDraftData.missingFields.filter(function(field) {
+        if (field === 'client') return !val('receiptClient');
+        if (field === 'site') return !val('receiptSite');
+        if (field === 'notes') return !val('receiptNotes');
+        if (field === 'reimbursable') return val('receiptReimbursable') === 'Unknown';
+        return false;
+      });
+    }
+
+    function receiptMissingFieldLabel(field) {
+      const labels = {
+        receiptDate: 'date',
+        totalAmount: 'amount',
+        client: 'client',
+        site: 'site/project',
+        notes: 'notes',
+        reimbursable: 'reimbursable status'
+      };
+      return labels[field] || field;
     }
 
     function completeReceiptMissingFields(payload, fileInput) {
@@ -3245,6 +3657,7 @@
 
     function clearReceiptForm() {
       ['receiptFile', 'receiptAmount', 'receiptVendor', 'receiptClient', 'receiptSite', 'receiptNotes'].forEach(function(id) { document.getElementById(id).value = ''; });
+      resetReceiptAiState(true);
     }
 
     function clearMileageForm() {
