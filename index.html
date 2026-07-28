@@ -1545,7 +1545,7 @@
         <button class="home-btn" onclick="showView('homeView')">← Home</button>
       </div>
       <p class="tiny">AI creates a draft only. Review and edit every field before confirming. The selected receipt photo is sent to Google Gemini only when you tap Generate AI Draft.</p>
-      <label>Receipt Photo</label>
+      <label>Receipt / Invoice Photo or PDF</label>
       <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment" onchange="handleReceiptFileChange()">
       <div class="actions compact-actions">
         <button class="btn" id="receiptAiButton" type="button" onclick="generateReceiptAiDraft()">Generate AI Draft</button>
@@ -1567,45 +1567,66 @@
           <button class="btn secondary compact" type="button" onclick="discardReceiptAiDraft()">Discard</button>
         </div>
       </div>
+      <label>Vendor / Shop Name</label>
+      <input id="receiptVendor" placeholder="Store, shop, restaurant, or provider">
       <div class="row">
         <div>
-          <label>Receipt Date</label>
+          <label>Receipt / Invoice Date</label>
           <input id="receiptDate" type="date">
         </div>
         <div>
-          <label>Amount</label>
-          <input id="receiptAmount" inputmode="decimal" placeholder="0.00">
+          <label>Receipt / Invoice #</label>
+          <input id="receiptInvoiceNumber" placeholder="If shown">
         </div>
       </div>
-      <label>Vendor</label>
-      <input id="receiptVendor" placeholder="Store / vendor">
-      <label>Category</label>
-      <select id="receiptCategory">
-        <option>Materials</option>
-        <option>Fuel</option>
-        <option>Tools</option>
-        <option>Meals</option>
-        <option>Parking/Tolls</option>
-        <option>Supplies</option>
-        <option>Other</option>
-      </select>
       <div class="row">
+        <div>
+          <label>Subtotal</label>
+          <input id="receiptSubtotal" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div>
+          <label>Sales Tax</label>
+          <input id="receiptSalesTax" inputmode="decimal" placeholder="0.00">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Total Amount</label>
+          <input id="receiptAmount" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div>
+          <label>Payment Method</label>
+          <select id="receiptPaymentMethod">
+            <option>Unknown</option>
+            <option>Card</option>
+            <option>Cash</option>
+            <option>Check</option>
+            <option>Bank / ACH</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <label>Last 4 of Card <span class="tiny">(if shown)</span></label>
+      <input id="receiptCardLast4" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Optional">
+      <div class="row">
+        <div>
+          <label>Expense Category</label>
+          <select id="receiptCategory">
+            <option>Materials</option>
+            <option>Fuel</option>
+            <option>Tools</option>
+            <option>Meals</option>
+            <option>Parking/Tolls</option>
+            <option>Supplies</option>
+            <option>Other</option>
+          </select>
+        </div>
         <div>
           <label>Reimbursable?</label>
           <select id="receiptReimbursable">
             <option>Unknown</option>
             <option>Yes</option>
             <option>No</option>
-          </select>
-        </div>
-        <div>
-          <label>Paid By</label>
-          <select id="receiptPaidBy">
-            <option>Personal card</option>
-            <option>Cash</option>
-            <option>Company card</option>
-            <option>Client</option>
-            <option>Other</option>
           </select>
         </div>
       </div>
@@ -1890,7 +1911,7 @@
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
-    const UI_VERSION = 'v0.3.0';
+    const UI_VERSION = 'v0.3.3';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -2501,10 +2522,14 @@
         site: val('receiptSite'),
         receiptDate: val('receiptDate'),
         vendor: val('receiptVendor'),
+        invoiceNumber: val('receiptInvoiceNumber'),
+        subtotal: val('receiptSubtotal'),
+        salesTax: val('receiptSalesTax'),
         amount: val('receiptAmount'),
+        paymentMethod: val('receiptPaymentMethod'),
+        cardLast4: val('receiptCardLast4').replace(/\D/g, '').slice(-4),
         category: val('receiptCategory'),
         reimbursable: val('receiptReimbursable'),
-        paidBy: val('receiptPaidBy'),
         notes: val('receiptNotes'),
         aiStatus: buildReceiptAiStatus()
       };
@@ -3036,13 +3061,17 @@
       }
 
       if (item.type === 'receipt') {
-        addDetail(rows, 'Vendor', item.vendor);
-        addDetail(rows, 'Amount', item.amount ? '$' + item.amount : '');
+        addDetail(rows, 'Vendor / Shop', item.vendor);
+        addDetail(rows, 'Receipt / Invoice #', item.invoiceNumber);
+        addDetail(rows, 'Subtotal', item.subtotal ? '$' + item.subtotal : '');
+        addDetail(rows, 'Sales Tax', item.salesTax ? '$' + item.salesTax : '');
+        addDetail(rows, 'Total Amount', item.amount ? '$' + item.amount : '');
+        addDetail(rows, 'Payment Method', item.paymentMethod);
+        addDetail(rows, 'Card Last 4', item.cardLast4);
         addDetail(rows, 'Category', item.category);
         addDetail(rows, 'Reimbursable', item.reimbursable);
-        addDetail(rows, 'Paid By', item.paidBy);
         addDetail(rows, 'Notes', item.notes);
-        if (item.fileUrl) rows.push('<div><strong>File:</strong> <a href="' + escapeAttr(item.fileUrl) + '" target="_blank" rel="noopener">Open upload</a></div>');
+        if (item.fileUrl) rows.push('<div><strong>Receipt / Invoice File:</strong> <a href="' + escapeAttr(item.fileUrl) + '" target="_blank" rel="noopener">Open upload</a></div>');
       }
 
       if (item.type === 'note') {
@@ -3390,9 +3419,14 @@
 
     function renderReceiptAiDraft(draft) {
       const rows = [
-        ['Vendor', draft.vendor || 'Not found'],
-        ['Receipt date', draft.receiptDate || 'Not found'],
-        ['Total', draft.totalAmount ? '$' + Number(draft.totalAmount).toFixed(2) : 'Not found'],
+        ['Vendor / Shop', draft.vendor || 'Not found'],
+        ['Receipt / Invoice Date', draft.receiptDate || 'Not found'],
+        ['Receipt / Invoice #', draft.invoiceNumber || 'Not shown'],
+        ['Subtotal', draft.subtotal ? '$' + Number(draft.subtotal).toFixed(2) : 'Not shown'],
+        ['Sales Tax', draft.salesTax ? '$' + Number(draft.salesTax).toFixed(2) : 'Not shown'],
+        ['Total Amount', draft.totalAmount ? '$' + Number(draft.totalAmount).toFixed(2) : 'Not found'],
+        ['Payment Method', draft.paymentMethod || 'Unknown'],
+        ['Card Last 4', draft.cardLast4 || 'Not shown'],
         ['Category', draft.category || 'Not found'],
         ['Client', draft.client || 'Not found'],
         ['Site / Project', draft.site || 'Not found'],
@@ -3426,7 +3460,12 @@
 
       setReceiptValueFromDraft('receiptVendor', draft.vendor);
       setReceiptValueFromDraft('receiptDate', draft.receiptDate);
+      setReceiptValueFromDraft('receiptInvoiceNumber', draft.invoiceNumber);
+      if (draft.subtotal) setReceiptValueFromDraft('receiptSubtotal', Number(draft.subtotal).toFixed(2));
+      if (draft.salesTax) setReceiptValueFromDraft('receiptSalesTax', Number(draft.salesTax).toFixed(2));
       if (draft.totalAmount) setReceiptValueFromDraft('receiptAmount', Number(draft.totalAmount).toFixed(2));
+      setReceiptValueFromDraft('receiptPaymentMethod', draft.paymentMethod || 'Unknown');
+      setReceiptValueFromDraft('receiptCardLast4', draft.cardLast4);
       setReceiptValueFromDraft('receiptCategory', draft.category);
       setReceiptValueFromDraft('receiptClient', draft.client);
       setReceiptValueFromDraft('receiptSite', draft.site);
@@ -3496,7 +3535,12 @@
       const fieldMap = {
         receiptDate: ['receiptdate', 'date'],
         receiptVendor: ['vendor'],
+        receiptInvoiceNumber: ['invoicenumber', 'receiptnumber'],
+        receiptSubtotal: ['subtotal'],
+        receiptSalesTax: ['salestax', 'tax'],
         receiptAmount: ['totalamount', 'amount', 'total'],
+        receiptPaymentMethod: ['paymentmethod'],
+        receiptCardLast4: ['cardlast4', 'last4'],
         receiptCategory: ['category'],
         receiptClient: ['client'],
         receiptSite: ['site', 'project'],
@@ -3656,7 +3700,10 @@
     }
 
     function clearReceiptForm() {
-      ['receiptFile', 'receiptAmount', 'receiptVendor', 'receiptClient', 'receiptSite', 'receiptNotes'].forEach(function(id) { document.getElementById(id).value = ''; });
+      ['receiptFile', 'receiptAmount', 'receiptVendor', 'receiptInvoiceNumber', 'receiptSubtotal', 'receiptSalesTax', 'receiptCardLast4', 'receiptClient', 'receiptSite', 'receiptNotes'].forEach(function(id) { document.getElementById(id).value = ''; });
+      document.getElementById('receiptPaymentMethod').value = 'Unknown';
+      document.getElementById('receiptReimbursable').value = 'Unknown';
+      document.getElementById('receiptCategory').value = 'Materials';
       resetReceiptAiState(true);
     }
 
