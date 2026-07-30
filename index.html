@@ -1589,19 +1589,19 @@
         <h2 class="section-title">Add Receipt</h2>
         <button class="home-btn" onclick="showView('homeView')">← Home</button>
       </div>
-      <p class="tiny">AI creates a draft only. In AI Capture, a selected photo is sent to Google Gemini for reading. Use Manual when a receipt is too rough to read.</p>
+      <p class="tiny">AI creates a draft only. In AI Capture, selected photos are sent to Google Gemini for reading. Use Manual when proof is too rough to read.</p>
       <label>Receipt Mode</label>
       <div class="mode-toggle" role="group" aria-label="Receipt entry mode">
         <button id="receiptModeAi" type="button" onclick="setReceiptMode('ai')">AI Capture</button>
         <button id="receiptModeManual" type="button" onclick="setReceiptMode('manual')">Manual</button>
       </div>
-      <label>Receipt / Invoice Photo or PDF</label>
-      <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment" onchange="handleReceiptFileChange()">
+      <label>Receipt / Invoice Photos or PDFs</label>
+      <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment" multiple onchange="handleReceiptFileChange()">
       <div class="actions compact-actions hidden" id="receiptAiActions">
         <button class="btn" id="receiptAiButton" type="button" onclick="generateReceiptAiDraft()">Generate AI Draft</button>
         <button class="btn secondary compact hidden" id="receiptAiDiscardButton" type="button" onclick="discardReceiptAiDraft()">Clear AI Draft</button>
       </div>
-      <div class="mini-panel" id="receiptAiPanel" aria-live="polite">AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.</div>
+      <div class="mini-panel" id="receiptAiPanel" aria-live="polite">AI Capture is ready. Choose receipt photos to generate a draft, or switch to Manual.</div>
       <div class="receipt-ai-draft hidden" id="receiptAiDraft">
         <div class="receipt-ai-head">
           <div>
@@ -1962,7 +1962,7 @@
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.6';
+    const UI_VERSION = 'v0.3.7';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -2592,8 +2592,9 @@
 
       if (!completeReceiptMissingFields(payload, fileInput)) return;
 
-      readOptionalFile(fileInput, function(filePayload) {
-        if (filePayload) payload.file = filePayload;
+      readOptionalFiles(fileInput, function(filePayloads) {
+        if (filePayloads.length === 1) payload.file = filePayloads[0];
+        if (filePayloads.length > 1) payload.files = filePayloads;
         saveLastReceiptContext(payload.client, payload.site);
         submitOrQueue('receipt', payload, 'Receipt sent.');
         clearReceiptForm();
@@ -3210,7 +3211,35 @@
     }
 
     function readOptionalFile(input, callback) {
-      const file = input.files && input.files[0];
+      readOptionalFiles(input, function(filePayloads) {
+        callback(filePayloads[0] || null);
+      });
+    }
+
+    function readOptionalFiles(input, callback) {
+      const files = getInputFiles(input);
+      if (!files.length) {
+        callback([]);
+        return;
+      }
+
+      const payloads = [];
+      let index = 0;
+      function readNext() {
+        if (index >= files.length) {
+          callback(payloads);
+          return;
+        }
+        prepareUploadFile(files[index], function(filePayload) {
+          if (filePayload) payloads.push(filePayload);
+          index += 1;
+          readNext();
+        });
+      }
+      readNext();
+    }
+
+    function prepareUploadFile(file, callback) {
       if (!file) {
         callback(null);
         return;
@@ -3234,6 +3263,10 @@
         callback(null);
       };
       reader.readAsDataURL(file);
+    }
+
+    function getInputFiles(input) {
+      return Array.prototype.slice.call((input && input.files) || []);
     }
 
     function compressImageFile(file, callback) {
@@ -3411,7 +3444,7 @@
       if (actions) actions.classList.add('hidden');
       if (panel && !receiptAiDraftData && !receiptAiRequestId) {
         panel.textContent = normalized === 'ai'
-          ? 'AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.'
+          ? 'AI Capture is ready. Choose receipt photos to generate a draft, or switch to Manual.'
           : 'Manual mode is ready. Add a photo or PDF if you want proof attached.';
       }
       if (normalized === 'manual') resetReceiptAiState(false);
@@ -3421,68 +3454,104 @@
     function handleReceiptFileChange() {
       resetReceiptAiState(false);
       const fileInput = document.getElementById('receiptFile');
-      const file = fileInput && fileInput.files && fileInput.files[0];
+      const files = getInputFiles(fileInput);
+      const imageFiles = getReceiptImageFiles(fileInput);
       const panel = document.getElementById('receiptAiPanel');
       const mode = getReceiptMode();
       applyReceiptMode(mode, false);
       if (!panel) return;
-      if (!file) {
+      if (!files.length) {
         panel.textContent = mode === 'ai'
-          ? 'AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.'
+          ? 'AI Capture is ready. Choose receipt photos to generate a draft, or switch to Manual.'
           : 'Manual mode is ready. Add a photo or PDF if you want proof attached.';
-      } else if (!String(file.type || '').startsWith('image/')) {
+      } else if (!imageFiles.length) {
         panel.textContent = mode === 'ai'
-          ? 'AI draft currently supports receipt photos only. This file can still be saved manually.'
-          : 'File attached for manual receipt entry.';
+          ? 'AI draft currently supports receipt photos only. These files can still be saved manually.'
+          : receiptFileCountLabel(files.length) + ' attached for manual receipt entry.';
       } else {
         panel.textContent = mode === 'ai'
-          ? 'Photo selected. Starting AI draft...'
-          : 'Photo attached for manual receipt entry.';
+          ? receiptFileCountLabel(imageFiles.length, 'photo') + ' selected. Starting AI draft...'
+          : receiptFileCountLabel(files.length) + ' attached for manual receipt entry.';
         if (mode === 'ai') generateReceiptAiDraft();
       }
     }
 
     function generateReceiptAiDraft() {
       const fileInput = document.getElementById('receiptFile');
-      const file = fileInput && fileInput.files && fileInput.files[0];
+      const files = getInputFiles(fileInput);
+      const imageFiles = getReceiptImageFiles(fileInput).slice(0, 4);
       const panel = document.getElementById('receiptAiPanel');
       if (!navigator.onLine) {
-        if (panel) panel.textContent = 'AI receipt reading needs internet. Your photo is still attached; continue manually or retry later.';
+        if (panel) panel.textContent = 'AI receipt reading needs internet. Your proof is still attached; continue manually or retry later.';
         toast('AI receipt reading requires an internet connection. Manual entry still works.');
         return;
       }
-      if (!file) {
-        if (panel) panel.textContent = 'Choose a receipt photo first, or switch to Manual.';
-        toast('Choose a receipt photo first.');
+      if (!files.length) {
+        if (panel) panel.textContent = 'Choose receipt photos first, or switch to Manual.';
+        toast('Choose receipt photos first.');
         return;
       }
-      if (!String(file.type || '').startsWith('image/')) {
-        if (panel) panel.textContent = 'AI draft currently supports receipt photos only. This file can still be saved manually.';
-        toast('AI draft currently supports receipt photos only. Save this file manually.');
+      if (!imageFiles.length) {
+        if (panel) panel.textContent = 'AI draft currently supports receipt photos only. These files can still be saved manually.';
+        toast('AI draft currently supports receipt photos only. Save these files manually.');
         return;
+      }
+      if (getReceiptImageFiles(fileInput).length > 4) {
+        toast('AI will read the first 4 photos. All selected files will still save.');
       }
 
       resetReceiptAiState(false);
-      setReceiptAiBusy(true, 'Preparing receipt photo...');
-      compressImageFile(file, function(filePayload) {
-        if (!filePayload || !filePayload.base64Data) {
-          showReceiptAiFailure('Could not prepare this photo. You can still enter the receipt manually.');
+      setReceiptAiBusy(true, 'Preparing receipt photos...');
+      prepareReceiptAiFiles(imageFiles, function(filePayloads) {
+        if (!filePayloads.length) {
+          showReceiptAiFailure('Could not prepare these photos. You can still enter the receipt manually.');
           return;
         }
-        if (filePayload.base64Data.length > 9000000) {
-          showReceiptAiFailure('This photo is too large for AI reading. Retake it closer or continue manually.');
+        const tooLarge = filePayloads.some(function(filePayload) {
+          return filePayload.base64Data && filePayload.base64Data.length > 9000000;
+        });
+        if (tooLarge) {
+          showReceiptAiFailure('One photo is too large for AI reading. Retake it closer or continue manually.');
           return;
         }
 
         const requestId = makeReceiptAiRequestId();
         receiptAiRequestId = requestId;
-        setReceiptAiBusy(true, 'Reading receipt... This may take several seconds.');
+        setReceiptAiBusy(true, 'Reading receipt proof... This may take several seconds.');
         postLongRunningToGas('analyzeReceipt', {
           requestId: requestId,
-          file: filePayload
+          files: filePayloads
         });
         pollReceiptAiDraft(requestId, 0);
       });
+    }
+
+    function getReceiptImageFiles(input) {
+      return getInputFiles(input).filter(function(file) {
+        return String(file.type || '').startsWith('image/');
+      });
+    }
+
+    function prepareReceiptAiFiles(files, callback) {
+      const payloads = [];
+      let index = 0;
+      function prepareNext() {
+        if (index >= files.length) {
+          callback(payloads);
+          return;
+        }
+        compressImageFile(files[index], function(filePayload) {
+          if (filePayload && filePayload.base64Data) payloads.push(filePayload);
+          index += 1;
+          prepareNext();
+        });
+      }
+      prepareNext();
+    }
+
+    function receiptFileCountLabel(count, noun) {
+      noun = noun || 'file';
+      return count + ' ' + noun + (count === 1 ? '' : 's');
     }
 
     function makeReceiptAiRequestId() {
@@ -3648,7 +3717,7 @@
       if (resetPanel) {
         const panel = document.getElementById('receiptAiPanel');
         if (panel) panel.textContent = getReceiptMode() === 'ai'
-          ? 'AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.'
+          ? 'AI Capture is ready. Choose receipt photos to generate a draft, or switch to Manual.'
           : 'Manual mode is ready. Add a photo or PDF if you want proof attached.';
       }
     }
@@ -3726,7 +3795,7 @@
 
     function completeReceiptMissingFields(payload, fileInput) {
       if (!payload.amount && !fileInput.files.length) {
-        toast('Add an amount or receipt photo.');
+        toast('Add an amount or receipt proof.');
         return false;
       }
 

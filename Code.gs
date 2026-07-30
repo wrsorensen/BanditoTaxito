@@ -1,11 +1,11 @@
 /**
- * v0.2.1 — Logbook viewer API
+ * v0.3.7 — Multi-image Receipt Proof API
  * Google Apps Script backend for a simple consultant work tracker.
  * Source of truth: Google Sheets.
  */
 
 const APP = {
-  version: 'v0.2.1',
+  version: 'v0.3.7',
   spreadsheetName: 'Bandito Taxito Backend',
   receiptFolderName: 'Bandito Taxito Receipt Uploads',
   photoFolderName: 'Bandito Taxito Photo Uploads',
@@ -21,6 +21,20 @@ const APP = {
   }
 };
 
+const RECEIPT_AI = {
+  defaultModel: 'gemini-3.6-flash',
+  cachePrefix: 'BT_RECEIPT_AI_',
+  cacheSeconds: 300,
+  maxImageBytes: 6 * 1024 * 1024,
+  maxImageCount: 4,
+  categories: ['Materials', 'Fuel', 'Tools', 'Meals', 'Parking/Tolls', 'Supplies', 'Other'],
+  reimbursableValues: ['Unknown', 'Yes', 'No'],
+  paymentMethodValues: ['Unknown', 'Card', 'Cash', 'Check', 'Bank / ACH', 'Other'],
+  missingFields: ['vendor', 'receiptDate', 'invoiceNumber', 'totalAmount', 'subtotal', 'salesTax', 'paymentMethod', 'cardLast4', 'category', 'client', 'site', 'notes', 'reimbursable']
+};
+
+const RECORD_META_HEADERS = ['Deleted', 'Deleted At', 'Delete Reason', 'Updated At', 'Updated Source'];
+
 const HEADERS = {
   Settings: ['Setting', 'Value', 'Notes'],
   Clients: ['Client Name', 'Default Site', 'Contact', 'Notes', 'Active'],
@@ -31,25 +45,93 @@ const HEADERS = {
     'Photo URLs', 'Receipt URLs', 'Created By', 'Sync Source',
     'Pay Type', 'Work Span', 'Work Start Date', 'Work End Date',
     'Billable Days', 'Rate', 'Estimated Pay'
-  ],
+  ].concat(RECORD_META_HEADERS),
   Mileage: [
     'Timestamp', 'Mileage ID', 'Client', 'Project/Site', 'Trip Date',
     'Start Odometer', 'End Odometer', 'Miles', 'From', 'To', 'Purpose',
     'Reimbursed?', 'Notes', 'Sync Source'
-  ],
+  ].concat(RECORD_META_HEADERS),
   Receipts: [
     'Timestamp', 'Receipt ID', 'Client', 'Project/Site', 'Receipt Date',
     'Vendor', 'Amount', 'Category', 'Reimbursable?', 'Paid By', 'Notes',
     'File URL', 'AI Status', 'Sync Source'
-  ],
+  ].concat(RECORD_META_HEADERS).concat([
+    'Receipt / Invoice Number', 'Subtotal', 'Sales Tax', 'Payment Method', 'Card Last 4'
+  ]),
   'Photos Notes': [
     'Timestamp', 'Note ID', 'Client', 'Project/Site', 'Note Date',
     'Type', 'Note', 'File URL', 'Status', 'Sync Source'
-  ],
+  ].concat(RECORD_META_HEADERS),
   'Tax Helper': [
     'Timestamp', 'Tax Event ID', 'Event Date', 'Type', 'Amount', 'Notes', 'Status'
-  ],
+  ].concat(RECORD_META_HEADERS),
   'Audit Log': ['Timestamp', 'Action', 'Details']
+};
+
+const LOGBOOK_ENTRY_TYPES = {
+  work: {
+    tabName: APP.tabs.workLog,
+    idHeader: 'Entry ID',
+    fields: {
+      client: 'Client',
+      site: 'Project/Site',
+      date: 'Work Date',
+      notes: 'Notes',
+      status: 'Status',
+      workPerformed: 'Work Performed'
+    }
+  },
+  mileage: {
+    tabName: APP.tabs.mileage,
+    idHeader: 'Mileage ID',
+    fields: {
+      client: 'Client',
+      site: 'Project/Site',
+      date: 'Trip Date',
+      notes: 'Notes',
+      from: 'From',
+      to: 'To',
+      purpose: 'Purpose'
+    }
+  },
+  receipt: {
+    tabName: APP.tabs.receipts,
+    idHeader: 'Receipt ID',
+    fields: {
+      client: 'Client',
+      site: 'Project/Site',
+      date: 'Receipt Date',
+      notes: 'Notes',
+      vendor: 'Vendor',
+      amount: 'Amount',
+      category: 'Category'
+    },
+    numberFields: ['amount']
+  },
+  note: {
+    tabName: APP.tabs.notes,
+    idHeader: 'Note ID',
+    fields: {
+      client: 'Client',
+      site: 'Project/Site',
+      date: 'Note Date',
+      status: 'Status',
+      noteType: 'Type',
+      note: 'Note'
+    }
+  },
+  tax: {
+    tabName: APP.tabs.tax,
+    idHeader: 'Tax Event ID',
+    fields: {
+      date: 'Event Date',
+      status: 'Status',
+      taxType: 'Type',
+      amount: 'Amount',
+      notes: 'Notes'
+    },
+    numberFields: ['amount']
+  }
 };
 
 function doGet(e) {
@@ -142,6 +224,13 @@ function handleApiAction_(action, payload, request) {
     return { ok: true, taxSummary: getTaxSummary() };
   }
 
+  if (action === 'updateLogbookEntry') return updateLogbookEntry(payload);
+  if (action === 'softDeleteLogbookEntry') return softDeleteLogbookEntry(payload);
+  if (action === 'restoreLogbookEntry') return restoreLogbookEntry(payload);
+
+  if (action === 'analyzeReceipt') return analyzeReceiptDraft(payload);
+  if (action === 'getReceiptDraft') return getReceiptDraft(payload, request);
+
   if (action === 'save') {
     return saveByType_(payload.type || (request && request.type), payload.payload || payload);
   }
@@ -158,6 +247,325 @@ function handleApiAction_(action, payload, request) {
   }
 
   return { ok: false, message: 'Unknown API action: ' + action };
+}
+
+function analyzeReceiptDraft(payload) {
+  payload = payload || {};
+  const requestId = validateReceiptAiRequestId_(payload.requestId);
+  const cache = CacheService.getScriptCache();
+  const cacheKey = RECEIPT_AI.cachePrefix + requestId;
+  cache.put(cacheKey, JSON.stringify({ state: 'pending' }), RECEIPT_AI.cacheSeconds);
+
+  try {
+    const draft = callGeminiReceiptDraft_(normalizeReceiptAiFiles_(payload));
+    cache.put(cacheKey, JSON.stringify({ state: 'complete', draft: draft }), RECEIPT_AI.cacheSeconds);
+    return { ok: true, requestId: requestId, state: 'complete' };
+  } catch (err) {
+    const message = safeReceiptAiError_(err);
+    cache.put(cacheKey, JSON.stringify({ state: 'error', message: message }), RECEIPT_AI.cacheSeconds);
+    return { ok: true, requestId: requestId, state: 'error' };
+  }
+}
+
+function getReceiptDraft(payload, request) {
+  payload = payload || {};
+  const params = (request && request.params) || {};
+  const requestId = validateReceiptAiRequestId_(payload.requestId || params.requestId);
+  const cached = CacheService.getScriptCache().get(RECEIPT_AI.cachePrefix + requestId);
+  if (!cached) return { ok: true, state: 'pending' };
+  const result = parseJsonSafe_(cached, { state: 'pending' });
+  result.ok = true;
+  return result;
+}
+
+function callGeminiReceiptDraft_(filePayloads) {
+  const props = PropertiesService.getScriptProperties();
+  const apiKey = clean_(props.getProperty('GEMINI_API_KEY'));
+  if (!apiKey) throw new Error('CONFIG_MISSING');
+
+  let model = clean_(props.getProperty('GEMINI_RECEIPT_MODEL')) || RECEIPT_AI.defaultModel;
+  if (!/^[a-zA-Z0-9._-]+$/.test(model)) model = RECEIPT_AI.defaultModel;
+
+  const preparedFiles = validateReceiptAiFiles_(filePayloads);
+  const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent';
+  const prompt = [
+    'Read the attached receipt or invoice image(s) and return one JSON object only.',
+    'The images may be multiple proofs for one purchase, such as a detailed invoice plus a credit-card receipt.',
+    'Treat them as one transaction. Do not double-count totals. Prefer detailed invoice lines for purchase notes and the payment slip for payment/card proof.',
+    'Do not use markdown, code fences, commentary, or extra text.',
+    'Use exactly these keys: vendor, receiptDate, invoiceNumber, subtotal, salesTax, totalAmount, paymentMethod, cardLast4, category, client, site, notes, reimbursable, confidence, needsCpaReview, cpaReviewReason, missingFields.',
+    'vendor: visible vendor, shop, restaurant, or service-provider name, otherwise empty string.',
+    'receiptDate: YYYY-MM-DD when visible, otherwise empty string.',
+    'invoiceNumber: only an explicitly labeled receipt or invoice number. Do not use authorization, approval, terminal, merchant, or unrelated reference codes.',
+    'subtotal: printed subtotal as a number. Do not calculate or infer it when it is not shown.',
+    'salesTax: printed sales tax as a number. Do not calculate or infer it when it is not shown.',
+    'totalAmount: final charged total as a number, otherwise 0.',
+    'paymentMethod: exactly Unknown, Card, Cash, Check, Bank / ACH, or Other. Normalize credit card, debit card, Visa, Mastercard, Amex, and Discover to Card.',
+    'cardLast4: exactly four digits only when the last four card digits are visible, otherwise empty string. Never return a full card number.',
+    'category: exactly one of Materials, Fuel, Tools, Meals, Parking/Tolls, Supplies, Other.',
+    'client and site: empty strings unless clearly printed and identifiable on the receipt.',
+    'notes: concise readable purchase summary, maximum 240 characters, with no claim that anything is deductible.',
+    'reimbursable: exactly Unknown, Yes, or No. Use Unknown unless the receipt clearly supports another value.',
+    'confidence: integer from 0 to 100.',
+    'needsCpaReview: boolean.',
+    'cpaReviewReason: short reason or empty string.',
+    'missingFields: array containing only vendor, receiptDate, invoiceNumber, totalAmount, subtotal, salesTax, paymentMethod, cardLast4, category, client, site, notes, reimbursable.',
+    'Do not mark invoiceNumber, subtotal, salesTax, or cardLast4 missing merely because the document does not print them.',
+    'Set needsCpaReview true for low confidence, missing essential fields, uncertain category, meals or entertainment, possible mixed personal/business items, fuel or vehicle ambiguity, or equipment that may need capitalization.',
+    'Do not include full payment-card numbers or unrelated personal information.',
+    'Example shape: {"vendor":"","receiptDate":"","invoiceNumber":"","subtotal":0,"salesTax":0,"totalAmount":0,"paymentMethod":"Unknown","cardLast4":"","category":"Other","client":"","site":"","notes":"","reimbursable":"Unknown","confidence":0,"needsCpaReview":true,"cpaReviewReason":"","missingFields":[]}'
+  ].join(' ');
+
+  const parts = preparedFiles.map(function(prepared) {
+    return { inlineData: { mimeType: prepared.mimeType, data: prepared.base64 } };
+  });
+  parts.push({ text: prompt });
+
+  const requestBody = {
+    contents: [{
+      parts: parts
+    }],
+    generationConfig: {
+      temperature: 0.1,
+      maxOutputTokens: 1600
+    }
+  };
+
+  const response = UrlFetchApp.fetch(endpoint, {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'x-goog-api-key': apiKey },
+    payload: JSON.stringify(requestBody),
+    muteHttpExceptions: true
+  });
+
+  const status = response.getResponseCode();
+  const responseText = response.getContentText();
+  if (status < 200 || status >= 300) {
+    logReceiptAiFailure_('HTTP_' + status, model, responseText);
+    throw new Error('GEMINI_HTTP_' + status);
+  }
+
+  const body = parseJsonSafe_(responseText, null);
+  if (!body) {
+    logReceiptAiFailure_('BAD_RESPONSE', model, responseText);
+    throw new Error('GEMINI_BAD_RESPONSE');
+  }
+  if (body.promptFeedback && body.promptFeedback.blockReason) {
+    logReceiptAiFailure_('BLOCKED', model, JSON.stringify(body.promptFeedback));
+    throw new Error('GEMINI_BLOCKED');
+  }
+
+  const responseParts = body.candidates && body.candidates[0] && body.candidates[0].content && body.candidates[0].content.parts;
+  const modelText = Array.isArray(responseParts) ? responseParts.filter(function(part) {
+    return part && part.thought !== true && typeof part.text === 'string';
+  }).map(function(part) {
+    return part.text;
+  }).join('\n').trim() : '';
+
+  const jsonText = extractReceiptJsonText_(modelText);
+  const rawDraft = parseJsonSafe_(jsonText, null);
+  if (!rawDraft || typeof rawDraft !== 'object' || Array.isArray(rawDraft)) {
+    logReceiptAiFailure_('BAD_JSON', model, modelText);
+    throw new Error('GEMINI_BAD_JSON');
+  }
+
+  return sanitizeReceiptAiDraft_(rawDraft);
+}
+
+function extractReceiptJsonText_(text) {
+  text = String(text || '').replace(/^\uFEFF/, '').trim();
+  if (!text) return '';
+
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenced && fenced[1]) text = fenced[1].trim();
+  if (parseJsonSafe_(text, null)) return text;
+
+  let start = -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text.charAt(i);
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === '\\') {
+        escaped = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+    if (char === '{') {
+      if (depth === 0) start = i;
+      depth++;
+      continue;
+    }
+    if (char === '}') {
+      if (depth > 0) depth--;
+      if (depth === 0 && start !== -1) return text.slice(start, i + 1);
+    }
+  }
+
+  return '';
+}
+
+function logReceiptAiFailure_(code, model, details) {
+  const safeDetails = String(details || '')
+    .replace(/AQ\.[A-Za-z0-9_-]+/g, '[REDACTED_API_KEY]')
+    .slice(0, 5000);
+  console.error('BT_RECEIPT_AI_ERROR code=' + clean_(code) + ' model=' + clean_(model) + ' details=' + safeDetails);
+}
+
+function normalizeReceiptAiFiles_(payload) {
+  payload = payload || {};
+  let files = Array.isArray(payload.files) ? payload.files : [];
+  if (!files.length && payload.file) files = [payload.file];
+  files = files.filter(function(filePayload) {
+    return filePayload && filePayload.base64Data;
+  });
+  if (!files.length) throw new Error('IMAGE_MISSING');
+  return files.slice(0, RECEIPT_AI.maxImageCount);
+}
+
+function validateReceiptAiFiles_(filePayloads) {
+  filePayloads = Array.isArray(filePayloads) ? filePayloads : [filePayloads];
+  if (!filePayloads.length) throw new Error('IMAGE_MISSING');
+  if (filePayloads.length > RECEIPT_AI.maxImageCount) throw new Error('TOO_MANY_IMAGES');
+  return filePayloads.map(validateReceiptAiFile_);
+}
+
+function validateReceiptAiFile_(filePayload) {
+  filePayload = filePayload || {};
+  const mimeType = clean_(filePayload.mimeType).toLowerCase();
+  const supported = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  if (supported.indexOf(mimeType) === -1) throw new Error('UNSUPPORTED_IMAGE');
+
+  const base64 = String(filePayload.base64Data || '').replace(/^data:[^,]+,/, '').replace(/\s/g, '');
+  if (!base64) throw new Error('IMAGE_MISSING');
+  let bytes;
+  try {
+    bytes = Utilities.base64Decode(base64);
+  } catch (err) {
+    throw new Error('IMAGE_INVALID');
+  }
+  if (!bytes.length || bytes.length > RECEIPT_AI.maxImageBytes) throw new Error('IMAGE_TOO_LARGE');
+  return { mimeType: mimeType === 'image/jpg' ? 'image/jpeg' : mimeType, base64: base64 };
+}
+
+function sanitizeReceiptAiDraft_(raw) {
+  raw = raw || {};
+  const missing = Array.isArray(raw.missingFields) ? raw.missingFields.map(function(value) {
+    return clean_(value);
+  }).filter(function(value, index, list) {
+    return RECEIPT_AI.missingFields.indexOf(value) !== -1 && list.indexOf(value) === index;
+  }) : [];
+
+  const vendor = cleanAiText_(raw.vendor, 120);
+  let receiptDate = clean_(raw.receiptDate);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(receiptDate)) receiptDate = '';
+  const invoiceNumber = cleanAiText_(raw.invoiceNumber, 80);
+  const subtotal = roundReceiptMoney_(raw.subtotal);
+  const salesTax = roundReceiptMoney_(raw.salesTax);
+  const totalAmount = roundReceiptMoney_(raw.totalAmount);
+  let paymentMethod = normalizeReceiptPaymentMethod_(raw.paymentMethod);
+  let cardLast4 = String(raw.cardLast4 || '').replace(/\D/g, '');
+  cardLast4 = cardLast4.length >= 4 ? cardLast4.slice(-4) : '';
+  if (paymentMethod !== 'Card') cardLast4 = '';
+
+  let category = clean_(raw.category);
+  if (RECEIPT_AI.categories.indexOf(category) === -1) category = 'Other';
+  let reimbursable = clean_(raw.reimbursable);
+  if (RECEIPT_AI.reimbursableValues.indexOf(reimbursable) === -1) reimbursable = 'Unknown';
+  const confidence = Math.max(0, Math.min(100, Math.round(Number(raw.confidence) || 0)));
+
+  if (!vendor && missing.indexOf('vendor') === -1) missing.push('vendor');
+  if (!receiptDate && missing.indexOf('receiptDate') === -1) missing.push('receiptDate');
+  if ((totalAmount === '' || Number(totalAmount) <= 0) && missing.indexOf('totalAmount') === -1) missing.push('totalAmount');
+  if (paymentMethod === 'Unknown' && missing.indexOf('paymentMethod') === -1) missing.push('paymentMethod');
+
+  let needsCpaReview = raw.needsCpaReview === true || confidence < 75 || category === 'Meals' || category === 'Other';
+  if (missing.indexOf('vendor') !== -1 || missing.indexOf('receiptDate') !== -1 || missing.indexOf('totalAmount') !== -1) {
+    needsCpaReview = true;
+  }
+  let cpaReviewReason = cleanAiText_(raw.cpaReviewReason, 280);
+  if (needsCpaReview && !cpaReviewReason) {
+    cpaReviewReason = missing.length ? 'Missing or uncertain receipt fields: ' + missing.join(', ') + '.' : 'Category or tax treatment is uncertain.';
+  }
+  if (!needsCpaReview) cpaReviewReason = '';
+
+  return {
+    vendor: vendor,
+    receiptDate: receiptDate,
+    invoiceNumber: invoiceNumber,
+    subtotal: subtotal === '' ? 0 : subtotal,
+    salesTax: salesTax === '' ? 0 : salesTax,
+    totalAmount: totalAmount === '' ? 0 : totalAmount,
+    paymentMethod: paymentMethod,
+    cardLast4: cardLast4,
+    category: category,
+    client: cleanAiText_(raw.client, 120),
+    site: cleanAiText_(raw.site, 120),
+    notes: cleanAiText_(raw.notes, 240),
+    reimbursable: reimbursable,
+    confidence: confidence,
+    needsCpaReview: needsCpaReview,
+    cpaReviewReason: cpaReviewReason,
+    missingFields: missing
+  };
+}
+
+function roundReceiptMoney_(value) {
+  const number = toNumber_(value);
+  if (number === '' || Number(number) < 0) return '';
+  return Math.round(Number(number) * 100) / 100;
+}
+
+function normalizeReceiptPaymentMethod_(value) {
+  const raw = clean_(value);
+  const lower = raw.toLowerCase();
+  if (!lower || lower === 'unknown' || lower === 'not shown' || lower === 'not found') return 'Unknown';
+  if (lower.indexOf('cash') !== -1) return 'Cash';
+  if (lower.indexOf('check') !== -1 || lower.indexOf('cheque') !== -1) return 'Check';
+  if (lower.indexOf('ach') !== -1 || lower.indexOf('bank') !== -1 || lower.indexOf('electronic transfer') !== -1) return 'Bank / ACH';
+  if (lower.indexOf('card') !== -1 || lower.indexOf('visa') !== -1 || lower.indexOf('mastercard') !== -1 || lower.indexOf('amex') !== -1 || lower.indexOf('discover') !== -1 || lower.indexOf('debit') !== -1 || lower.indexOf('credit') !== -1) return 'Card';
+  if (RECEIPT_AI.paymentMethodValues.indexOf(raw) !== -1) return raw;
+  return 'Other';
+}
+
+function cleanAiText_(value, maxLength) {
+  return clean_(value).replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').slice(0, maxLength);
+}
+
+function validateReceiptAiRequestId_(requestId) {
+  requestId = clean_(requestId);
+  if (!/^[A-Za-z0-9_-]{12,80}$/.test(requestId)) throw new Error('Invalid AI request ID.');
+  return requestId;
+}
+
+function safeReceiptAiError_(err) {
+  const message = String((err && err.message) || err || '');
+  if (message.indexOf('CONFIG_MISSING') !== -1) return 'Gemini API key is not configured in Apps Script.';
+  if (message.indexOf('GEMINI_HTTP_400') !== -1) return 'Gemini rejected the receipt request. Check the latest Apps Script execution for BT_RECEIPT_AI_ERROR.';
+  if (message.indexOf('GEMINI_HTTP_401') !== -1) return 'Gemini rejected the API key. Create a replacement key and update Script Properties.';
+  if (message.indexOf('GEMINI_HTTP_403') !== -1) return 'Gemini API access was denied. Check the API key and project permissions.';
+  if (message.indexOf('GEMINI_HTTP_404') !== -1) return 'The configured Gemini model is unavailable. Check GEMINI_RECEIPT_MODEL.';
+  if (message.indexOf('GEMINI_HTTP_429') !== -1) return 'Gemini free-tier limit reached. Try again later or enter the receipt manually.';
+  if (message.indexOf('GEMINI_HTTP_5') !== -1) return 'Gemini is temporarily unavailable. Try again or enter the receipt manually.';
+  if (message.indexOf('GEMINI_BAD_JSON') !== -1) return 'Gemini returned an unreadable draft response. Retry once or enter the receipt manually.';
+  if (message.indexOf('GEMINI_BAD_RESPONSE') !== -1) return 'Gemini returned an incomplete response. Retry once or enter the receipt manually.';
+  if (message.indexOf('UNSUPPORTED_IMAGE') !== -1) return 'AI reading supports JPG, PNG, and WebP receipt photos.';
+  if (message.indexOf('TOO_MANY_IMAGES') !== -1) return 'AI reading supports up to 4 receipt photos at a time.';
+  if (message.indexOf('IMAGE_TOO_LARGE') !== -1) return 'Receipt photo is too large for AI reading. Retake it closer or continue manually.';
+  if (message.indexOf('GEMINI_BLOCKED') !== -1) return 'Gemini could not analyze this image. Manual entry remains available.';
+  return 'AI could not read this receipt. Manual entry remains available.';
 }
 
 function saveByType_(type, payload) {
@@ -258,32 +666,16 @@ function saveWorkLog(payload) {
   const estimatedPay = calculateEstimatedPay_(payType, billableDays, rate, hours);
 
   const row = [
-    now_(),
-    entryId,
-    clean_(payload.client),
-    clean_(payload.site),
-    clean_(payload.workDate),
-    clean_(payload.startTime),
-    clean_(payload.endTime),
-    hours,
-    clean_(payload.status || 'Complete'),
-    clean_(payload.workPerformed),
-    clean_(payload.notes),
-    startOdo,
-    endOdo,
-    miles,
-    clean_(payload.readyForReport || 'No'),
-    clean_(payload.photoUrls),
-    clean_(payload.receiptUrls),
-    clean_(payload.createdBy),
-    clean_(payload.syncSource || 'Online'),
-    payType,
+    now_(), entryId, clean_(payload.client), clean_(payload.site), clean_(payload.workDate),
+    clean_(payload.startTime), clean_(payload.endTime), hours,
+    clean_(payload.status || 'Complete'), clean_(payload.workPerformed), clean_(payload.notes),
+    startOdo, endOdo, miles, clean_(payload.readyForReport || 'No'),
+    clean_(payload.photoUrls), clean_(payload.receiptUrls), clean_(payload.createdBy),
+    clean_(payload.syncSource || 'Online'), payType,
     clean_(payload.workSpan || 'Single-day'),
     clean_(payload.workStartDate || payload.workDate),
     clean_(payload.workEndDate || payload.workDate),
-    billableDays,
-    rate,
-    estimatedPay
+    billableDays, rate, estimatedPay
   ];
 
   appendRow_(APP.tabs.workLog, row);
@@ -303,19 +695,10 @@ function saveMileage(payload) {
     : calculateMiles_(startOdo, endOdo);
 
   const row = [
-    now_(),
-    mileageId,
-    clean_(payload.client),
-    clean_(payload.site),
-    clean_(payload.tripDate),
-    startOdo,
-    endOdo,
-    miles,
-    clean_(payload.from),
-    clean_(payload.to),
+    now_(), mileageId, clean_(payload.client), clean_(payload.site), clean_(payload.tripDate),
+    startOdo, endOdo, miles, clean_(payload.from), clean_(payload.to),
     clean_(payload.purpose || 'Business/job travel'),
-    clean_(payload.reimbursed || 'Unknown'),
-    clean_(payload.notes),
+    clean_(payload.reimbursed || 'Unknown'), clean_(payload.notes),
     clean_(payload.syncSource || 'Online')
   ];
 
@@ -331,31 +714,36 @@ function saveReceipt(payload) {
   const receiptId = payload.receiptId || makeId_('RCPT');
   let fileUrl = clean_(payload.fileUrl);
 
-  if (payload.file && payload.file.base64Data) {
-    const file = saveBase64File_(payload.file, APP.receiptFolderName, receiptId);
-    fileUrl = file.getUrl();
+  const savedFiles = saveReceiptProofFiles_(payload, receiptId);
+  if (savedFiles.length) {
+    fileUrl = savedFiles.map(function(file) { return file.getUrl(); }).join('\n');
   }
 
   const row = [
-    now_(),
-    receiptId,
-    clean_(payload.client),
-    clean_(payload.site),
-    clean_(payload.receiptDate),
-    clean_(payload.vendor),
-    toNumber_(payload.amount),
-    clean_(payload.category),
-    clean_(payload.reimbursable || 'Unknown'),
-    clean_(payload.paidBy),
-    clean_(payload.notes),
-    fileUrl,
-    clean_(payload.aiStatus || 'Manual entry'),
-    clean_(payload.syncSource || 'Online')
+    now_(), receiptId, clean_(payload.client), clean_(payload.site), clean_(payload.receiptDate),
+    clean_(payload.vendor), toNumber_(payload.amount), clean_(payload.category),
+    clean_(payload.reimbursable || 'Unknown'), '', clean_(payload.notes),
+    fileUrl, clean_(payload.aiStatus || 'Manual entry'), clean_(payload.syncSource || 'Online'),
+    '', '', '', '', '',
+    clean_(payload.invoiceNumber), toNumber_(payload.subtotal), toNumber_(payload.salesTax),
+    normalizeReceiptPaymentMethod_(payload.paymentMethod), clean_(payload.cardLast4).replace(/\D/g, '').slice(-4)
   ];
 
   appendRow_(APP.tabs.receipts, row);
   audit_('SAVE_RECEIPT', receiptId);
   return { ok: true, id: receiptId, fileUrl: fileUrl, message: 'Receipt saved.' };
+}
+
+function saveReceiptProofFiles_(payload, receiptId) {
+  let files = Array.isArray(payload.files) ? payload.files : [];
+  if (!files.length && payload.file) files = [payload.file];
+  files = files.filter(function(filePayload) {
+    return filePayload && filePayload.base64Data;
+  });
+  return files.map(function(filePayload, index) {
+    const suffix = files.length > 1 ? '-' + (index + 1) : '';
+    return saveBase64File_(filePayload, APP.receiptFolderName, receiptId + suffix);
+  });
 }
 
 function saveNotePhoto(payload) {
@@ -371,16 +759,9 @@ function saveNotePhoto(payload) {
   }
 
   const row = [
-    now_(),
-    noteId,
-    clean_(payload.client),
-    clean_(payload.site),
-    clean_(payload.noteDate),
-    clean_(payload.type || 'Note'),
-    clean_(payload.note),
-    fileUrl,
-    clean_(payload.status || 'Open'),
-    clean_(payload.syncSource || 'Online')
+    now_(), noteId, clean_(payload.client), clean_(payload.site), clean_(payload.noteDate),
+    clean_(payload.type || 'Note'), clean_(payload.note), fileUrl,
+    clean_(payload.status || 'Open'), clean_(payload.syncSource || 'Online')
   ];
 
   appendRow_(APP.tabs.notes, row);
@@ -394,13 +775,8 @@ function saveTaxNote(payload) {
 
   const taxEventId = payload.taxEventId || makeId_('TAX');
   const row = [
-    now_(),
-    taxEventId,
-    clean_(payload.eventDate),
-    clean_(payload.type || 'Tax Review'),
-    toNumber_(payload.amount),
-    clean_(payload.notes),
-    clean_(payload.status || 'Open')
+    now_(), taxEventId, clean_(payload.eventDate), clean_(payload.type || 'Tax Review'),
+    toNumber_(payload.amount), clean_(payload.notes), clean_(payload.status || 'Open')
   ];
 
   appendRow_(APP.tabs.tax, row);
@@ -434,13 +810,121 @@ function syncQueuedItems(items) {
   return { ok: true, results: results };
 }
 
+function updateLogbookEntry(payload) {
+  setupSpreadsheet_();
+  payload = payload || {};
+
+  const context = getLogbookRowContext_(payload.type, payload.id);
+  const updates = payload.updates || {};
+  const config = context.config;
+  const numberFields = config.numberFields || [];
+  let changed = 0;
+
+  Object.keys(config.fields).forEach(function(key) {
+    if (!Object.prototype.hasOwnProperty.call(updates, key)) return;
+    const header = config.fields[key];
+    const column = context.headerMap[header];
+    if (!column) return;
+    const value = numberFields.indexOf(key) !== -1 ? toNumber_(updates[key]) : clean_(updates[key]);
+    context.sheet.getRange(context.rowNumber, column).setValue(value);
+    changed += 1;
+  });
+
+  if (!changed) throw new Error('No editable fields were supplied.');
+
+  setRowMetadata_(context, {
+    'Updated At': now_(),
+    'Updated Source': clean_(payload.source || 'Logbook controls')
+  });
+
+  audit_('UPDATE_LOGBOOK_ENTRY', context.type + ':' + context.id);
+  return { ok: true, id: context.id, type: context.type, message: 'Logbook entry updated.' };
+}
+
+function softDeleteLogbookEntry(payload) {
+  setupSpreadsheet_();
+  payload = payload || {};
+
+  const context = getLogbookRowContext_(payload.type, payload.id);
+  const timestamp = now_();
+  setRowMetadata_(context, {
+    Deleted: 'Yes',
+    'Deleted At': timestamp,
+    'Delete Reason': clean_(payload.reason || 'Deleted from Logbook'),
+    'Updated At': timestamp,
+    'Updated Source': clean_(payload.source || 'Logbook controls')
+  });
+
+  audit_('SOFT_DELETE_LOGBOOK_ENTRY', context.type + ':' + context.id);
+  return { ok: true, id: context.id, type: context.type, message: 'Logbook entry hidden and recoverable.' };
+}
+
+function restoreLogbookEntry(payload) {
+  setupSpreadsheet_();
+  payload = payload || {};
+
+  const context = getLogbookRowContext_(payload.type, payload.id);
+  setRowMetadata_(context, {
+    Deleted: '',
+    'Deleted At': '',
+    'Delete Reason': '',
+    'Updated At': now_(),
+    'Updated Source': clean_(payload.source || 'Logbook restore')
+  });
+
+  audit_('RESTORE_LOGBOOK_ENTRY', context.type + ':' + context.id);
+  return { ok: true, id: context.id, type: context.type, message: 'Logbook entry restored.' };
+}
+
+function getLogbookRowContext_(type, id) {
+  type = clean_(type).toLowerCase();
+  id = clean_(id);
+  const config = LOGBOOK_ENTRY_TYPES[type];
+  if (!config) throw new Error('Unsupported logbook entry type.');
+  if (!id) throw new Error('Record ID is required.');
+
+  const sheet = getSs_().getSheetByName(config.tabName);
+  if (!sheet) throw new Error('Source sheet not found.');
+
+  const values = sheet.getDataRange().getValues();
+  if (!values.length) throw new Error('Source sheet is empty.');
+
+  const headers = values[0].map(function(value) { return clean_(value); });
+  const headerMap = {};
+  headers.forEach(function(header, index) {
+    if (header) headerMap[header] = index + 1;
+  });
+
+  const idColumn = headerMap[config.idHeader];
+  if (!idColumn) throw new Error('Record ID column not found.');
+
+  let rowNumber = 0;
+  for (let index = 1; index < values.length; index += 1) {
+    if (clean_(values[index][idColumn - 1]) === id) {
+      rowNumber = index + 1;
+      break;
+    }
+  }
+
+  if (!rowNumber) throw new Error('Record not found.');
+  return { type: type, id: id, config: config, sheet: sheet, rowNumber: rowNumber, headerMap: headerMap };
+}
+
+function setRowMetadata_(context, valuesByHeader) {
+  Object.keys(valuesByHeader).forEach(function(header) {
+    const column = context.headerMap[header];
+    if (!column) throw new Error('Required metadata column not found: ' + header);
+    context.sheet.getRange(context.rowNumber, column).setValue(valuesByHeader[header]);
+  });
+}
+
 function getWeeklyReview() {
   setupSpreadsheet_();
 
   const ss = getSs_();
-  const work = readRows_(ss.getSheetByName(APP.tabs.workLog));
-  const receipts = readRows_(ss.getSheetByName(APP.tabs.receipts));
-  const mileage = readRows_(ss.getSheetByName(APP.tabs.mileage));
+  const work = readRows_(ss.getSheetByName(APP.tabs.workLog)).filter(notDeletedRow_);
+  const receipts = readRows_(ss.getSheetByName(APP.tabs.receipts)).filter(notDeletedRow_);
+  const mileage = readRows_(ss.getSheetByName(APP.tabs.mileage)).filter(notDeletedRow_);
 
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -448,11 +932,9 @@ function getWeeklyReview() {
   const recentWork = work.filter(function(row) {
     return dateInRange_(row['Work Date'] || row.Timestamp, sevenDaysAgo);
   });
-
   const recentReceipts = receipts.filter(function(row) {
     return dateInRange_(row['Receipt Date'] || row.Timestamp, sevenDaysAgo);
   });
-
   const recentMileage = mileage.filter(function(row) {
     return dateInRange_(row['Trip Date'] || row.Timestamp, sevenDaysAgo);
   });
@@ -476,7 +958,6 @@ function getWeeklyReview() {
   };
 }
 
-
 function getLogbook(limit) {
   setupSpreadsheet_();
   limit = Math.max(1, Math.min(50, Number(limit) || 25));
@@ -493,9 +974,15 @@ function getRecentRows_(tabName, limit, mapper) {
   const sheet = getSs_().getSheetByName(tabName);
   return readRows_(sheet)
     .filter(rowHasContent_)
+    .filter(notDeletedRow_)
     .reverse()
     .slice(0, limit)
     .map(mapper);
+}
+
+function notDeletedRow_(row) {
+  const value = clean_(row && row.Deleted).toUpperCase();
+  return value !== 'YES' && value !== 'TRUE' && value !== '1';
 }
 
 function rowHasContent_(row) {
@@ -507,76 +994,46 @@ function rowHasContent_(row) {
 
 function mapWorkLogForApi_(row) {
   return {
-    type: 'work',
-    id: apiValue_(row['Entry ID']),
-    timestamp: apiValue_(row.Timestamp),
+    type: 'work', id: apiValue_(row['Entry ID']), timestamp: apiValue_(row.Timestamp),
     title: apiValue_(row['Project/Site'] || row.Client || 'Work Log'),
-    client: apiValue_(row.Client),
-    site: apiValue_(row['Project/Site']),
-    date: apiValue_(row['Work Date']),
-    startTime: apiValue_(row['Start Time']),
-    endTime: apiValue_(row['End Time']),
-    hours: apiValue_(row.Hours),
-    status: apiValue_(row.Status),
-    workPerformed: apiValue_(row['Work Performed']),
-    notes: apiValue_(row.Notes),
-    miles: apiValue_(row.Miles),
-    billableDays: apiValue_(row['Billable Days']),
-    rate: apiValue_(row.Rate),
-    estimatedPay: apiValue_(row['Estimated Pay'])
+    client: apiValue_(row.Client), site: apiValue_(row['Project/Site']), date: apiValue_(row['Work Date']),
+    startTime: apiValue_(row['Start Time']), endTime: apiValue_(row['End Time']),
+    hours: apiValue_(row.Hours), status: apiValue_(row.Status),
+    workPerformed: apiValue_(row['Work Performed']), notes: apiValue_(row.Notes),
+    miles: apiValue_(row.Miles), billableDays: apiValue_(row['Billable Days']),
+    rate: apiValue_(row.Rate), estimatedPay: apiValue_(row['Estimated Pay'])
   };
 }
 
 function mapMileageForApi_(row) {
   return {
-    type: 'mileage',
-    id: apiValue_(row['Mileage ID']),
-    timestamp: apiValue_(row.Timestamp),
+    type: 'mileage', id: apiValue_(row['Mileage ID']), timestamp: apiValue_(row.Timestamp),
     title: apiValue_((row.From && row.To) ? row.From + ' → ' + row.To : (row['Project/Site'] || 'Mileage')),
-    client: apiValue_(row.Client),
-    site: apiValue_(row['Project/Site']),
-    date: apiValue_(row['Trip Date']),
-    miles: apiValue_(row.Miles),
-    from: apiValue_(row.From),
-    to: apiValue_(row.To),
-    purpose: apiValue_(row.Purpose),
-    reimbursed: apiValue_(row['Reimbursed?']),
-    notes: apiValue_(row.Notes)
+    client: apiValue_(row.Client), site: apiValue_(row['Project/Site']), date: apiValue_(row['Trip Date']),
+    miles: apiValue_(row.Miles), from: apiValue_(row.From), to: apiValue_(row.To),
+    purpose: apiValue_(row.Purpose), reimbursed: apiValue_(row['Reimbursed?']), notes: apiValue_(row.Notes)
   };
 }
 
 function mapReceiptForApi_(row) {
   return {
-    type: 'receipt',
-    id: apiValue_(row['Receipt ID']),
-    timestamp: apiValue_(row.Timestamp),
+    type: 'receipt', id: apiValue_(row['Receipt ID']), timestamp: apiValue_(row.Timestamp),
     title: apiValue_(row.Vendor || row.Category || 'Receipt'),
-    client: apiValue_(row.Client),
-    site: apiValue_(row['Project/Site']),
-    date: apiValue_(row['Receipt Date']),
-    vendor: apiValue_(row.Vendor),
-    amount: apiValue_(row.Amount),
-    category: apiValue_(row.Category),
-    reimbursable: apiValue_(row['Reimbursable?']),
-    paidBy: apiValue_(row['Paid By']),
-    notes: apiValue_(row.Notes),
-    fileUrl: apiValue_(row['File URL']),
-    aiStatus: apiValue_(row['AI Status'])
+    client: apiValue_(row.Client), site: apiValue_(row['Project/Site']), date: apiValue_(row['Receipt Date']),
+    vendor: apiValue_(row.Vendor), amount: apiValue_(row.Amount), category: apiValue_(row.Category),
+    reimbursable: apiValue_(row['Reimbursable?']), notes: apiValue_(row.Notes),
+    invoiceNumber: apiValue_(row['Receipt / Invoice Number']), subtotal: apiValue_(row.Subtotal),
+    salesTax: apiValue_(row['Sales Tax']), paymentMethod: apiValue_(row['Payment Method']),
+    cardLast4: apiValue_(row['Card Last 4']), fileUrl: apiValue_(row['File URL']), aiStatus: apiValue_(row['AI Status'])
   };
 }
 
 function mapNoteForApi_(row) {
   return {
-    type: 'note',
-    id: apiValue_(row['Note ID']),
-    timestamp: apiValue_(row.Timestamp),
-    title: apiValue_(row.Type || 'Note / Photo'),
-    client: apiValue_(row.Client),
-    site: apiValue_(row['Project/Site']),
-    date: apiValue_(row['Note Date']),
-    noteType: apiValue_(row.Type),
-    note: apiValue_(row.Note),
-    status: apiValue_(row.Status),
+    type: 'note', id: apiValue_(row['Note ID']), timestamp: apiValue_(row.Timestamp),
+    title: apiValue_(row.Type || 'Note / Photo'), client: apiValue_(row.Client),
+    site: apiValue_(row['Project/Site']), date: apiValue_(row['Note Date']),
+    noteType: apiValue_(row.Type), note: apiValue_(row.Note), status: apiValue_(row.Status),
     fileUrl: apiValue_(row['File URL'])
   };
 }
@@ -615,9 +1072,7 @@ function getSs_() {
   const props = PropertiesService.getScriptProperties();
   const savedId = props.getProperty('SPREADSHEET_ID');
 
-  if (savedId) {
-    return SpreadsheetApp.openById(savedId);
-  }
+  if (savedId) return SpreadsheetApp.openById(savedId);
 
   const active = SpreadsheetApp.getActiveSpreadsheet();
   if (active) {
@@ -634,8 +1089,8 @@ function ensureSheet_(ss, name, headers) {
   let sheet = ss.getSheetByName(name);
   if (!sheet) sheet = ss.insertSheet(name);
 
-  const existingLastColumn = Math.max(sheet.getLastColumn(), headers.length);
-  const firstRow = sheet.getRange(1, 1, 1, existingLastColumn).getValues()[0];
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const firstRow = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
   const hasHeaders = firstRow.some(function(value) { return value !== ''; });
 
   if (!hasHeaders) {
@@ -645,22 +1100,21 @@ function ensureSheet_(ss, name, headers) {
     return;
   }
 
-  // Safe schema upgrade: append missing headers at the end without rewriting old columns.
-  const existingHeaders = firstRow.map(function(value) { return clean_(value); }).filter(Boolean);
+  const existingHeaders = firstRow.map(function(value) { return clean_(value); });
   const missingHeaders = headers.filter(function(header) {
     return existingHeaders.indexOf(header) === -1;
   });
 
   if (missingHeaders.length) {
-    sheet.getRange(1, existingHeaders.length + 1, 1, missingHeaders.length).setValues([missingHeaders]);
-    sheet.autoResizeColumns(1, existingHeaders.length + missingHeaders.length);
+    const appendColumn = sheet.getLastColumn() + 1;
+    sheet.getRange(1, appendColumn, 1, missingHeaders.length).setValues([missingHeaders]);
+    sheet.autoResizeColumns(appendColumn, missingHeaders.length);
   }
 }
 
 function seedSettings_() {
   const sheet = getSs_().getSheetByName(APP.tabs.settings);
   const existing = readRows_(sheet).map(function(row) { return row.Setting; });
-
   const defaults = [
     ['appName', 'Bandito Taxito', 'Visible app name.'],
     ['defaultClientCompany', '', 'Optional default company/client to reduce phone typing.'],
