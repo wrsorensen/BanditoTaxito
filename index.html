@@ -1597,7 +1597,7 @@
       </div>
       <label>Receipt / Invoice Photo or PDF</label>
       <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment" onchange="handleReceiptFileChange()">
-      <div class="actions compact-actions" id="receiptAiActions">
+      <div class="actions compact-actions hidden" id="receiptAiActions">
         <button class="btn" id="receiptAiButton" type="button" onclick="generateReceiptAiDraft()">Generate AI Draft</button>
         <button class="btn secondary compact hidden" id="receiptAiDiscardButton" type="button" onclick="discardReceiptAiDraft()">Clear AI Draft</button>
       </div>
@@ -1612,10 +1612,6 @@
         </div>
         <div class="receipt-ai-grid" id="receiptAiDraftGrid"></div>
         <div class="receipt-ai-review hidden" id="receiptAiReview"></div>
-        <div class="actions compact-actions">
-          <button class="btn" type="button" onclick="applyReceiptAiDraft()">Apply Draft to Form</button>
-          <button class="btn secondary compact" type="button" onclick="discardReceiptAiDraft()">Discard</button>
-        </div>
       </div>
       <label>Vendor / Shop Name</label>
       <input id="receiptVendor" placeholder="Store, shop, restaurant, or provider">
@@ -1965,7 +1961,7 @@
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
-    const UI_VERSION = 'v0.3.4';
+    const UI_VERSION = 'v0.3.5';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -3376,7 +3372,7 @@
         manualButton.classList.toggle('active', normalized === 'manual');
         manualButton.setAttribute('aria-pressed', String(normalized === 'manual'));
       }
-      if (actions) actions.classList.toggle('hidden', normalized !== 'ai');
+      if (actions) actions.classList.add('hidden');
       if (panel && !receiptAiDraftData && !receiptAiRequestId) {
         panel.textContent = normalized === 'ai'
           ? 'AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.'
@@ -3475,9 +3471,9 @@
             receiptAiDraftData = data.draft;
             receiptAiDraftApplied = false;
             receiptAiRequestId = '';
-            setReceiptAiBusy(false, 'AI draft ready. Review it before applying.');
+            setReceiptAiBusy(false, 'AI draft filled the form. Review, edit if needed, then Confirm & Save.');
             renderReceiptAiDraft(data.draft);
-            toast('AI receipt draft ready.');
+            toast('AI filled the receipt form.');
             return;
           }
           if (state === 'error') {
@@ -3522,45 +3518,18 @@
     }
 
     function renderReceiptAiDraft(draft) {
-      const rows = [
-        ['Vendor / Shop', draft.vendor || 'Not found'],
-        ['Receipt / Invoice Date', draft.receiptDate || 'Not found'],
-        ['Receipt / Invoice #', draft.invoiceNumber || 'Not shown'],
-        ['Subtotal', draft.subtotal ? '$' + Number(draft.subtotal).toFixed(2) : 'Not shown'],
-        ['Sales Tax', draft.salesTax ? '$' + Number(draft.salesTax).toFixed(2) : 'Not shown'],
-        ['Total Amount', draft.totalAmount ? '$' + Number(draft.totalAmount).toFixed(2) : 'Not found'],
-        ['Payment Method', draft.paymentMethod || 'Unknown'],
-        ['Card Last 4', draft.cardLast4 || 'Not shown'],
-        ['Category', draft.category || 'Not found'],
-        ['Client', draft.client || 'Not found'],
-        ['Site / Project', draft.site || 'Not found'],
-        ['Reimbursable', draft.reimbursable || 'Unknown'],
-        ['Notes', draft.notes || 'No suggestion']
-      ];
-      const grid = document.getElementById('receiptAiDraftGrid');
-      grid.innerHTML = rows.map(function(row) {
-        return '<div class="receipt-ai-item"><span class="receipt-ai-label">' + escapeHtml(row[0]) + '</span><span class="receipt-ai-value">' + escapeHtml(row[1]) + '</span></div>';
-      }).join('');
-
-      document.getElementById('receiptAiConfidence').textContent = 'Confidence ' + (Number(draft.confidence) || 0) + '%';
-      const review = document.getElementById('receiptAiReview');
       const missing = Array.isArray(draft.missingFields) ? draft.missingFields : [];
-      const messages = [];
-      if (draft.needsCpaReview) messages.push('Needs CPA Review: ' + (draft.cpaReviewReason || 'AI marked this receipt for review.'));
-      if (missing.length) messages.push('Missing or uncertain: ' + missing.join(', ') + '.');
-      review.textContent = messages.join(' ');
-      review.classList.toggle('hidden', !messages.length);
-
-      document.getElementById('receiptAiDraft').classList.remove('hidden');
-      document.getElementById('receiptAiDiscardButton').classList.remove('hidden');
+      applyReceiptAiDraft(true);
       markReceiptAiMissingFields(missing);
     }
 
-    function applyReceiptAiDraft() {
+    function applyReceiptAiDraft(skipConfirm) {
       const draft = receiptAiDraftData;
       if (!draft) return;
-      const apply = confirm('Apply these AI suggestions to the receipt form? Review and edit every field before confirming the save.');
-      if (!apply) return;
+      if (!skipConfirm) {
+        const apply = confirm('Apply these AI suggestions to the receipt form? Review and edit every field before confirming the save.');
+        if (!apply) return;
+      }
 
       setReceiptValueFromDraft('receiptVendor', draft.vendor);
       setReceiptValueFromDraft('receiptDate', draft.receiptDate);
@@ -3582,11 +3551,21 @@
       }
 
       receiptAiDraftApplied = true;
-      document.getElementById('receiptAiPanel').textContent = draft.needsCpaReview
-        ? 'Draft applied. Review every field. This receipt is marked Needs CPA Review.'
-        : 'Draft applied. Review every field, then tap Confirm & Save.';
       reviewReceiptFields();
-      toast('AI draft applied. Review before saving.');
+      updateReceiptAiReviewPanel(draft);
+      if (!skipConfirm) toast('AI draft applied. Review before saving.');
+    }
+
+    function updateReceiptAiReviewPanel(draft) {
+      const panel = document.getElementById('receiptAiPanel');
+      if (!panel || !draft) return;
+      const confidence = Number(draft.confidence) || 0;
+      const missing = Array.isArray(draft.missingFields) ? draft.missingFields : [];
+      const messages = ['AI filled the form. Confidence ' + confidence + '%.'];
+      if (draft.needsCpaReview) messages.push('Needs CPA Review: ' + (draft.cpaReviewReason || 'AI marked this receipt for review.'));
+      if (missing.length) messages.push('Check: ' + missing.map(receiptMissingFieldLabel).join(', ') + '.');
+      messages.push('Edit anything wrong, then Confirm & Save.');
+      panel.textContent = messages.join(' ');
     }
 
     function setReceiptValueFromDraft(id, value) {
