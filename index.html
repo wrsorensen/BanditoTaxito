@@ -544,6 +544,51 @@
     .btn.danger { background: var(--red); }
     .btn.compact { min-height: 36px; padding: 8px 11px; font-size: 11px; }
 
+    .mode-toggle {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      margin: 8px 0 10px;
+      padding: 5px;
+      border: 1px solid rgba(212, 179, 125, 0.72);
+      border-radius: 999px;
+      background: rgba(255, 250, 240, 0.78);
+    }
+
+    .mode-toggle button {
+      min-height: 36px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .mode-toggle button.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 5px 12px rgba(112, 41, 30, 0.18);
+    }
+
+    .receipt-extra {
+      margin-top: 10px;
+      padding: 9px 10px;
+      border: 1px dashed var(--line);
+      border-radius: 13px;
+      background: rgba(255, 250, 240, 0.7);
+    }
+
+    .receipt-extra summary {
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .receipt-extra[open] summary { margin-bottom: 8px; }
+
     .review-list {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1544,14 +1589,19 @@
         <h2 class="section-title">Add Receipt</h2>
         <button class="home-btn" onclick="showView('homeView')">← Home</button>
       </div>
-      <p class="tiny">AI creates a draft only. Review and edit every field before confirming. The selected receipt photo is sent to Google Gemini only when you tap Generate AI Draft.</p>
+      <p class="tiny">AI creates a draft only. In AI Capture, a selected photo is sent to Google Gemini for reading. Use Manual when a receipt is too rough to read.</p>
+      <label>Receipt Mode</label>
+      <div class="mode-toggle" role="group" aria-label="Receipt entry mode">
+        <button id="receiptModeAi" type="button" onclick="setReceiptMode('ai')">AI Capture</button>
+        <button id="receiptModeManual" type="button" onclick="setReceiptMode('manual')">Manual</button>
+      </div>
       <label>Receipt / Invoice Photo or PDF</label>
       <input id="receiptFile" type="file" accept="image/*,application/pdf" capture="environment" onchange="handleReceiptFileChange()">
-      <div class="actions compact-actions">
+      <div class="actions compact-actions" id="receiptAiActions">
         <button class="btn" id="receiptAiButton" type="button" onclick="generateReceiptAiDraft()">Generate AI Draft</button>
         <button class="btn secondary compact hidden" id="receiptAiDiscardButton" type="button" onclick="discardReceiptAiDraft()">Clear AI Draft</button>
       </div>
-      <div class="mini-panel" id="receiptAiPanel" aria-live="polite">Choose a receipt photo, or continue with manual entry. PDF files can still be saved manually.</div>
+      <div class="mini-panel" id="receiptAiPanel" aria-live="polite">AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.</div>
       <div class="receipt-ai-draft hidden" id="receiptAiDraft">
         <div class="receipt-ai-head">
           <div>
@@ -1575,39 +1625,10 @@
           <input id="receiptDate" type="date">
         </div>
         <div>
-          <label>Receipt / Invoice #</label>
-          <input id="receiptInvoiceNumber" placeholder="If shown">
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>Subtotal</label>
-          <input id="receiptSubtotal" inputmode="decimal" placeholder="0.00">
-        </div>
-        <div>
-          <label>Sales Tax</label>
-          <input id="receiptSalesTax" inputmode="decimal" placeholder="0.00">
-        </div>
-      </div>
-      <div class="row">
-        <div>
           <label>Total Amount</label>
           <input id="receiptAmount" inputmode="decimal" placeholder="0.00">
         </div>
-        <div>
-          <label>Payment Method</label>
-          <select id="receiptPaymentMethod">
-            <option>Unknown</option>
-            <option>Card</option>
-            <option>Cash</option>
-            <option>Check</option>
-            <option>Bank / ACH</option>
-            <option>Other</option>
-          </select>
-        </div>
       </div>
-      <label>Last 4 of Card <span class="tiny">(if shown)</span></label>
-      <input id="receiptCardLast4" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Optional">
       <div class="row">
         <div>
           <label>Expense Category</label>
@@ -1630,6 +1651,38 @@
           </select>
         </div>
       </div>
+      <details class="receipt-extra" id="receiptMoreDetails">
+        <summary>More receipt details</summary>
+        <div class="row">
+          <div>
+            <label>Receipt / Invoice #</label>
+            <input id="receiptInvoiceNumber" placeholder="If shown">
+          </div>
+          <div>
+            <label>Payment Method</label>
+            <select id="receiptPaymentMethod">
+              <option>Unknown</option>
+              <option>Card</option>
+              <option>Cash</option>
+              <option>Check</option>
+              <option>Bank / ACH</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Subtotal</label>
+            <input id="receiptSubtotal" inputmode="decimal" placeholder="0.00">
+          </div>
+          <div>
+            <label>Sales Tax</label>
+            <input id="receiptSalesTax" inputmode="decimal" placeholder="0.00">
+          </div>
+        </div>
+        <label>Last 4 of Card <span class="tiny">(if shown)</span></label>
+        <input id="receiptCardLast4" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Optional">
+      </details>
       <label>Company / Site</label>
       <input id="receiptClient" list="clientList" placeholder="Client / company">
       <input id="receiptSite" placeholder="Site / project" style="margin-top:8px;">
@@ -1911,7 +1964,8 @@
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
-    const UI_VERSION = 'v0.3.3';
+    const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
+    const UI_VERSION = 'v0.3.4';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -1962,6 +2016,7 @@
       enableLogbookEntryControls();
       updateSettingsSummaries();
       setBanditoLoadingState();
+      applyReceiptMode(getReceiptMode(), false);
 
       apiGet('initialData')
         .then(function(data) {
@@ -2446,6 +2501,7 @@
 
       if (id === 'endWorkView') fillEndFromActiveSession();
       if (id === 'logbookView') refreshLogbook();
+      if (id === 'receiptView') applyReceiptMode(getReceiptMode(), false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -3295,33 +3351,81 @@
       return hours >= 0 ? hours : '';
     }
 
+    function getReceiptMode() {
+      const mode = localStorage.getItem(RECEIPT_MODE_KEY);
+      return mode === 'manual' ? 'manual' : 'ai';
+    }
+
+    function setReceiptMode(mode) {
+      const normalized = mode === 'manual' ? 'manual' : 'ai';
+      localStorage.setItem(RECEIPT_MODE_KEY, normalized);
+      applyReceiptMode(normalized, true);
+    }
+
+    function applyReceiptMode(mode, fromUser) {
+      const normalized = mode === 'manual' ? 'manual' : 'ai';
+      const aiButton = document.getElementById('receiptModeAi');
+      const manualButton = document.getElementById('receiptModeManual');
+      const actions = document.getElementById('receiptAiActions');
+      const panel = document.getElementById('receiptAiPanel');
+      if (aiButton) {
+        aiButton.classList.toggle('active', normalized === 'ai');
+        aiButton.setAttribute('aria-pressed', String(normalized === 'ai'));
+      }
+      if (manualButton) {
+        manualButton.classList.toggle('active', normalized === 'manual');
+        manualButton.setAttribute('aria-pressed', String(normalized === 'manual'));
+      }
+      if (actions) actions.classList.toggle('hidden', normalized !== 'ai');
+      if (panel && !receiptAiDraftData && !receiptAiRequestId) {
+        panel.textContent = normalized === 'ai'
+          ? 'AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.'
+          : 'Manual mode is ready. Add a photo or PDF if you want proof attached.';
+      }
+      if (normalized === 'manual') resetReceiptAiState(false);
+      if (fromUser) toast(normalized === 'ai' ? 'Receipt mode saved: AI Capture.' : 'Receipt mode saved: Manual.');
+    }
+
     function handleReceiptFileChange() {
       resetReceiptAiState(false);
       const fileInput = document.getElementById('receiptFile');
       const file = fileInput && fileInput.files && fileInput.files[0];
       const panel = document.getElementById('receiptAiPanel');
+      const mode = getReceiptMode();
+      applyReceiptMode(mode, false);
       if (!panel) return;
       if (!file) {
-        panel.textContent = 'Choose a receipt photo, or continue with manual entry. PDF files can still be saved manually.';
+        panel.textContent = mode === 'ai'
+          ? 'AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.'
+          : 'Manual mode is ready. Add a photo or PDF if you want proof attached.';
       } else if (!String(file.type || '').startsWith('image/')) {
-        panel.textContent = 'AI draft currently supports receipt photos only. This file can still be saved manually.';
+        panel.textContent = mode === 'ai'
+          ? 'AI draft currently supports receipt photos only. This file can still be saved manually.'
+          : 'File attached for manual receipt entry.';
       } else {
-        panel.textContent = 'Photo selected. Tap Generate AI Draft, or fill the receipt manually.';
+        panel.textContent = mode === 'ai'
+          ? 'Photo selected. Starting AI draft...'
+          : 'Photo attached for manual receipt entry.';
+        if (mode === 'ai') generateReceiptAiDraft();
       }
     }
 
     function generateReceiptAiDraft() {
       const fileInput = document.getElementById('receiptFile');
       const file = fileInput && fileInput.files && fileInput.files[0];
+      const panel = document.getElementById('receiptAiPanel');
       if (!navigator.onLine) {
+        if (panel) panel.textContent = 'AI receipt reading needs internet. Your photo is still attached; continue manually or retry later.';
         toast('AI receipt reading requires an internet connection. Manual entry still works.');
         return;
       }
       if (!file) {
+        if (panel) panel.textContent = 'Choose a receipt photo first, or switch to Manual.';
         toast('Choose a receipt photo first.');
         return;
       }
       if (!String(file.type || '').startsWith('image/')) {
+        if (panel) panel.textContent = 'AI draft currently supports receipt photos only. This file can still be saved manually.';
         toast('AI draft currently supports receipt photos only. Save this file manually.');
         return;
       }
@@ -3504,7 +3608,9 @@
       const hadDraft = !!receiptAiDraftData || !!receiptAiRequestId;
       resetReceiptAiState(false);
       const panel = document.getElementById('receiptAiPanel');
-      if (panel) panel.textContent = 'AI draft cleared. Continue manually or generate a new draft.';
+      if (panel) panel.textContent = getReceiptMode() === 'ai'
+        ? 'AI draft cleared. Choose another photo or generate a new draft.'
+        : 'AI draft cleared. Manual mode is ready.';
       if (hadDraft) toast('AI draft cleared.');
     }
 
@@ -3526,7 +3632,9 @@
       markReceiptAiMissingFields([]);
       if (resetPanel) {
         const panel = document.getElementById('receiptAiPanel');
-        if (panel) panel.textContent = 'Choose a receipt photo, or continue with manual entry. PDF files can still be saved manually.';
+        if (panel) panel.textContent = getReceiptMode() === 'ai'
+          ? 'AI Capture is ready. Choose a photo to generate a draft, or switch to Manual.'
+          : 'Manual mode is ready. Add a photo or PDF if you want proof attached.';
       }
     }
 
