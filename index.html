@@ -1961,7 +1961,8 @@
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
-    const UI_VERSION = 'v0.3.5';
+    const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
+    const UI_VERSION = 'v0.3.6';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -2497,7 +2498,10 @@
 
       if (id === 'endWorkView') fillEndFromActiveSession();
       if (id === 'logbookView') refreshLogbook();
-      if (id === 'receiptView') applyReceiptMode(getReceiptMode(), false);
+      if (id === 'receiptView') {
+        applyReceiptMode(getReceiptMode(), false);
+        applyReceiptContextDefaults();
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2590,6 +2594,7 @@
 
       readOptionalFile(fileInput, function(filePayload) {
         if (filePayload) payload.file = filePayload;
+        saveLastReceiptContext(payload.client, payload.site);
         submitOrQueue('receipt', payload, 'Receipt sent.');
         clearReceiptForm();
         showView('homeView');
@@ -3350,6 +3355,37 @@
     function getReceiptMode() {
       const mode = localStorage.getItem(RECEIPT_MODE_KEY);
       return mode === 'manual' ? 'manual' : 'ai';
+    }
+
+    function getLastReceiptContext() {
+      try {
+        return JSON.parse(localStorage.getItem(RECEIPT_CONTEXT_KEY) || 'null') || {};
+      } catch (err) {
+        return {};
+      }
+    }
+
+    function saveLastReceiptContext(client, site) {
+      const context = {
+        client: String(client || '').trim(),
+        site: String(site || '').trim()
+      };
+      if (!context.client && !context.site) return;
+      localStorage.setItem(RECEIPT_CONTEXT_KEY, JSON.stringify(context));
+    }
+
+    function applyReceiptContextDefaults() {
+      const clientEl = document.getElementById('receiptClient');
+      const siteEl = document.getElementById('receiptSite');
+      if (!clientEl || !siteEl) return;
+      if (clientEl.value || siteEl.value) return;
+
+      const active = getActiveSession() || {};
+      const remembered = getLastReceiptContext();
+      const client = active.client || remembered.client || '';
+      const site = active.site || remembered.site || '';
+      if (client) clientEl.value = client;
+      if (site) siteEl.value = site;
     }
 
     function setReceiptMode(mode) {
