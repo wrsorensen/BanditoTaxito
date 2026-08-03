@@ -1,11 +1,11 @@
 /**
- * v0.3.7 — Multi-image Receipt Proof API
+ * v0.3.8 — CPA Report Builder API
  * Google Apps Script backend for a simple consultant work tracker.
  * Source of truth: Google Sheets.
  */
 
 const APP = {
-  version: 'v0.3.7',
+  version: 'v0.3.8',
   spreadsheetName: 'Bandito Taxito Backend',
   receiptFolderName: 'Bandito Taxito Receipt Uploads',
   photoFolderName: 'Bandito Taxito Photo Uploads',
@@ -222,6 +222,10 @@ function handleApiAction_(action, payload, request) {
 
   if (action === 'taxSummary' || action === 'getTaxSummary') {
     return { ok: true, taxSummary: getTaxSummary() };
+  }
+
+  if (action === 'reportData' || action === 'getReportData') {
+    return { ok: true, report: getReportData(payload, request) };
   }
 
   if (action === 'updateLogbookEntry') return updateLogbookEntry(payload);
@@ -968,6 +972,210 @@ function getLogbook(limit) {
     receipts: getRecentRows_(APP.tabs.receipts, limit, mapReceiptForApi_),
     notes: getRecentRows_(APP.tabs.notes, limit, mapNoteForApi_)
   };
+}
+
+function getReportData(payload, request) {
+  setupSpreadsheet_();
+  payload = payload || {};
+  const params = (request && request.params) || {};
+  const startDate = clean_(payload.startDate || params.startDate);
+  const endDate = clean_(payload.endDate || params.endDate);
+
+  const ss = getSs_();
+  const work = readRows_(ss.getSheetByName(APP.tabs.workLog))
+    .filter(rowHasContent_)
+    .filter(notDeletedRow_)
+    .filter(function(row) { return rowInReportRange_(row['Work Date'] || row.Timestamp, startDate, endDate); })
+    .map(mapWorkLogForApi_);
+  const receipts = readRows_(ss.getSheetByName(APP.tabs.receipts))
+    .filter(rowHasContent_)
+    .filter(notDeletedRow_)
+    .filter(function(row) { return rowInReportRange_(row['Receipt Date'] || row.Timestamp, startDate, endDate); })
+    .map(mapReceiptForApi_);
+  const mileage = readRows_(ss.getSheetByName(APP.tabs.mileage))
+    .filter(rowHasContent_)
+    .filter(notDeletedRow_)
+    .filter(function(row) { return rowInReportRange_(row['Trip Date'] || row.Timestamp, startDate, endDate); })
+    .map(mapMileageForApi_);
+  const taxNotes = readRows_(ss.getSheetByName(APP.tabs.tax))
+    .filter(rowHasContent_)
+    .filter(notDeletedRow_)
+    .filter(function(row) { return rowInReportRange_(row['Event Date'] || row.Timestamp, startDate, endDate); })
+    .map(mapTaxNoteForApi_);
+
+  return {
+    generatedAt: now_(),
+    range: { startDate: startDate, endDate: endDate },
+    summary: buildReportSummary_(work, receipts, mileage),
+    expenseByCategory: buildExpenseByCategory_(receipts),
+    reimbursements: buildReimbursementSummary_(receipts),
+    reviewFlags: buildReportReviewFlags_(work, receipts, mileage),
+    missingInfo: buildReportMissingInfo_(work, receipts, mileage),
+    work: sortReportRows_(work),
+    receipts: sortReportRows_(receipts),
+    mileage: sortReportRows_(mileage),
+    taxNotes: sortReportRows_(taxNotes)
+  };
+}
+
+function rowInReportRange_(value, startDate, endDate) {
+  const key = dateKey_(value);
+  if (!key) return false;
+  if (startDate && key < startDate) return false;
+  if (endDate && key > endDate) return false;
+  return true;
+}
+
+function dateKey_(value) {
+  if (!value) return '';
+  if (value instanceof Date) return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const raw = clean_(value);
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10);
+  const date = new Date(raw);
+  if (isNaN(date.getTime())) return '';
+  return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+}
+
+function mapTaxNoteForApi_(row) {
+  return {
+    type: 'tax', id: apiValue_(row['Tax Event ID']), timestamp: apiValue_(row.Timestamp),
+    title: apiValue_(row.Type || 'Tax Note'), date: apiValue_(row['Event Date']),
+    taxType: apiValue_(row.Type), amount: apiValue_(row.Amount), notes: apiValue_(row.Notes),
+    status: apiValue_(row.Status)
+  };
+}
+
+function sortReportRows_(rows) {
+  return (rows || []).sort(function(a, b) {
+    return String(a.date || a.timestamp || '').localeCompare(String(b.date || b.timestamp || ''));
+  });
+}
+
+function buildReportSummary_(work, receipts, mileage) {
+  const workTotals = (work || []).reduce(function(total, row) {
+    total.hours += toReportNumber_(row.hours);
+    total.billableDays += toReportNumber_(row.billableDays);
+    total.estimatedPay += toReportNumber_(row.estimatedPay);
+    return total;
+  }, { hours: 0, billableDays: 0, estimatedPay: 0 });
+  const expenseTotal = (receipts || []).reduce(function(total, row) {
+    return total + toReportNumber_(row.amount);
+  }, 0);
+  const miles = (mileage || []).reduce(function(total, row) {
+    return total + toReportNumber_(row.miles);
+  }, 0);
+
+  return {
+    workCount: (work || []).length,
+    receiptCount: (receipts || []).length,
+    mileageCount: (mileage || []).length,
+    hours: roundReportNumber_(workTotals.hours),
+    billableDays: roundReportNumber_(workTotals.billableDays),
+    estimatedPay: roundReportMoney_(workTotals.estimatedPay),
+    expenseTotal: roundReportMoney_(expenseTotal),
+    businessMiles: roundReportNumber_(miles)
+  };
+}
+
+function buildExpenseByCategory_(receipts) {
+  const totals = {};
+  (receipts || []).forEach(function(row) {
+    const category = clean_(row.category || 'Other') || 'Other';
+    totals[category] = (totals[category] || 0) + toReportNumber_(row.amount);
+  });
+  return Object.keys(totals).sort().map(function(category) {
+    return { category: category, total: roundReportMoney_(totals[category]) };
+  });
+}
+
+function buildReimbursementSummary_(receipts) {
+  const summary = { Yes: 0, No: 0, Unknown: 0 };
+  (receipts || []).forEach(function(row) {
+    const key = summary.hasOwnProperty(row.reimbursable) ? row.reimbursable : 'Unknown';
+    summary[key] += toReportNumber_(row.amount);
+  });
+  return {
+    yes: roundReportMoney_(summary.Yes),
+    no: roundReportMoney_(summary.No),
+    unknown: roundReportMoney_(summary.Unknown)
+  };
+}
+
+function buildReportReviewFlags_(work, receipts, mileage) {
+  const flags = [];
+  (receipts || []).forEach(function(row) {
+    const category = clean_(row.category);
+    const haystack = [row.vendor, row.category, row.notes, row.aiStatus].join(' ').toLowerCase();
+    if (category === 'Other') addReportFlag_(flags, row, 'Receipt', 'Category is Other.');
+    if (category === 'Meals') addReportFlag_(flags, row, 'Receipt', 'Meals may need CPA review.');
+    if (clean_(row.reimbursable) === 'Unknown') addReportFlag_(flags, row, 'Receipt', 'Reimbursement status is Unknown.');
+    if (haystack.indexOf('mixed') !== -1 || haystack.indexOf('personal') !== -1 || haystack.indexOf('split') !== -1) addReportFlag_(flags, row, 'Receipt', 'Possible mixed business/personal expense.');
+    if (haystack.indexOf('fuel') !== -1 || haystack.indexOf('vehicle') !== -1 || haystack.indexOf('tire') !== -1 || haystack.indexOf('maintenance') !== -1 || haystack.indexOf('repair') !== -1) addReportFlag_(flags, row, 'Vehicle', 'Vehicle-related expense.');
+    if (haystack.indexOf('tool') !== -1 || haystack.indexOf('equipment') !== -1 || haystack.indexOf('computer') !== -1) addReportFlag_(flags, row, 'Receipt', 'Tool/equipment purchase may need classification.');
+    if (clean_(row.aiStatus).toLowerCase().indexOf('needs cpa review') !== -1) addReportFlag_(flags, row, 'Receipt', row.aiStatus);
+  });
+  (mileage || []).forEach(function(row) {
+    if (!row.purpose) addReportFlag_(flags, row, 'Mileage', 'Missing trip purpose.');
+    if (!row.miles) addReportFlag_(flags, row, 'Mileage', 'Missing calculated miles.');
+  });
+  (work || []).forEach(function(row) {
+    if (!row.endTime) addReportFlag_(flags, row, 'Work', 'Missing end time.');
+    if (!row.workPerformed && !row.notes) addReportFlag_(flags, row, 'Work', 'Missing work description/notes.');
+  });
+  return flags;
+}
+
+function buildReportMissingInfo_(work, receipts, mileage) {
+  const missing = [];
+  (receipts || []).forEach(function(row) {
+    if (!row.date) addReportMissing_(missing, row, 'Receipt date');
+    if (!row.vendor) addReportMissing_(missing, row, 'Receipt vendor');
+    if (!row.amount) addReportMissing_(missing, row, 'Receipt amount');
+    if (!row.fileUrl) addReportMissing_(missing, row, 'Receipt proof file');
+    if (row.reimbursable === 'Unknown') addReportMissing_(missing, row, 'Reimbursement status');
+  });
+  (mileage || []).forEach(function(row) {
+    if (!row.date) addReportMissing_(missing, row, 'Mileage date');
+    if (!row.miles) addReportMissing_(missing, row, 'Mileage miles');
+    if (!row.purpose) addReportMissing_(missing, row, 'Mileage purpose');
+  });
+  (work || []).forEach(function(row) {
+    if (!row.endTime) addReportMissing_(missing, row, 'Work end time');
+    if (!row.workPerformed && !row.notes) addReportMissing_(missing, row, 'Work performed/notes');
+  });
+  return missing;
+}
+
+function addReportFlag_(flags, row, bucket, reason) {
+  flags.push({
+    bucket: bucket,
+    id: row.id || '',
+    date: row.date || row.timestamp || '',
+    title: row.title || row.vendor || row.site || '',
+    reason: clean_(reason)
+  });
+}
+
+function addReportMissing_(missing, row, field) {
+  missing.push({
+    id: row.id || '',
+    date: row.date || row.timestamp || '',
+    title: row.title || row.vendor || row.site || '',
+    field: field
+  });
+}
+
+function toReportNumber_(value) {
+  const number = toNumber_(value);
+  return number === '' ? 0 : Number(number);
+}
+
+function roundReportMoney_(value) {
+  return Math.round((Number(value) || 0) * 100) / 100;
+}
+
+function roundReportNumber_(value) {
+  return Math.round((Number(value) || 0) * 100) / 100;
 }
 
 function getRecentRows_(tabName, limit, mapper) {

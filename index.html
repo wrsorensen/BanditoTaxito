@@ -1266,6 +1266,141 @@
       line-height: 1.45;
     }
 
+    .report-options {
+      display: grid;
+      gap: 8px;
+      margin: 8px 0 12px;
+    }
+
+    .report-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid rgba(113, 75, 44, 0.18);
+      border-radius: 10px;
+      background: rgba(255, 252, 246, 0.72);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .report-option input { width: auto; margin: 0; }
+
+    .report-preview {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid rgba(113, 75, 44, 0.18);
+      border-radius: 12px;
+      background: rgba(255, 252, 246, 0.78);
+    }
+
+    .report-title {
+      margin: 0 0 3px;
+      font-size: 21px;
+      line-height: 1.15;
+    }
+
+    .report-subtitle {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .report-section {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(113, 75, 44, 0.16);
+    }
+
+    .report-section h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .report-stat {
+      padding: 10px;
+      border-radius: 10px;
+      background: white;
+      border: 1px solid rgba(113, 75, 44, 0.12);
+    }
+
+    .report-stat strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .report-stat span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      background: white;
+    }
+
+    .report-table th,
+    .report-table td {
+      padding: 7px 6px;
+      border-bottom: 1px solid rgba(113, 75, 44, 0.14);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .report-table th {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .report-empty {
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.72);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    @media print {
+      body { background: white !important; }
+      .brand-header,
+      #homeView,
+      .home-btn,
+      .actions,
+      .settings-overlay,
+      .toast,
+      #reportView > .section-head,
+      #reportView > .tiny,
+      #reportView > label,
+      #reportView > input,
+      #reportView > select,
+      #reportView > .row,
+      #reportView > .report-options { display: none !important; }
+      .app { max-width: none; padding: 0; }
+      .card, .report-preview {
+        border: 0;
+        box-shadow: none;
+        background: white;
+        padding: 0;
+      }
+      .hidden { display: none !important; }
+      #reportView, #reportPreview { display: block !important; }
+      .report-section { break-inside: avoid; }
+    }
+
     .toast {
       position: fixed;
       left: 12px;
@@ -1306,7 +1441,7 @@
       .tool-helper { font-size: 11.5px; line-height: 1.2; }
       .review-toggle { min-height: 80px; }
       .logbook-edit-grid { grid-template-columns: 1fr; }
-      .row, .receipt-ai-grid { grid-template-columns: 1fr; }
+      .row, .receipt-ai-grid, .report-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 350px) {
@@ -1375,6 +1510,10 @@
             <button class="tool-btn" data-dashboard-tool="taxHelper" onclick="showView('taxView')">
               <span class="ui-icon tool-icon icon-tax" aria-hidden="true"></span>
               <span class="tool-copy"><span class="tool-label">Tax Helper</span><span class="tool-helper">Hunt write-offs.</span></span>
+            </button>
+            <button class="tool-btn" data-dashboard-tool="reports" onclick="showView('reportView')">
+              <span class="ui-icon tool-icon icon-tax" aria-hidden="true"></span>
+              <span class="tool-copy"><span class="tool-label">Reports</span><span class="tool-helper">Build CPA packet.</span></span>
             </button>
           </div>
         </section>
@@ -1792,6 +1931,45 @@
       </div>
     </section>
 
+    <section id="reportView" class="card hidden">
+      <div class="section-head">
+        <h2 class="section-title">Reports</h2>
+        <button class="home-btn" onclick="showView('homeView')">â† Home</button>
+      </div>
+      <p class="tiny">Build a CPA/tax-prep packet from saved records. Review before sending to a CPA.</p>
+      <label>Report Type</label>
+      <select id="reportType">
+        <option>CPA / Tax Prep</option>
+      </select>
+      <div class="row">
+        <div>
+          <label>Start Date</label>
+          <input id="reportStartDate" type="date">
+        </div>
+        <div>
+          <label>End Date</label>
+          <input id="reportEndDate" type="date">
+        </div>
+      </div>
+      <label>Include Buckets</label>
+      <div class="report-options">
+        <label class="report-option"><span>Summary</span><input type="checkbox" data-report-bucket="summary" checked></label>
+        <label class="report-option"><span>Work / Income</span><input type="checkbox" data-report-bucket="work"></label>
+        <label class="report-option"><span>Receipts / Expenses</span><input type="checkbox" data-report-bucket="receipts" checked></label>
+        <label class="report-option"><span>Mileage</span><input type="checkbox" data-report-bucket="mileage" checked></label>
+        <label class="report-option"><span>Vehicle</span><input type="checkbox" data-report-bucket="vehicle"></label>
+        <label class="report-option"><span>Reimbursements</span><input type="checkbox" data-report-bucket="reimbursements" checked></label>
+        <label class="report-option"><span>CPA Review Flags</span><input type="checkbox" data-report-bucket="review" checked></label>
+        <label class="report-option"><span>Missing Info Checklist</span><input type="checkbox" data-report-bucket="missing" checked></label>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button" onclick="generateReport()">Preview Report</button>
+        <button class="btn secondary" type="button" onclick="printReport()">Print / Save PDF</button>
+        <button class="btn secondary" type="button" onclick="showView('homeView')">Cancel</button>
+      </div>
+      <div class="report-preview hidden" id="reportPreview"></div>
+    </section>
+
     <datalist id="clientList"></datalist>
   </div>
 
@@ -1841,6 +2019,7 @@
           <label class="settings-option"><span>Mileage</span><input type="checkbox" data-dashboard-pref="mileage"></label>
           <label class="settings-option"><span>Note / Photo</span><input type="checkbox" data-dashboard-pref="notePhoto"></label>
           <label class="settings-option"><span>Tax Helper</span><input type="checkbox" data-dashboard-pref="taxHelper"></label>
+          <label class="settings-option"><span>Reports</span><input type="checkbox" data-dashboard-pref="reports"></label>
           <label class="settings-option"><span>Work Session</span><input type="checkbox" data-dashboard-pref="workSession"></label>
           <label class="settings-option"><span>Bandito Review</span><input type="checkbox" data-dashboard-pref="weeklyReview"></label>
         </div>
@@ -1962,7 +2141,7 @@
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.7';
+    const UI_VERSION = 'v0.3.8';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -1976,6 +2155,7 @@
       mileage: true,
       notePhoto: true,
       taxHelper: true,
+      reports: true,
       workSession: true,
       weeklyReview: true
     };
@@ -2049,10 +2229,11 @@
           callback: callbackName,
           _: Date.now()
         }));
+        const timeoutMs = action === 'reportData' ? 20000 : 12000;
         const timeout = window.setTimeout(function() {
           cleanup();
           reject(new Error('Backend timed out'));
-        }, 12000);
+        }, timeoutMs);
 
         function cleanup() {
           window.clearTimeout(timeout);
@@ -2491,7 +2672,7 @@
     }
 
     function showView(id) {
-      const views = ['homeView', 'startWorkView', 'endWorkView', 'receiptView', 'mileageView', 'noteView', 'taxView', 'logbookView'];
+      const views = ['homeView', 'startWorkView', 'endWorkView', 'receiptView', 'mileageView', 'noteView', 'taxView', 'reportView', 'logbookView'];
       views.forEach(function(viewId) {
         document.getElementById(viewId).classList.toggle('hidden', viewId !== id);
       });
@@ -2502,6 +2683,7 @@
         applyReceiptMode(getReceiptMode(), false);
         applyReceiptContextDefaults();
       }
+      if (id === 'reportView') setDefaultReportDates();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2814,6 +2996,210 @@
         return total + (Number(value) || 0);
       }, 0);
       renderBanditoReviewStatus(troubleCount);
+    }
+
+    function setDefaultReportDates() {
+      const start = document.getElementById('reportStartDate');
+      const end = document.getElementById('reportEndDate');
+      if (!start || !end) return;
+      const current = today();
+      if (!start.value) start.value = current.slice(0, 4) + '-01-01';
+      if (!end.value) end.value = current;
+    }
+
+    function selectedReportBuckets() {
+      return Array.from(document.querySelectorAll('[data-report-bucket]:checked')).map(function(input) {
+        return input.getAttribute('data-report-bucket');
+      });
+    }
+
+    function generateReport() {
+      setDefaultReportDates();
+      const preview = document.getElementById('reportPreview');
+      const buckets = selectedReportBuckets();
+      if (!buckets.length) {
+        toast('Select at least one report bucket.');
+        return Promise.resolve();
+      }
+      if (preview) {
+        preview.classList.remove('hidden');
+        preview.innerHTML = '<div class="report-empty">' + escapeHtml(randomLoadingLine()) + '</div>';
+      }
+      return apiGet('reportData', {
+        startDate: val('reportStartDate'),
+        endDate: val('reportEndDate')
+      })
+        .then(function(data) {
+          const report = (data && data.report) || {};
+          appState.report = report;
+          renderReport(report, buckets);
+          toast('Report preview ready.');
+        })
+        .catch(function(err) {
+          if (preview) preview.innerHTML = '<div class="report-empty">Could not load report data.</div>';
+          toast('Could not load report.');
+          console.error(err);
+        });
+    }
+
+    function printReport() {
+      const preview = document.getElementById('reportPreview');
+      if (!preview || preview.classList.contains('hidden') || !preview.innerHTML.trim()) {
+        generateReport().then(function() { window.print(); });
+        return;
+      }
+      window.print();
+    }
+
+    function renderReport(report, buckets) {
+      report = report || {};
+      buckets = buckets || [];
+      const preview = document.getElementById('reportPreview');
+      if (!preview) return;
+
+      const sections = [
+        '<h2 class="report-title">CPA / Tax Prep Report</h2>',
+        '<p class="report-subtitle">' + escapeHtml(reportRangeLabel(report.range)) + ' | Generated ' + escapeHtml(report.generatedAt || '') + '</p>'
+      ];
+      if (buckets.indexOf('summary') !== -1) sections.push(renderReportSummary(report.summary || {}));
+      if (buckets.indexOf('work') !== -1) sections.push(renderReportWork(report.work || []));
+      if (buckets.indexOf('receipts') !== -1) sections.push(renderReportReceipts(report));
+      if (buckets.indexOf('mileage') !== -1) sections.push(renderReportMileage(report.mileage || []));
+      if (buckets.indexOf('vehicle') !== -1) sections.push(renderReportVehicle(report.receipts || [], report.reviewFlags || []));
+      if (buckets.indexOf('reimbursements') !== -1) sections.push(renderReportReimbursements(report.reimbursements || {}, report.receipts || []));
+      if (buckets.indexOf('review') !== -1) sections.push(renderReportFlags(report.reviewFlags || []));
+      if (buckets.indexOf('missing') !== -1) sections.push(renderReportMissing(report.missingInfo || []));
+
+      preview.classList.remove('hidden');
+      preview.innerHTML = sections.join('');
+    }
+
+    function renderReportSummary(summary) {
+      const stats = [
+        ['Work logs', summary.workCount || 0],
+        ['Estimated pay', money(summary.estimatedPay)],
+        ['Receipts', summary.receiptCount || 0],
+        ['Expense total', money(summary.expenseTotal)],
+        ['Mileage logs', summary.mileageCount || 0],
+        ['Business miles', numberText(summary.businessMiles)],
+        ['Hours', numberText(summary.hours)],
+        ['Billable days', numberText(summary.billableDays)]
+      ];
+      return '<section class="report-section"><h3>Summary</h3><div class="report-grid">' + stats.map(function(stat) {
+        return '<div class="report-stat"><strong>' + escapeHtml(stat[1]) + '</strong><span>' + escapeHtml(stat[0]) + '</span></div>';
+      }).join('') + '</div></section>';
+    }
+
+    function renderReportWork(rows) {
+      return reportSection('Work / Income', rows, ['Date', 'Client', 'Site', 'Hours', 'Billable Days', 'Estimated Pay'], function(row) {
+        return [shortDate(row.date), row.client, row.site, numberText(row.hours), numberText(row.billableDays), money(row.estimatedPay)];
+      });
+    }
+
+    function renderReportReceipts(report) {
+      const categoryRows = (report.expenseByCategory || []).map(function(row) {
+        return [row.category, money(row.total)];
+      });
+      const categoryHtml = categoryRows.length
+        ? reportTable(['Category', 'Total'], categoryRows)
+        : '<div class="report-empty">No category totals for this range.</div>';
+      const receiptHtml = reportSection('Receipt Detail', report.receipts || [], ['Date', 'Vendor', 'Category', 'Amount', 'Reimbursable', 'Proof'], function(row) {
+        return [shortDate(row.date), row.vendor, row.category, money(row.amount), row.reimbursable, row.fileUrl ? 'Yes' : 'Missing'];
+      });
+      return '<section class="report-section"><h3>Receipts / Expenses</h3>' + categoryHtml + '</section>' + receiptHtml;
+    }
+
+    function renderReportMileage(rows) {
+      return reportSection('Mileage', rows, ['Date', 'Client', 'Site', 'Miles', 'Purpose', 'Reimbursed'], function(row) {
+        return [shortDate(row.date), row.client, row.site, numberText(row.miles), row.purpose, row.reimbursed];
+      });
+    }
+
+    function renderReportVehicle(receipts, flags) {
+      const ids = {};
+      (flags || []).filter(function(flag) { return flag.bucket === 'Vehicle'; }).forEach(function(flag) {
+        if (flag.id) ids[flag.id] = true;
+      });
+      const rows = (receipts || []).filter(function(row) {
+        return ids[row.id] || isVehicleReceipt(row);
+      });
+      return reportSection('Vehicle Review', rows, ['Date', 'Vendor', 'Category', 'Amount', 'Reason'], function(row) {
+        return [shortDate(row.date), row.vendor, row.category, money(row.amount), vehicleReason(row)];
+      }, 'No vehicle-related receipt flags in this range.');
+    }
+
+    function renderReportReimbursements(summary, receipts) {
+      const statHtml = '<div class="report-grid">' + [
+        ['Reimbursable Yes', money(summary.yes)],
+        ['Reimbursable No', money(summary.no)],
+        ['Unknown', money(summary.unknown)]
+      ].map(function(stat) {
+        return '<div class="report-stat"><strong>' + escapeHtml(stat[1]) + '</strong><span>' + escapeHtml(stat[0]) + '</span></div>';
+      }).join('') + '</div>';
+      const rows = (receipts || []).filter(function(row) { return row.reimbursable === 'Unknown' || row.reimbursable === 'Yes'; });
+      return '<section class="report-section"><h3>Reimbursements</h3>' + statHtml + '</section>' +
+        reportSection('Reimbursement Detail', rows, ['Date', 'Vendor', 'Amount', 'Status'], function(row) {
+          return [shortDate(row.date), row.vendor, money(row.amount), row.reimbursable];
+        }, 'No reimbursable or unknown receipts in this range.');
+    }
+
+    function renderReportFlags(rows) {
+      return reportSection('CPA Review Flags', rows, ['Date', 'Bucket', 'Record', 'Reason'], function(row) {
+        return [shortDate(row.date), row.bucket, row.title || row.id, row.reason];
+      }, 'No CPA review flags in this range.');
+    }
+
+    function renderReportMissing(rows) {
+      return reportSection('Missing Info Checklist', rows, ['Date', 'Record', 'Needed'], function(row) {
+        return [shortDate(row.date), row.title || row.id, row.field];
+      }, 'No missing info found in this range.');
+    }
+
+    function reportSection(title, rows, headers, mapper, emptyText) {
+      rows = rows || [];
+      return '<section class="report-section"><h3>' + escapeHtml(title) + '</h3>' +
+        (rows.length ? reportTable(headers, rows.map(mapper)) : '<div class="report-empty">' + escapeHtml(emptyText || 'No records in this range.') + '</div>') +
+        '</section>';
+    }
+
+    function reportTable(headers, rows) {
+      return '<table class="report-table"><thead><tr>' + headers.map(function(header) {
+        return '<th>' + escapeHtml(header) + '</th>';
+      }).join('') + '</tr></thead><tbody>' + rows.map(function(row) {
+        return '<tr>' + row.map(function(cell) {
+          return '<td>' + escapeHtml(cell) + '</td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table>';
+    }
+
+    function reportRangeLabel(range) {
+      range = range || {};
+      return (range.startDate || 'Start') + ' to ' + (range.endDate || 'End');
+    }
+
+    function money(value) {
+      const num = Number(value) || 0;
+      return '$' + num.toFixed(2);
+    }
+
+    function numberText(value) {
+      const num = Number(value) || 0;
+      return String(Math.round(num * 100) / 100);
+    }
+
+    function isVehicleReceipt(row) {
+      const text = [row.vendor, row.category, row.notes, row.aiStatus].join(' ').toLowerCase();
+      return ['fuel', 'vehicle', 'tire', 'maintenance', 'repair', 'oil change', 'truck', 'car'].some(function(term) {
+        return text.indexOf(term) !== -1;
+      });
+    }
+
+    function vehicleReason(row) {
+      const text = [row.vendor, row.category, row.notes, row.aiStatus].join(' ').toLowerCase();
+      if (text.indexOf('fuel') !== -1) return 'Fuel';
+      if (text.indexOf('tire') !== -1) return 'Tires';
+      if (text.indexOf('maintenance') !== -1 || text.indexOf('repair') !== -1 || text.indexOf('oil change') !== -1) return 'Repair/maintenance';
+      return 'Vehicle-related';
     }
 
     function refreshLogbook() {
