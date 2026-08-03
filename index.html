@@ -1421,7 +1421,186 @@
 
     @media (min-width: 761px) {
       body {
-        background-size: cover, auto 100vh, auto;
+        background:
+          linear-gradient(90deg, rgba(17, 16, 13, 0.76) 0%, rgba(17, 16, 13, 0.25) 18%, rgba(18, 63, 61, 0.18) 50%, rgba(17, 16, 13, 0.25) 82%, rgba(17, 16, 13, 0.76) 100%),
+          linear-gradient(180deg, rgba(17, 16, 13, 0.58) 0%, rgba(31, 23, 17, 0.36) 44%, rgba(18, 63, 61, 0.48) 100%),
+          var(--asset-parchment),
+          var(--bg);
+        background-size: cover, cover, min(1280px, 100vw) auto, auto;
+        background-position: center, center, center top, center;
+        background-repeat: no-repeat, no-repeat, repeat-y, repeat;
+        background-attachment: fixed, fixed, fixed, fixed;
+      }
+
+      .app {
+        max-width: 1120px;
+        padding: 18px 24px 48px;
+      }
+
+      .brand-header {
+        margin-bottom: 10px;
+      }
+
+      .brand-header-main {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 20px;
+        margin: 0 0 8px;
+      }
+
+      .brand-stage {
+        width: min(100%, 760px);
+        height: 190px;
+        margin: 0 auto;
+      }
+
+      .brand-logo {
+        left: 50%;
+        top: 58%;
+        width: min(92%, 700px);
+      }
+
+      .header-shortcuts {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 0;
+        min-width: 114px;
+      }
+
+      .shortcut-button {
+        width: 52px;
+        height: 52px;
+        flex-basis: 52px;
+        border-radius: 16px;
+      }
+
+      .shortcut-button .ui-icon,
+      .shortcut-button .header-svg {
+        width: 22px;
+        height: 22px;
+        flex-basis: 22px;
+      }
+
+      .status-row {
+        max-width: 1040px;
+        margin: 0 auto 12px;
+      }
+
+      .dashboard-modules {
+        display: grid;
+        grid-template-columns: minmax(300px, 0.9fr) minmax(420px, 1.1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .quick-actions-module {
+        grid-column: 1 / -1;
+      }
+
+      .quick-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 0;
+      }
+
+      .tool-btn {
+        min-height: 112px;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 16px;
+        border-radius: 17px;
+      }
+
+      .tool-icon {
+        width: 28px;
+        height: 28px;
+        flex-basis: 28px;
+      }
+
+      .tool-label {
+        font-size: 17px;
+      }
+
+      .tool-helper {
+        font-size: 11px;
+      }
+
+      .work-card,
+      .review-card {
+        min-height: 168px;
+      }
+
+      .work-card {
+        padding: 16px;
+      }
+
+      .work-card-head {
+        margin-bottom: 12px;
+      }
+
+      .work-card-head h2 {
+        font-size: 18px;
+      }
+
+      .work-row {
+        gap: 12px;
+      }
+
+      .work-btn {
+        min-height: 100px;
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 15px;
+      }
+
+      .work-icon {
+        width: 26px;
+        height: 26px;
+        flex-basis: 26px;
+      }
+
+      .work-label {
+        font-size: 15px;
+      }
+
+      .work-helper {
+        font-size: 10.5px;
+      }
+
+      .review-toggle {
+        min-height: 82px;
+        padding: 16px;
+      }
+
+      .review-body {
+        padding: 0 16px 16px;
+      }
+
+      .review-body-head {
+        padding-top: 14px;
+      }
+
+      .review-list {
+        gap: 9px;
+      }
+
+      #logbookView.card,
+      #startWorkView.card,
+      #endWorkView.card,
+      #receiptView.card,
+      #mileageView.card,
+      #noteView.card,
+      #taxView.card,
+      #reportView.card {
+        max-width: 980px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 18px;
       }
     }
 
@@ -2141,7 +2320,7 @@
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.8';
+    const UI_VERSION = 'v0.3.9';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
