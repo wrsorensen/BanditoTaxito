@@ -1,11 +1,11 @@
 /**
- * v0.3.8 — CPA Report Builder API
+ * v0.3.11 - Settings feedback API
  * Google Apps Script backend for a simple consultant work tracker.
  * Source of truth: Google Sheets.
  */
 
 const APP = {
-  version: 'v0.3.8',
+  version: 'v0.3.11',
   spreadsheetName: 'Bandito Taxito Backend',
   receiptFolderName: 'Bandito Taxito Receipt Uploads',
   photoFolderName: 'Bandito Taxito Photo Uploads',
@@ -17,6 +17,7 @@ const APP = {
     receipts: 'Receipts',
     notes: 'Photos Notes',
     tax: 'Tax Helper',
+    feedback: 'Feedback',
     audit: 'Audit Log'
   }
 };
@@ -64,6 +65,10 @@ const HEADERS = {
   ].concat(RECORD_META_HEADERS),
   'Tax Helper': [
     'Timestamp', 'Tax Event ID', 'Event Date', 'Type', 'Amount', 'Notes', 'Status'
+  ].concat(RECORD_META_HEADERS),
+  Feedback: [
+    'Timestamp', 'Feedback ID', 'Type', 'Message', 'Contact', 'App Version',
+    'Page URL', 'User Agent', 'Sync Source', 'Status'
   ].concat(RECORD_META_HEADERS),
   'Audit Log': ['Timestamp', 'Action', 'Details']
 };
@@ -244,6 +249,7 @@ function handleApiAction_(action, payload, request) {
   if (action === 'saveReceipt') return saveReceipt(payload);
   if (action === 'saveNotePhoto') return saveNotePhoto(payload);
   if (action === 'saveTaxNote') return saveTaxNote(payload);
+  if (action === 'saveFeedback') return saveFeedback(payload);
 
   if (action === 'syncQueuedItems') {
     const items = Array.isArray(payload) ? payload : (payload.items || []);
@@ -582,6 +588,7 @@ function saveByType_(type, payload) {
   if (type === 'receipt') return saveReceipt(payload);
   if (type === 'notePhoto') return saveNotePhoto(payload);
   if (type === 'taxNote') return saveTaxNote(payload);
+  if (type === 'feedback') return saveFeedback(payload);
 
   return { ok: false, message: 'Unknown save type: ' + type };
 }
@@ -788,6 +795,25 @@ function saveTaxNote(payload) {
   return { ok: true, id: taxEventId, message: 'Tax note saved.' };
 }
 
+function saveFeedback(payload) {
+  setupSpreadsheet_();
+  payload = payload || {};
+
+  if (!clean_(payload.message)) throw new Error('Feedback message is required.');
+
+  const feedbackId = payload.feedbackId || makeId_('FDBK');
+  const row = [
+    now_(), feedbackId, clean_(payload.type || 'Suggestion'), clean_(payload.message),
+    clean_(payload.contact), clean_(payload.appVersion || APP.version),
+    clean_(payload.pageUrl), clean_(payload.userAgent), clean_(payload.syncSource || 'Online'),
+    clean_(payload.status || 'New')
+  ].concat(['', '', '', '', '']);
+
+  appendRow_(APP.tabs.feedback, row);
+  audit_('SAVE_FEEDBACK', feedbackId);
+  return { ok: true, id: feedbackId, message: 'Feedback saved.' };
+}
+
 function syncQueuedItems(items) {
   setupSpreadsheet_();
   items = Array.isArray(items) ? items : [];
@@ -804,6 +830,7 @@ function syncQueuedItems(items) {
       else if (type === 'receipt') results.push(saveReceipt(payload));
       else if (type === 'notePhoto') results.push(saveNotePhoto(payload));
       else if (type === 'taxNote') results.push(saveTaxNote(payload));
+      else if (type === 'feedback') results.push(saveFeedback(payload));
       else results.push({ ok: false, message: 'Unknown queue item type: ' + type });
     } catch (err) {
       results.push({ ok: false, message: err.message });

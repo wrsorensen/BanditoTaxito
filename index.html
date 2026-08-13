@@ -1149,6 +1149,15 @@
       cursor: pointer;
     }
 
+    .settings-feedback-status {
+      min-height: 18px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
     .settings-option input {
       width: 22px;
       height: 22px;
@@ -2225,6 +2234,11 @@
             <span class="settings-menu-copy"><span class="settings-menu-title">Data &amp; Sync</span><span class="settings-menu-meta" id="settingsDataMeta">Connection and offline queue</span></span>
             <span class="settings-chevron" aria-hidden="true">›</span>
           </button>
+          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('feedback')">
+            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8z"></path><path d="M8 9h8"></path><path d="M8 13h5"></path></svg></span>
+            <span class="settings-menu-copy"><span class="settings-menu-title">Is Bandito missing something?</span><span class="settings-menu-meta">Bug, suggestion, or missing feature</span></span>
+            <span class="settings-chevron" aria-hidden="true">&rsaquo;</span>
+          </button>
           <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('about')">
             <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg></span>
             <span class="settings-menu-copy"><span class="settings-menu-title">About Bandito Taxito</span><span class="settings-menu-meta" id="settingsMenuVersion">App details</span></span>
@@ -2283,6 +2297,33 @@
           <div class="settings-status-card"><div class="settings-status-label">Offline Queue</div><div class="settings-status-value" id="settingsQueueValue">0 waiting</div></div>
         </div>
         <div class="settings-actions"><button class="btn secondary" type="button" onclick="syncQueueFromSettings()">Sync Queue Now</button></div>
+      </section>
+
+      <section class="settings-panel hidden" data-settings-panel="feedback">
+        <div class="settings-head">
+          <div class="settings-head-main">
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">â€¹</button>
+            <h2>Missing Something?</h2>
+          </div>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
+        </div>
+        <p class="settings-note">Send a bug, suggestion, or missing feature note. App version is attached automatically.</p>
+        <label>Type</label>
+        <select id="feedbackType">
+          <option>Bug</option>
+          <option selected>Suggestion</option>
+          <option>Missing Feature</option>
+          <option>Other</option>
+        </select>
+        <label>Message</label>
+        <textarea id="feedbackMessage" placeholder="What should Bandito fix or add?"></textarea>
+        <label>Contact <span class="tiny">(optional)</span></label>
+        <input id="feedbackContact" placeholder="Email or phone if you want follow-up">
+        <div class="settings-feedback-status" id="feedbackStatus">Version will be attached when sent.</div>
+        <div class="settings-actions">
+          <button class="btn" id="feedbackSendButton" type="button" onclick="saveFeedbackForm()">Send Feedback</button>
+          <button class="btn secondary" type="button" onclick="showSettingsPanel('home')">Cancel</button>
+        </div>
       </section>
 
       <section class="settings-panel hidden" data-settings-panel="about">
@@ -2369,7 +2410,7 @@
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.10';
+    const UI_VERSION = 'v0.3.11';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -3079,6 +3120,57 @@
       submitOrQueue('taxNote', payload, 'Tax note sent.');
       clearTaxForm();
       showView('homeView');
+    }
+
+    function saveFeedbackForm() {
+      const message = val('feedbackMessage');
+      const status = document.getElementById('feedbackStatus');
+      const button = document.getElementById('feedbackSendButton');
+      if (!message) {
+        if (status) status.textContent = 'Add a message before sending.';
+        toast('Add a feedback message.');
+        return;
+      }
+
+      const payload = {
+        type: val('feedbackType') || 'Suggestion',
+        message: message,
+        contact: val('feedbackContact'),
+        appVersion: UI_VERSION,
+        pageUrl: window.location.href,
+        userAgent: navigator.userAgent,
+        status: 'New'
+      };
+
+      if (button) button.disabled = true;
+      if (status) status.textContent = 'Sending feedback...';
+
+      if (!navigator.onLine) {
+        queueItem('feedback', payload);
+        if (status) status.textContent = 'Offline. Feedback saved to queue.';
+        if (button) button.disabled = false;
+        clearFeedbackForm();
+        toast('Offline. Feedback saved to queue.');
+        return;
+      }
+
+      postToGas('save', { type: 'feedback', payload: payload })
+        .then(function() {
+          if (status) status.textContent = 'Feedback sent. Thank you.';
+          clearFeedbackForm();
+          toast('Feedback sent.');
+          window.setTimeout(function() {
+            showSettingsPanel('home');
+            if (button) button.disabled = false;
+          }, 700);
+        })
+        .catch(function(err) {
+          queueItem('feedback', payload);
+          if (status) status.textContent = 'Send failed. Feedback saved to queue.';
+          if (button) button.disabled = false;
+          toast('Send failed. Added to offline queue.');
+          console.error(err);
+        });
     }
 
     function submitOrQueue(type, payload, successMessage) {
@@ -4662,6 +4754,15 @@
 
     function clearTaxForm() {
       ['taxAmount', 'taxNotes'].forEach(function(id) { document.getElementById(id).value = ''; });
+    }
+
+    function clearFeedbackForm() {
+      ['feedbackMessage', 'feedbackContact'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const type = document.getElementById('feedbackType');
+      if (type) type.value = 'Suggestion';
     }
 
     function val(id) {
