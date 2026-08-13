@@ -1,14 +1,15 @@
 /**
- * v0.3.11 - Settings feedback API
+ * v0.3.12 - Feedback email alerts
  * Google Apps Script backend for a simple consultant work tracker.
  * Source of truth: Google Sheets.
  */
 
 const APP = {
-  version: 'v0.3.11',
+  version: 'v0.3.12',
   spreadsheetName: 'Bandito Taxito Backend',
   receiptFolderName: 'Bandito Taxito Receipt Uploads',
   photoFolderName: 'Bandito Taxito Photo Uploads',
+  feedbackEmail: 'wrsorensen@gmail.com',
   tabs: {
     settings: 'Settings',
     clients: 'Clients',
@@ -811,7 +812,48 @@ function saveFeedback(payload) {
 
   appendRow_(APP.tabs.feedback, row);
   audit_('SAVE_FEEDBACK', feedbackId);
+  notifyFeedbackSubmitted_(feedbackId, payload);
   return { ok: true, id: feedbackId, message: 'Feedback saved.' };
+}
+
+function notifyFeedbackSubmitted_(feedbackId, payload) {
+  if (!APP.feedbackEmail) return;
+
+  try {
+    const feedbackType = clean_(payload.type || 'Suggestion');
+    const message = clean_(payload.message);
+    const contact = clean_(payload.contact) || 'Not provided';
+    const appVersion = clean_(payload.appVersion || APP.version);
+    const pageUrl = clean_(payload.pageUrl) || 'Not provided';
+    const userAgent = clean_(payload.userAgent) || 'Not provided';
+    const syncSource = clean_(payload.syncSource || 'Online');
+    const submittedAt = now_();
+    const subject = '[Bandito Taxito] New ' + feedbackType + ' feedback';
+    const body = [
+      'Bandito Taxito feedback received.',
+      '',
+      'Feedback ID: ' + feedbackId,
+      'Submitted: ' + submittedAt,
+      'Type: ' + feedbackType,
+      'Contact: ' + contact,
+      'App Version: ' + appVersion,
+      'Sync Source: ' + syncSource,
+      '',
+      'Message:',
+      message,
+      '',
+      'Page URL:',
+      pageUrl,
+      '',
+      'User Agent:',
+      userAgent
+    ].join('\n');
+
+    MailApp.sendEmail(APP.feedbackEmail, subject, body);
+    audit_('SEND_FEEDBACK_EMAIL', feedbackId + ' -> ' + APP.feedbackEmail);
+  } catch (err) {
+    audit_('SEND_FEEDBACK_EMAIL_FAILED', feedbackId + ': ' + (err.message || String(err)));
+  }
 }
 
 function syncQueuedItems(items) {
