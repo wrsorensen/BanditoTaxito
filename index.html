@@ -596,11 +596,13 @@
     }
 
     .review-item {
+      width: 100%;
       min-height: 44px;
       padding: 8px 9px;
       border: 1px solid var(--line);
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.84);
+      color: inherit;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -608,6 +610,16 @@
       font-size: 11px;
       font-weight: 800;
       line-height: 1.2;
+      text-align: left;
+    }
+
+    button.review-item {
+      cursor: pointer;
+    }
+
+    button.review-item:focus-visible {
+      outline: 2px solid rgba(248, 223, 170, 0.88);
+      outline-offset: 2px;
     }
 
     .review-item.bad { background: rgba(255, 241, 239, 0.88); border-color: #ffc6c1; }
@@ -748,6 +760,43 @@
 
     .logbook-note { margin: 0 0 8px; }
     .logbook-section { margin-top: 14px; }
+
+    .logbook-filter-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 10px 0;
+      padding: 10px 11px;
+      border: 1px solid rgba(183, 122, 26, 0.50);
+      border-radius: 13px;
+      background: rgba(255, 247, 227, 0.88);
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .logbook-filter-banner button {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 1px solid rgba(156, 47, 34, 0.35);
+      border-radius: 999px;
+      background: #fff8ea;
+      color: var(--primary-dark);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .logbook-issue-reason {
+      margin-top: 6px;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
 
     .logbook-heading {
       margin: 0 0 7px;
@@ -1425,6 +1474,181 @@
       }
     }
 
+    @media (min-width: 1024px) {
+      .app {
+        max-width: 1120px;
+        padding: 18px 24px 48px;
+      }
+
+      .brand-header {
+        margin-bottom: 12px;
+      }
+
+      .brand-header-main {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 18px;
+        margin: 0 0 8px;
+      }
+
+      .brand-stage {
+        width: min(100%, 660px);
+        height: 184px;
+      }
+
+      .brand-logo {
+        left: 49%;
+        top: 57%;
+        width: min(92%, 610px);
+      }
+
+      .header-shortcuts {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 0;
+      }
+
+      .shortcut-button {
+        width: 50px;
+        height: 50px;
+        flex-basis: 50px;
+        border-radius: 15px;
+      }
+
+      .status-row {
+        margin: -12px 0 12px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      #activeSessionCard {
+        max-width: none;
+      }
+
+      .dashboard-modules {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.95fr);
+        grid-template-rows: auto auto 1fr;
+        gap: 14px;
+        align-items: start;
+      }
+
+      .quick-actions-module {
+        grid-column: 1;
+        grid-row: 1 / 4;
+      }
+
+      .quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 0;
+      }
+
+      .tool-btn {
+        min-height: 102px;
+        padding: 17px;
+        gap: 14px;
+        border-radius: 18px;
+      }
+
+      .tool-icon {
+        width: 30px;
+        height: 30px;
+        flex-basis: 30px;
+      }
+
+      .tool-label {
+        font-size: 18px;
+      }
+
+      .tool-helper {
+        font-size: 12px;
+        line-height: 1.25;
+      }
+
+      #workSessionModule,
+      #weeklyReviewModule {
+        grid-column: 2;
+        margin-bottom: 0;
+      }
+
+      #workSessionModule {
+        grid-row: 1;
+      }
+
+      #weeklyReviewModule {
+        grid-row: 2;
+      }
+
+      .work-card {
+        padding: 14px;
+      }
+
+      .work-card-head {
+        margin-bottom: 10px;
+      }
+
+      .work-card-head h2 {
+        font-size: 18px;
+      }
+
+      .work-row {
+        gap: 10px;
+      }
+
+      .work-btn {
+        min-height: 74px;
+        padding: 14px;
+        border-radius: 16px;
+      }
+
+      .work-icon {
+        width: 28px;
+        height: 28px;
+        flex-basis: 28px;
+      }
+
+      .work-label {
+        font-size: 15px;
+      }
+
+      .work-helper {
+        font-size: 11px;
+      }
+
+      .review-toggle {
+        min-height: 98px;
+        padding: 17px;
+        gap: 12px;
+      }
+
+      .review-summary-text {
+        font-size: 12px;
+      }
+
+      .review-body {
+        padding: 0 17px 17px;
+      }
+
+      .review-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .review-item {
+        min-height: 50px;
+        padding: 10px 11px;
+        font-size: 12px;
+      }
+
+      .settings-sheet,
+      .logbook-control-sheet {
+        max-width: 560px;
+      }
+    }
+
     @media (max-width: 440px) {
       .app { padding: 6px 8px 38px; }
       .brand-header-main {
@@ -1468,7 +1692,7 @@
             <svg class="header-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h2"></path><path d="M10 17h10"></path><circle cx="8" cy="17" r="2"></circle></svg>
           </button>
           <button class="shortcut-button" type="button" onclick="showView('logbookView')" aria-label="Open Logbook" title="Logbook">
-            <span class="ui-icon icon-logbook" aria-hidden="true"></span>
+            <svg class="header-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21V5.5z"></path><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5A2.5 2.5 0 0 1 20 21V5.5z"></path><path d="M7 7h2"></path><path d="M15 7h2"></path><path d="M15 11h2"></path><path d="M7 11h2"></path></svg>
           </button>
         </div>
       </div>
@@ -1567,6 +1791,10 @@
         </button>
       </div>
       <p class="tiny" id="logbookStatus">Open this screen to load recent records.</p>
+      <div class="logbook-filter-banner hidden" id="logbookFilterBanner">
+        <span id="logbookFilterText">Filtered logbook</span>
+        <button type="button" onclick="clearLogbookFilter()">Clear</button>
+      </div>
 
       <div class="logbook-section">
         <h3 class="logbook-heading">Recent Work Logs</h3>
@@ -2141,7 +2369,7 @@
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.8';
+    const UI_VERSION = 'v0.3.10';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -2167,6 +2395,7 @@
     let logbookPress = null;
     let selectedLogbookEntry = null;
     let logbookEntryMap = {};
+    let activeLogbookFilter = null;
     let suppressLogbookToggleUntil = 0;
     let receiptAiDraftData = null;
     let receiptAiDraftApplied = false;
@@ -2671,14 +2900,15 @@
       toast('Dashboard order saved.');
     }
 
-    function showView(id) {
+    function showView(id, options) {
+      options = options || {};
       const views = ['homeView', 'startWorkView', 'endWorkView', 'receiptView', 'mileageView', 'noteView', 'taxView', 'reportView', 'logbookView'];
       views.forEach(function(viewId) {
         document.getElementById(viewId).classList.toggle('hidden', viewId !== id);
       });
 
       if (id === 'endWorkView') fillEndFromActiveSession();
-      if (id === 'logbookView') refreshLogbook();
+      if (id === 'logbookView' && !options.skipRefresh) refreshLogbook();
       if (id === 'receiptView') {
         applyReceiptMode(getReceiptMode(), false);
         applyReceiptContextDefaults();
@@ -2918,7 +3148,8 @@
       setBanditoLoadingState();
       apiGet('weeklyReview')
         .then(function(data) {
-          renderWeeklyReview((data && data.weeklyReview) || data || {});
+          appState.weeklyReview = (data && data.weeklyReview) || data || {};
+          renderWeeklyReview(appState.weeklyReview);
         })
         .catch(function(err) {
           toast('Could not refresh review.');
@@ -2972,18 +3203,13 @@
 
     function renderWeeklyReview(data) {
       data = data || {};
-      const items = [
-        { label: 'Work logs', value: data.workLogs || 0, type: data.workLogs ? 'good' : 'neutral', needsReview: false },
-        { label: 'Missing end', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'neutral', needsReview: Number(data.missingEndTime) > 0 },
-        { label: 'Missing notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'neutral', needsReview: Number(data.missingWorkNotes) > 0 },
-        { label: 'Receipt file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'neutral', needsReview: Number(data.missingReceiptFile) > 0 },
-        { label: 'Receipt amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'neutral', needsReview: Number(data.missingReceiptAmount) > 0 },
-        { label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'neutral', needsReview: Number(data.missingMileage) > 0 }
-      ];
+      const items = getReviewItems(data);
 
       document.getElementById('reviewList').innerHTML = items.map(function(item) {
         const reviewClass = item.needsReview ? ' needs-review' : '';
-        return '<div class="review-item ' + item.type + reviewClass + '"><span>' + item.label + '</span><span class="count">' + item.value + '</span></div>';
+        const content = '<span>' + escapeHtml(item.label) + '</span><span class="count">' + escapeHtml(item.value) + '</span>';
+        if (!item.needsReview) return '<div class="review-item ' + item.type + reviewClass + '">' + content + '</div>';
+        return '<button class="review-item ' + item.type + reviewClass + '" type="button" data-review-issue="' + escapeAttr(item.key) + '" onclick="openReviewIssue(this.dataset.reviewIssue)" title="' + escapeAttr(item.reason) + '">' + content + '</button>';
       }).join('');
 
       const troubleCount = [
@@ -2996,6 +3222,105 @@
         return total + (Number(value) || 0);
       }, 0);
       renderBanditoReviewStatus(troubleCount);
+    }
+
+    function getReviewItems(data) {
+      data = data || {};
+      return [
+        { key: 'workLogs', label: 'Work logs', value: data.workLogs || 0, type: data.workLogs ? 'good' : 'neutral', needsReview: false, recordType: 'work', reason: '' },
+        { key: 'missingEndTime', label: 'Missing end', value: data.missingEndTime || 0, type: data.missingEndTime ? 'bad' : 'neutral', needsReview: Number(data.missingEndTime) > 0, recordType: 'work', reason: 'Missing end time.' },
+        { key: 'missingWorkNotes', label: 'Missing notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'neutral', needsReview: Number(data.missingWorkNotes) > 0, recordType: 'work', reason: 'Missing work description or notes.' },
+        { key: 'missingReceiptFile', label: 'Receipt file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'neutral', needsReview: Number(data.missingReceiptFile) > 0, recordType: 'receipt', reason: 'Missing receipt proof file.' },
+        { key: 'missingReceiptAmount', label: 'Receipt amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'neutral', needsReview: Number(data.missingReceiptAmount) > 0, recordType: 'receipt', reason: 'Missing receipt amount.' },
+        { key: 'missingMileage', label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'neutral', needsReview: Number(data.missingMileage) > 0, recordType: 'mileage', reason: 'Missing mileage miles.' }
+      ];
+    }
+
+    function reviewIssueConfig(issueKey) {
+      return getReviewItems(appState.weeklyReview || {}).filter(function(item) {
+        return item.key === issueKey;
+      })[0] || null;
+    }
+
+    function openReviewIssue(issueKey) {
+      const issue = reviewIssueConfig(issueKey);
+      if (!issue || !issue.needsReview) {
+        toast('No matching review issue.');
+        return;
+      }
+      toast('Opening ' + issue.label + '...');
+      return apiGet('logbook', { limit: 50 })
+        .then(function(data) {
+          appState.logbook = (data && data.logbook) || {};
+          const matches = getReviewIssueMatches(issue.key, appState.logbook);
+          activeLogbookFilter = {
+            key: issue.key,
+            label: issue.label,
+            reason: issue.reason,
+            count: matches.length
+          };
+          showView('logbookView', { skipRefresh: true });
+          renderLogbook(appState.logbook);
+          if (matches.length === 1) {
+            openLogbookCardForItem(matches[0]);
+            toast(issue.reason);
+          } else if (matches.length > 1) {
+            toast(matches.length + ' records need attention.');
+          } else {
+            toast('No matching records found in recent Logbook.');
+          }
+        })
+        .catch(function(err) {
+          toast('Could not open review issue.');
+          console.error(err);
+        });
+    }
+
+    function getReviewIssueMatches(issueKey, data) {
+      return getAllLogbookRows(data).filter(function(item) {
+        return reviewIssueMatchesItem(issueKey, item);
+      });
+    }
+
+    function getAllLogbookRows(data) {
+      data = data || {};
+      return []
+        .concat(data.work || [])
+        .concat(data.mileage || [])
+        .concat(data.receipts || [])
+        .concat(data.notes || []);
+    }
+
+    function reviewIssueMatchesItem(issueKey, item) {
+      item = item || {};
+      if (!isRecentReviewItem(item)) return false;
+      if (issueKey === 'missingEndTime') return item.type === 'work' && !hasValue(item.endTime);
+      if (issueKey === 'missingWorkNotes') return item.type === 'work' && !hasValue(item.workPerformed) && !hasValue(item.notes);
+      if (issueKey === 'missingReceiptFile') return item.type === 'receipt' && !hasValue(item.fileUrl);
+      if (issueKey === 'missingReceiptAmount') return item.type === 'receipt' && !hasValue(item.amount);
+      if (issueKey === 'missingMileage') return item.type === 'mileage' && !hasValue(item.miles);
+      return false;
+    }
+
+    function isRecentReviewItem(item) {
+      const key = dateKeyFromValue(item.date || item.timestamp);
+      if (!key) return false;
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 7);
+      return key >= dateKeyFromValue(cutoff);
+    }
+
+    function dateKeyFromValue(value) {
+      if (!value) return '';
+      if (value instanceof Date && !isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+      const raw = String(value).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10);
+      const parsed = new Date(raw);
+      return isNaN(parsed.getTime()) ? '' : parsed.toISOString().slice(0, 10);
+    }
+
+    function hasValue(value) {
+      return value !== null && value !== undefined && String(value).trim() !== '';
     }
 
     function setDefaultReportDates() {
@@ -3206,11 +3531,11 @@
       const status = document.getElementById('logbookStatus');
       if (status) status.textContent = randomLoadingLine();
 
-      apiGet('logbook', { limit: 25 })
+      apiGet('logbook', { limit: activeLogbookFilter ? 50 : 25 })
         .then(function(data) {
           appState.logbook = (data && data.logbook) || {};
           renderLogbook(appState.logbook);
-          if (status) status.textContent = 'Showing newest 25 records per category.';
+          if (status) status.textContent = activeLogbookFilter ? 'Showing matching recent records.' : 'Showing newest 25 records per category.';
         })
         .catch(function(err) {
           if (status) status.textContent = 'Could not load logbook.';
@@ -3222,10 +3547,37 @@
     function renderLogbook(data) {
       data = data || {};
       logbookEntryMap = {};
-      renderLogbookGroup('logbookWork', data.work || [], 'No work logs yet.');
-      renderLogbookGroup('logbookMileage', data.mileage || [], 'No mileage records yet.');
-      renderLogbookGroup('logbookReceipts', data.receipts || [], 'No receipt records yet.');
-      renderLogbookGroup('logbookNotes', data.notes || [], 'No notes/photos yet.');
+      updateLogbookFilterBanner();
+      const visibleData = activeLogbookFilter ? filterLogbookForIssue(data, activeLogbookFilter.key) : data;
+      renderLogbookGroup('logbookWork', visibleData.work || [], activeLogbookFilter ? 'No matching work logs.' : 'No work logs yet.');
+      renderLogbookGroup('logbookMileage', visibleData.mileage || [], activeLogbookFilter ? 'No matching mileage records.' : 'No mileage records yet.');
+      renderLogbookGroup('logbookReceipts', visibleData.receipts || [], activeLogbookFilter ? 'No matching receipts.' : 'No receipt records yet.');
+      renderLogbookGroup('logbookNotes', visibleData.notes || [], activeLogbookFilter ? 'No matching notes/photos.' : 'No notes/photos yet.');
+    }
+
+    function filterLogbookForIssue(data, issueKey) {
+      data = data || {};
+      return {
+        work: (data.work || []).filter(function(item) { return reviewIssueMatchesItem(issueKey, item); }),
+        mileage: (data.mileage || []).filter(function(item) { return reviewIssueMatchesItem(issueKey, item); }),
+        receipts: (data.receipts || []).filter(function(item) { return reviewIssueMatchesItem(issueKey, item); }),
+        notes: []
+      };
+    }
+
+    function updateLogbookFilterBanner() {
+      const banner = document.getElementById('logbookFilterBanner');
+      const text = document.getElementById('logbookFilterText');
+      if (!banner || !text) return;
+      banner.classList.toggle('hidden', !activeLogbookFilter);
+      if (!activeLogbookFilter) return;
+      const count = Number(activeLogbookFilter.count) || 0;
+      text.textContent = activeLogbookFilter.label + ': ' + activeLogbookFilter.reason + ' ' + count + ' matching record' + (count === 1 ? '' : 's') + '.';
+    }
+
+    function clearLogbookFilter() {
+      activeLogbookFilter = null;
+      renderLogbook(appState.logbook || {});
     }
 
     function renderLogbookGroup(id, rows, emptyText) {
@@ -3245,15 +3597,30 @@
       const meta = logbookMeta(item);
       const details = logbookDetails(item);
       const key = String(item.type || '') + ':' + String(item.id || '');
+      const issueReason = activeLogbookFilter && reviewIssueMatchesItem(activeLogbookFilter.key, item)
+        ? '<div class="logbook-issue-reason">Needs attention: ' + escapeHtml(activeLogbookFilter.reason) + '</div>'
+        : '';
       logbookEntryMap[key] = item;
 
       return '<details class="logbook-card" data-logbook-key="' + escapeAttr(key) + '">' +
         '<summary>' +
           '<div class="logbook-summary-main"><span>' + escapeHtml(title) + '</span><span class="logbook-date">' + escapeHtml(shortDate(date)) + '</span></div>' +
           '<div class="logbook-meta">' + escapeHtml(meta || 'Tap to view details') + '</div>' +
+          issueReason +
         '</summary>' +
         '<div class="logbook-details">' + details + '</div>' +
       '</details>';
+    }
+
+    function openLogbookCardForItem(item) {
+      if (!item) return;
+      const key = String(item.type || '') + ':' + String(item.id || '');
+      const card = Array.from(document.querySelectorAll('[data-logbook-key]')).filter(function(element) {
+        return element.dataset.logbookKey === key;
+      })[0];
+      if (!card) return;
+      card.open = true;
+      card.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
 
     function enableLogbookEntryControls() {
