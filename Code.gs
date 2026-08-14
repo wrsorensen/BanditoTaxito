@@ -1,11 +1,11 @@
 /**
- * v0.3.12 - Feedback email alerts
+ * v0.3.13 - Feedback email auth helper
  * Google Apps Script backend for a simple consultant work tracker.
  * Source of truth: Google Sheets.
  */
 
 const APP = {
-  version: 'v0.3.12',
+  version: 'v0.3.13',
   spreadsheetName: 'Bandito Taxito Backend',
   receiptFolderName: 'Bandito Taxito Receipt Uploads',
   photoFolderName: 'Bandito Taxito Photo Uploads',
@@ -854,6 +854,23 @@ function notifyFeedbackSubmitted_(feedbackId, payload) {
   } catch (err) {
     audit_('SEND_FEEDBACK_EMAIL_FAILED', feedbackId + ': ' + (err.message || String(err)));
   }
+}
+
+function testFeedbackEmailAuth() {
+  const subject = '[Bandito Taxito] Feedback email test';
+  const body = [
+    'Bandito Taxito feedback email alerts are authorized.',
+    '',
+    'App Version: ' + APP.version,
+    'Timestamp: ' + now_(),
+    '',
+    'You can submit another feedback test from the live app now.'
+  ].join('\n');
+
+  MailApp.sendEmail(APP.feedbackEmail, subject, body);
+  setupSpreadsheet_();
+  audit_('TEST_FEEDBACK_EMAIL_AUTH', APP.feedbackEmail);
+  return 'Feedback email test sent to ' + APP.feedbackEmail + '.';
 }
 
 function syncQueuedItems(items) {
