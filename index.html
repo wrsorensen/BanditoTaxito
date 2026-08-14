@@ -790,6 +790,66 @@
       cursor: pointer;
     }
 
+    .logbook-toolbar {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin: 10px 0 8px;
+      padding: 5px;
+      border: 1px solid rgba(212, 179, 125, 0.72);
+      border-radius: 14px;
+      background: rgba(255, 250, 240, 0.78);
+    }
+
+    .logbook-filter-btn {
+      min-height: 34px;
+      padding: 7px 6px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .logbook-filter-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 5px 12px rgba(112, 41, 30, 0.18);
+    }
+
+    .logbook-summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 7px;
+      margin: 8px 0 4px;
+    }
+
+    .logbook-summary-chip {
+      min-height: 46px;
+      padding: 8px;
+      border: 1px solid rgba(212, 179, 125, 0.62);
+      border-radius: 12px;
+      background: rgba(255, 251, 242, 0.78);
+    }
+
+    .logbook-summary-chip strong {
+      display: block;
+      color: var(--primary-dark);
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .logbook-summary-chip span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
     .logbook-issue-reason {
       margin-top: 6px;
       color: var(--red);
@@ -842,11 +902,40 @@
       font-weight: 900;
     }
 
+    .logbook-summary-title {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .logbook-summary-side {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .logbook-date {
       color: var(--muted);
       font-size: 11px;
       font-weight: 800;
       white-space: nowrap;
+    }
+
+    .logbook-row-action {
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid rgba(212, 179, 125, 0.74);
+      border-radius: 10px;
+      background: rgba(255, 251, 242, 0.92);
+      color: var(--primary-dark);
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
     }
 
     .logbook-meta {
@@ -865,6 +954,21 @@
       font-size: 12px;
       line-height: 1.35;
       border-top: 1px solid #ead9bc;
+    }
+
+    .logbook-compact .logbook-card summary {
+      min-height: 42px;
+      padding: 8px 9px;
+    }
+
+    .logbook-compact .logbook-meta {
+      margin-top: 2px;
+      font-size: 10px;
+      line-height: 1.2;
+    }
+
+    .logbook-compact .logbook-details {
+      padding: 8px 9px 9px;
     }
 
     .logbook-empty {
@@ -1069,6 +1173,26 @@
       gap: 8px;
     }
 
+    .settings-menu-section {
+      display: grid;
+      gap: 8px;
+    }
+
+    .settings-menu-section + .settings-menu-section {
+      margin-top: 8px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(212, 179, 125, 0.60);
+    }
+
+    .settings-menu-heading {
+      margin: 0 2px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
     .settings-menu-btn {
       width: 100%;
       min-height: 62px;
@@ -1165,6 +1289,14 @@
       margin: 0;
       padding: 0;
       accent-color: var(--primary);
+    }
+
+    .settings-option select {
+      width: auto;
+      min-width: 148px;
+      max-width: 52%;
+      padding: 9px 32px 9px 10px;
+      font-size: 13px;
     }
 
     .settings-actions {
@@ -1484,6 +1616,17 @@
     }
 
     @media (min-width: 1024px) {
+      body {
+        background:
+          radial-gradient(circle at 18% 0%, rgba(197, 154, 69, 0.18), transparent 32%),
+          radial-gradient(circle at 92% 18%, rgba(18, 63, 61, 0.24), transparent 34%),
+          linear-gradient(135deg, #11100d 0%, #1d1711 46%, #123f3d 100%);
+        background-size: auto;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
+
       .app {
         max-width: 1120px;
         padding: 18px 24px 48px;
@@ -1656,6 +1799,22 @@
       .logbook-control-sheet {
         max-width: 560px;
       }
+
+      #logbookView {
+        max-width: 1120px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .logbook-sections {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .logbook-section {
+        margin-top: 0;
+      }
     }
 
     @media (max-width: 440px) {
@@ -1674,7 +1833,8 @@
       .tool-helper { font-size: 11.5px; line-height: 1.2; }
       .review-toggle { min-height: 80px; }
       .logbook-edit-grid { grid-template-columns: 1fr; }
-      .row, .receipt-ai-grid, .report-grid { grid-template-columns: 1fr; }
+      .row, .receipt-ai-grid, .report-grid, .logbook-summary-strip { grid-template-columns: 1fr; }
+      .logbook-toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
     @media (max-width: 350px) {
@@ -1790,46 +1950,56 @@
     <section id="logbookView" class="card hidden">
       <div class="section-head">
         <h2 class="section-title">Logbook</h2>
-        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+        <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
-      <p class="logbook-note">Tap an entry to view details. Hold an entry for Edit or Delete.</p>
+      <p class="logbook-note">Tap an entry to view details. Use the row button for Edit or Delete.</p>
       <div class="actions compact-actions">
         <button class="module-action-btn" type="button" onclick="refreshLogbook()">
           <svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>
           <span>Refresh Logbook</span>
         </button>
       </div>
+      <div class="logbook-toolbar" role="tablist" aria-label="Logbook filters">
+        <button class="logbook-filter-btn active" type="button" data-logbook-filter="all" onclick="setLogbookTypeFilter('all')">All</button>
+        <button class="logbook-filter-btn" type="button" data-logbook-filter="work" onclick="setLogbookTypeFilter('work')">Work</button>
+        <button class="logbook-filter-btn" type="button" data-logbook-filter="mileage" onclick="setLogbookTypeFilter('mileage')">Mileage</button>
+        <button class="logbook-filter-btn" type="button" data-logbook-filter="receipts" onclick="setLogbookTypeFilter('receipts')">Receipts</button>
+        <button class="logbook-filter-btn" type="button" data-logbook-filter="notes" onclick="setLogbookTypeFilter('notes')">Notes</button>
+      </div>
+      <div class="logbook-summary-strip" id="logbookSummary" aria-label="Logbook record counts"></div>
       <p class="tiny" id="logbookStatus">Open this screen to load recent records.</p>
       <div class="logbook-filter-banner hidden" id="logbookFilterBanner">
         <span id="logbookFilterText">Filtered logbook</span>
         <button type="button" onclick="clearLogbookFilter()">Clear</button>
       </div>
 
-      <div class="logbook-section">
-        <h3 class="logbook-heading">Recent Work Logs</h3>
-        <div id="logbookWork" class="logbook-list"></div>
-      </div>
+      <div class="logbook-sections">
+        <div class="logbook-section" data-logbook-section="work">
+          <h3 class="logbook-heading">Recent Work Logs</h3>
+          <div id="logbookWork" class="logbook-list"></div>
+        </div>
 
-      <div class="logbook-section">
-        <h3 class="logbook-heading">Recent Mileage</h3>
-        <div id="logbookMileage" class="logbook-list"></div>
-      </div>
+        <div class="logbook-section" data-logbook-section="mileage">
+          <h3 class="logbook-heading">Recent Mileage</h3>
+          <div id="logbookMileage" class="logbook-list"></div>
+        </div>
 
-      <div class="logbook-section">
-        <h3 class="logbook-heading">Recent Receipts</h3>
-        <div id="logbookReceipts" class="logbook-list"></div>
-      </div>
+        <div class="logbook-section" data-logbook-section="receipts">
+          <h3 class="logbook-heading">Recent Receipts</h3>
+          <div id="logbookReceipts" class="logbook-list"></div>
+        </div>
 
-      <div class="logbook-section">
-        <h3 class="logbook-heading">Recent Notes / Photos</h3>
-        <div id="logbookNotes" class="logbook-list"></div>
+        <div class="logbook-section" data-logbook-section="notes">
+          <h3 class="logbook-heading">Recent Notes / Photos</h3>
+          <div id="logbookNotes" class="logbook-list"></div>
+        </div>
       </div>
     </section>
 
     <section id="startWorkView" class="card hidden">
       <div class="section-head">
         <h2 class="section-title">Start Work</h2>
-        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+        <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
       <label>Company / Client</label>
       <input id="startClient" list="clientList" placeholder="Default company/client if set">
@@ -1873,7 +2043,7 @@
     <section id="endWorkView" class="card hidden">
       <div class="section-head">
         <h2 class="section-title">End Work</h2>
-        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+        <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
       <label>Company / Client</label>
       <input id="endClient" list="clientList">
@@ -1963,7 +2133,7 @@
     <section id="receiptView" class="card hidden">
       <div class="section-head">
         <h2 class="section-title">Add Receipt</h2>
-        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+        <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
       <p class="tiny">AI creates a draft only. In AI Capture, selected photos are sent to Google Gemini for reading. Use Manual when proof is too rough to read.</p>
       <label>Receipt Mode</label>
@@ -2070,7 +2240,7 @@
     <section id="mileageView" class="card hidden">
       <div class="section-head">
         <h2 class="section-title">Add Mileage</h2>
-        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+        <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
       <label>Company / Client</label>
       <input id="mileageClient" list="clientList">
@@ -2117,7 +2287,7 @@
     <section id="noteView" class="card hidden">
       <div class="section-head">
         <h2 class="section-title">Add Note / Photo</h2>
-        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+        <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
       <label>Photo / File</label>
       <input id="noteFile" type="file" accept="image/*,application/pdf" capture="environment">
@@ -2145,7 +2315,7 @@
     <section id="taxView" class="card hidden">
       <div class="section-head">
         <h2 class="section-title">Tax Helper</h2>
-        <button class="home-btn" onclick="showView('homeView')">← Home</button>
+        <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
       <p class="tiny">Reminder/helper only. This does not replace a CPA or tax preparer.</p>
       <label>Review Date</label>
@@ -2171,7 +2341,7 @@
     <section id="reportView" class="card hidden">
       <div class="section-head">
         <h2 class="section-title">Reports</h2>
-        <button class="home-btn" onclick="showView('homeView')">â† Home</button>
+        <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
       <p class="tiny">Build a CPA/tax-prep packet from saved records. Review before sending to a CPA.</p>
       <label>Report Type</label>
@@ -2217,40 +2387,54 @@
           <div class="settings-head-main"><h2 id="settingsTitle">Settings</h2></div>
           <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
         </div>
-        <p class="settings-note">Choose how Bandito Taxito looks and works on this device.</p>
+        <p class="settings-note">Choose what appears on this device, check sync, or send feedback.</p>
         <div class="settings-menu">
-          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('dashboard')">
-            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg></span>
-            <span class="settings-menu-copy"><span class="settings-menu-title">Customize Dashboard</span><span class="settings-menu-meta" id="settingsDashboardMeta">Show, hide, and reset modules</span></span>
-            <span class="settings-chevron" aria-hidden="true">›</span>
-          </button>
-          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('appearance')">
-            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.42 1.42"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg></span>
-            <span class="settings-menu-copy"><span class="settings-menu-title">Appearance</span><span class="settings-menu-meta">Western Night • Dog-led branding</span></span>
-            <span class="settings-chevron" aria-hidden="true">›</span>
-          </button>
-          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('data')">
-            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9"></path><path d="m16 3 4 4-4 4"></path><path d="M4 17h9"></path><path d="m8 13-4 4 4 4"></path></svg></span>
-            <span class="settings-menu-copy"><span class="settings-menu-title">Data &amp; Sync</span><span class="settings-menu-meta" id="settingsDataMeta">Connection and offline queue</span></span>
-            <span class="settings-chevron" aria-hidden="true">›</span>
-          </button>
-          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('feedback')">
-            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8z"></path><path d="M8 9h8"></path><path d="M8 13h5"></path></svg></span>
-            <span class="settings-menu-copy"><span class="settings-menu-title">Is Bandito missing something?</span><span class="settings-menu-meta">Bug, suggestion, or missing feature</span></span>
-            <span class="settings-chevron" aria-hidden="true">&rsaquo;</span>
-          </button>
-          <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('about')">
-            <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg></span>
-            <span class="settings-menu-copy"><span class="settings-menu-title">About Bandito Taxito</span><span class="settings-menu-meta" id="settingsMenuVersion">App details</span></span>
-            <span class="settings-chevron" aria-hidden="true">›</span>
-          </button>
+          <div class="settings-menu-section">
+            <div class="settings-menu-heading">Daily Use</div>
+            <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('dashboard')">
+              <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg></span>
+              <span class="settings-menu-copy"><span class="settings-menu-title">Dashboard</span><span class="settings-menu-meta" id="settingsDashboardMeta">Show, hide, and reset modules</span></span>
+              <span class="settings-chevron" aria-hidden="true">&rsaquo;</span>
+            </button>
+            <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('logbook')">
+              <span class="settings-menu-icon"><span class="ui-icon icon-logbook" aria-hidden="true"></span></span>
+              <span class="settings-menu-copy"><span class="settings-menu-title">Logbook Setup</span><span class="settings-menu-meta" id="settingsLogbookMeta">Default view and row density</span></span>
+              <span class="settings-chevron" aria-hidden="true">&rsaquo;</span>
+            </button>
+          </div>
+          <div class="settings-menu-section">
+            <div class="settings-menu-heading">System</div>
+            <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('appearance')">
+              <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.42 1.42"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg></span>
+              <span class="settings-menu-copy"><span class="settings-menu-title">Appearance</span><span class="settings-menu-meta">Mobile parchment, desktop night desk</span></span>
+              <span class="settings-chevron" aria-hidden="true">&rsaquo;</span>
+            </button>
+            <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('data')">
+              <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9"></path><path d="m16 3 4 4-4 4"></path><path d="M4 17h9"></path><path d="m8 13-4 4 4 4"></path></svg></span>
+              <span class="settings-menu-copy"><span class="settings-menu-title">Data &amp; Sync</span><span class="settings-menu-meta" id="settingsDataMeta">Connection and offline queue</span></span>
+              <span class="settings-chevron" aria-hidden="true">&rsaquo;</span>
+            </button>
+          </div>
+          <div class="settings-menu-section">
+            <div class="settings-menu-heading">Support</div>
+            <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('feedback')">
+              <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8z"></path><path d="M8 9h8"></path><path d="M8 13h5"></path></svg></span>
+              <span class="settings-menu-copy"><span class="settings-menu-title">Is Bandito missing something?</span><span class="settings-menu-meta">Bug, suggestion, or missing feature</span></span>
+              <span class="settings-chevron" aria-hidden="true">&rsaquo;</span>
+            </button>
+            <button class="settings-menu-btn" type="button" onclick="showSettingsPanel('about')">
+              <span class="settings-menu-icon"><svg class="inline-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg></span>
+              <span class="settings-menu-copy"><span class="settings-menu-title">About Bandito Taxito</span><span class="settings-menu-meta" id="settingsMenuVersion">App details</span></span>
+              <span class="settings-chevron" aria-hidden="true">&rsaquo;</span>
+            </button>
+          </div>
         </div>
       </section>
 
       <section class="settings-panel hidden" data-settings-panel="dashboard">
         <div class="settings-head">
           <div class="settings-head-main">
-            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">‹</button>
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Customize Dashboard</h2>
           </div>
           <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
@@ -2271,10 +2455,29 @@
         </div>
       </section>
 
+      <section class="settings-panel hidden" data-settings-panel="logbook">
+        <div class="settings-head">
+          <div class="settings-head-main">
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
+            <h2>Logbook Setup</h2>
+          </div>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">&times;</button>
+        </div>
+        <p class="settings-note">Choose the Logbook view this device opens first.</p>
+        <div class="settings-list">
+          <label class="settings-option"><span>Default View</span><select id="logbookDefaultViewSetting"><option value="all">All</option><option value="work">Work</option><option value="mileage">Mileage</option><option value="receipts">Receipts</option><option value="notes">Notes</option></select></label>
+          <label class="settings-option"><span>Compact Rows</span><input type="checkbox" id="logbookCompactRowsSetting"></label>
+        </div>
+        <div class="settings-actions">
+          <button class="btn" type="button" onclick="saveLogbookPreferences()">Save</button>
+          <button class="btn secondary" type="button" onclick="resetLogbookPreferences()">Reset Logbook</button>
+        </div>
+      </section>
+
       <section class="settings-panel hidden" data-settings-panel="appearance">
         <div class="settings-head">
           <div class="settings-head-main">
-            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">‹</button>
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Appearance</h2>
           </div>
           <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
@@ -2286,7 +2489,7 @@
       <section class="settings-panel hidden" data-settings-panel="data">
         <div class="settings-head">
           <div class="settings-head-main">
-            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">‹</button>
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Data &amp; Sync</h2>
           </div>
           <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
@@ -2302,10 +2505,10 @@
       <section class="settings-panel hidden" data-settings-panel="feedback">
         <div class="settings-head">
           <div class="settings-head-main">
-            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">â€¹</button>
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Missing Something?</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">&times;</button>
         </div>
         <p class="settings-note">Send a bug, suggestion, or missing feature note. App version is attached automatically.</p>
         <label>Type</label>
@@ -2329,7 +2532,7 @@
       <section class="settings-panel hidden" data-settings-panel="about">
         <div class="settings-head">
           <div class="settings-head-main">
-            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">‹</button>
+            <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>About</h2>
           </div>
           <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
@@ -2359,7 +2562,7 @@
       <section class="hidden" data-logbook-control-panel="edit">
         <div class="settings-head">
           <div class="settings-head-main">
-            <button class="settings-back" type="button" onclick="showLogbookControlPanel('actions')" aria-label="Back to record controls">‹</button>
+            <button class="settings-back" type="button" onclick="showLogbookControlPanel('actions')" aria-label="Back to record controls">&lsaquo;</button>
             <h2>Edit Record</h2>
           </div>
           <button class="settings-close" type="button" onclick="closeLogbookControls()" aria-label="Close record controls">×</button>
@@ -2408,9 +2611,10 @@
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
+    const LOGBOOK_PREFS_KEY = 'banditoTaxitoLogbookPrefs_v038';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.13';
+    const UI_VERSION = 'v0.3.14';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -2428,6 +2632,10 @@
       workSession: true,
       weeklyReview: true
     };
+    const DEFAULT_LOGBOOK_PREFS = {
+      defaultView: 'all',
+      compactRows: false
+    };
     let appState = { clients: [], settings: {}, weeklyReview: {}, logbook: {} };
     let backendOkay = false;
     let dashboardPress = null;
@@ -2437,6 +2645,7 @@
     let selectedLogbookEntry = null;
     let logbookEntryMap = {};
     let activeLogbookFilter = null;
+    let activeLogbookType = 'all';
     let suppressLogbookToggleUntil = 0;
     let receiptAiDraftData = null;
     let receiptAiDraftApplied = false;
@@ -2454,6 +2663,7 @@
     });
 
     function init() {
+      activeLogbookType = getLogbookPreferences().defaultView || 'all';
       setDefaultDates();
       updateOnlineStatus();
       updateQueuePill();
@@ -2671,8 +2881,25 @@
       });
     }
 
+    function getLogbookPreferences() {
+      try {
+        return Object.assign({}, DEFAULT_LOGBOOK_PREFS, JSON.parse(localStorage.getItem(LOGBOOK_PREFS_KEY) || '{}'));
+      } catch (err) {
+        return Object.assign({}, DEFAULT_LOGBOOK_PREFS);
+      }
+    }
+
+    function setLogbookPreferenceInputs(prefs) {
+      prefs = Object.assign({}, DEFAULT_LOGBOOK_PREFS, prefs || {});
+      const view = document.getElementById('logbookDefaultViewSetting');
+      const compact = document.getElementById('logbookCompactRowsSetting');
+      if (view) view.value = prefs.defaultView || DEFAULT_LOGBOOK_PREFS.defaultView;
+      if (compact) compact.checked = !!prefs.compactRows;
+    }
+
     function openSettings() {
       setDashboardPreferenceInputs(getDashboardPreferences());
+      setLogbookPreferenceInputs(getLogbookPreferences());
       updateSettingsSummaries();
       showSettingsPanel('home');
       const overlay = document.getElementById('appSettings');
@@ -2696,6 +2923,7 @@
         panel.classList.toggle('hidden', panel.getAttribute('data-settings-panel') !== name);
       });
       if (name === 'dashboard') setDashboardPreferenceInputs(getDashboardPreferences());
+      if (name === 'logbook') setLogbookPreferenceInputs(getLogbookPreferences());
       updateSettingsSummaries();
       const sheet = document.querySelector('#appSettings .settings-sheet');
       if (sheet) sheet.scrollTop = 0;
@@ -2707,7 +2935,10 @@
         return prefs[key] !== false;
       }).length;
       const dashboardMeta = document.getElementById('settingsDashboardMeta');
-      if (dashboardMeta) dashboardMeta.textContent = visibleCount + ' of 6 tools shown';
+      if (dashboardMeta) dashboardMeta.textContent = visibleCount + ' of 7 items shown';
+      const logbookPrefs = getLogbookPreferences();
+      const logbookMeta = document.getElementById('settingsLogbookMeta');
+      if (logbookMeta) logbookMeta.textContent = logbookViewLabel(logbookPrefs.defaultView) + (logbookPrefs.compactRows ? ' - compact rows' : ' - comfortable rows');
 
       const queueCount = getQueue().length;
       const connectionText = !navigator.onLine ? 'Offline' : (backendOkay ? 'Connected' : 'Checking');
@@ -2718,7 +2949,7 @@
       const aboutVersion = document.getElementById('settingsAboutVersion');
       if (connectionValue) connectionValue.textContent = connectionText;
       if (queueValue) queueValue.textContent = queueCount + ' waiting';
-      if (dataMeta) dataMeta.textContent = connectionText + ' • ' + queueCount + ' queued';
+      if (dataMeta) dataMeta.textContent = connectionText + ' - ' + queueCount + ' queued';
       if (menuVersion) menuVersion.textContent = UI_VERSION;
       if (aboutVersion) aboutVersion.textContent = 'Version ' + UI_VERSION;
     }
@@ -2747,6 +2978,32 @@
       updateSettingsSummaries();
       showSettingsPanel('home');
       toast('Dashboard updated.');
+    }
+
+    function saveLogbookPreferences() {
+      const compactInput = document.getElementById('logbookCompactRowsSetting');
+      const prefs = {
+        defaultView: val('logbookDefaultViewSetting') || DEFAULT_LOGBOOK_PREFS.defaultView,
+        compactRows: !!(compactInput && compactInput.checked)
+      };
+      localStorage.setItem(LOGBOOK_PREFS_KEY, JSON.stringify(prefs));
+      activeLogbookType = prefs.defaultView;
+      applyLogbookPreferences();
+      renderLogbook(appState.logbook || {});
+      updateSettingsSummaries();
+      showSettingsPanel('home');
+      toast('Logbook setup saved.');
+    }
+
+    function resetLogbookPreferences() {
+      localStorage.removeItem(LOGBOOK_PREFS_KEY);
+      activeLogbookType = DEFAULT_LOGBOOK_PREFS.defaultView;
+      setLogbookPreferenceInputs(DEFAULT_LOGBOOK_PREFS);
+      applyLogbookPreferences();
+      renderLogbook(appState.logbook || {});
+      updateSettingsSummaries();
+      showSettingsPanel('home');
+      toast('Logbook setup reset.');
     }
 
     function resetDashboardPreferences() {
@@ -3351,6 +3608,7 @@
             reason: issue.reason,
             count: matches.length
           };
+          activeLogbookType = 'all';
           showView('logbookView', { skipRefresh: true });
           renderLogbook(appState.logbook);
           if (matches.length === 1) {
@@ -3621,6 +3879,7 @@
 
     function refreshLogbook() {
       const status = document.getElementById('logbookStatus');
+      applyLogbookPreferences();
       if (status) status.textContent = randomLoadingLine();
 
       apiGet('logbook', { limit: activeLogbookFilter ? 50 : 25 })
@@ -3640,11 +3899,68 @@
       data = data || {};
       logbookEntryMap = {};
       updateLogbookFilterBanner();
+      updateLogbookFilterButtons();
+      updateLogbookSummary(data);
+      updateLogbookSectionVisibility();
       const visibleData = activeLogbookFilter ? filterLogbookForIssue(data, activeLogbookFilter.key) : data;
       renderLogbookGroup('logbookWork', visibleData.work || [], activeLogbookFilter ? 'No matching work logs.' : 'No work logs yet.');
       renderLogbookGroup('logbookMileage', visibleData.mileage || [], activeLogbookFilter ? 'No matching mileage records.' : 'No mileage records yet.');
       renderLogbookGroup('logbookReceipts', visibleData.receipts || [], activeLogbookFilter ? 'No matching receipts.' : 'No receipt records yet.');
       renderLogbookGroup('logbookNotes', visibleData.notes || [], activeLogbookFilter ? 'No matching notes/photos.' : 'No notes/photos yet.');
+    }
+
+    function applyLogbookPreferences() {
+      const prefs = getLogbookPreferences();
+      if (!activeLogbookType) activeLogbookType = prefs.defaultView || 'all';
+      const view = document.getElementById('logbookView');
+      if (view) view.classList.toggle('logbook-compact', !!prefs.compactRows);
+    }
+
+    function setLogbookTypeFilter(type) {
+      activeLogbookType = type || 'all';
+      updateLogbookFilterButtons();
+      updateLogbookSectionVisibility();
+    }
+
+    function updateLogbookFilterButtons() {
+      document.querySelectorAll('[data-logbook-filter]').forEach(function(button) {
+        const active = button.getAttribute('data-logbook-filter') === activeLogbookType;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+      });
+    }
+
+    function updateLogbookSectionVisibility() {
+      document.querySelectorAll('[data-logbook-section]').forEach(function(section) {
+        const key = section.getAttribute('data-logbook-section');
+        section.classList.toggle('hidden', activeLogbookType !== 'all' && activeLogbookType !== key);
+      });
+    }
+
+    function updateLogbookSummary(data) {
+      const summary = document.getElementById('logbookSummary');
+      if (!summary) return;
+      data = data || {};
+      const counts = {
+        work: (data.work || []).length,
+        mileage: (data.mileage || []).length,
+        receipts: (data.receipts || []).length,
+        notes: (data.notes || []).length
+      };
+      summary.innerHTML = [
+        logbookSummaryChip('Work', counts.work),
+        logbookSummaryChip('Mileage', counts.mileage),
+        logbookSummaryChip('Receipts', counts.receipts),
+        logbookSummaryChip('Notes', counts.notes)
+      ].join('');
+    }
+
+    function logbookSummaryChip(label, count) {
+      return '<div class="logbook-summary-chip"><strong>' + escapeHtml(count) + '</strong><span>' + escapeHtml(label) + '</span></div>';
+    }
+
+    function logbookViewLabel(value) {
+      return { all: 'All records', work: 'Work', mileage: 'Mileage', receipts: 'Receipts', notes: 'Notes' }[value] || 'All records';
     }
 
     function filterLogbookForIssue(data, issueKey) {
@@ -3696,7 +4012,7 @@
 
       return '<details class="logbook-card" data-logbook-key="' + escapeAttr(key) + '">' +
         '<summary>' +
-          '<div class="logbook-summary-main"><span>' + escapeHtml(title) + '</span><span class="logbook-date">' + escapeHtml(shortDate(date)) + '</span></div>' +
+          '<div class="logbook-summary-main"><span class="logbook-summary-title">' + escapeHtml(title) + '</span><span class="logbook-summary-side"><span class="logbook-date">' + escapeHtml(shortDate(date)) + '</span><button class="logbook-row-action" type="button" aria-label="Record actions" data-logbook-action="' + escapeAttr(key) + '">...</button></span></div>' +
           '<div class="logbook-meta">' + escapeHtml(meta || 'Tap to view details') + '</div>' +
           issueReason +
         '</summary>' +
@@ -3721,6 +4037,7 @@
       view.dataset.entryControlsReady = 'true';
 
       view.addEventListener('pointerdown', function(event) {
+        if (event.target.closest('.logbook-row-action')) return;
         const summary = event.target.closest('.logbook-card summary');
         if (!summary || event.button > 0) return;
         const card = summary.closest('.logbook-card');
@@ -3756,6 +4073,13 @@
         if (event.target.closest('.logbook-card summary')) event.preventDefault();
       });
       view.addEventListener('click', function(event) {
+        const actionButton = event.target.closest('.logbook-row-action');
+        if (actionButton) {
+          event.preventDefault();
+          event.stopPropagation();
+          openLogbookActions(actionButton.getAttribute('data-logbook-action'));
+          return;
+        }
         if (Date.now() < suppressLogbookToggleUntil && event.target.closest('.logbook-card summary')) {
           event.preventDefault();
           event.stopPropagation();
@@ -3780,7 +4104,7 @@
       const title = document.getElementById('logbookControlTitle');
       const meta = document.getElementById('logbookControlMeta');
       if (title) title.textContent = item.title || item.vendor || item.site || 'Record controls';
-      if (meta) meta.textContent = [labelForLogbookType(item.type), shortDate(item.date || item.timestamp), item.id].filter(Boolean).join(' • ');
+      if (meta) meta.textContent = [labelForLogbookType(item.type), shortDate(item.date || item.timestamp), item.id].filter(Boolean).join(' - ');
       showLogbookControlPanel('actions');
       const overlay = document.getElementById('logbookControls');
       if (overlay) overlay.classList.remove('hidden');
@@ -3928,10 +4252,10 @@
     }
 
     function logbookMeta(item) {
-      if (item.type === 'work') return [item.client, item.status, item.hours ? item.hours + ' hrs' : '', item.miles ? item.miles + ' mi' : ''].filter(Boolean).join(' • ');
-      if (item.type === 'mileage') return [item.client, item.miles ? item.miles + ' mi' : '', item.reimbursed ? 'Reimbursed: ' + item.reimbursed : ''].filter(Boolean).join(' • ');
-      if (item.type === 'receipt') return [item.category, item.amount ? '$' + item.amount : '', item.reimbursable ? 'Reimbursable: ' + item.reimbursable : ''].filter(Boolean).join(' • ');
-      if (item.type === 'note') return [item.client, item.site, item.status].filter(Boolean).join(' • ');
+      if (item.type === 'work') return [item.client, item.status, item.hours ? item.hours + ' hrs' : '', item.miles ? item.miles + ' mi' : ''].filter(Boolean).join(' - ');
+      if (item.type === 'mileage') return [item.client, item.miles ? item.miles + ' mi' : '', item.reimbursed ? 'Reimbursed: ' + item.reimbursed : ''].filter(Boolean).join(' - ');
+      if (item.type === 'receipt') return [item.category, item.amount ? '$' + item.amount : '', item.reimbursable ? 'Reimbursable: ' + item.reimbursable : ''].filter(Boolean).join(' - ');
+      if (item.type === 'note') return [item.client, item.site, item.status].filter(Boolean).join(' - ');
       return '';
     }
 

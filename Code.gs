@@ -1,11 +1,11 @@
 /**
- * v0.3.13 - Feedback email auth helper
+ * v0.3.14 - Settings and Logbook UX pass
  * Google Apps Script backend for a simple consultant work tracker.
  * Source of truth: Google Sheets.
  */
 
 const APP = {
-  version: 'v0.3.13',
+  version: 'v0.3.14',
   spreadsheetName: 'Bandito Taxito Backend',
   receiptFolderName: 'Bandito Taxito Receipt Uploads',
   photoFolderName: 'Bandito Taxito Photo Uploads',
