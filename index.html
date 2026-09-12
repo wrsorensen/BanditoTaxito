@@ -1478,6 +1478,13 @@
 
     .report-option input { width: auto; margin: 0; }
 
+    .report-type-note {
+      margin: 6px 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
     .report-preview {
       margin-top: 14px;
       padding: 14px;
@@ -2345,9 +2352,11 @@
       </div>
       <p class="tiny">Build a CPA/tax-prep packet from saved records. Review before sending to a CPA.</p>
       <label>Report Type</label>
-      <select id="reportType">
-        <option>CPA / Tax Prep</option>
+      <select id="reportType" onchange="updateReportTypeUi()">
+        <option value="cpa">CPA / Tax Prep</option>
+        <option value="expense">Company Expense / Reimbursement</option>
       </select>
+      <p class="report-type-note" id="reportTypeNote">Build a CPA/tax-prep packet from saved records. Review before sending to a CPA.</p>
       <div class="row">
         <div>
           <label>Start Date</label>
@@ -2358,8 +2367,9 @@
           <input id="reportEndDate" type="date">
         </div>
       </div>
-      <label>Include Buckets</label>
-      <div class="report-options">
+      <div id="reportCpaOptions">
+        <label>Include Buckets</label>
+        <div class="report-options">
         <label class="report-option"><span>Summary</span><input type="checkbox" data-report-bucket="summary" checked></label>
         <label class="report-option"><span>Work / Income</span><input type="checkbox" data-report-bucket="work"></label>
         <label class="report-option"><span>Receipts / Expenses</span><input type="checkbox" data-report-bucket="receipts" checked></label>
@@ -2368,6 +2378,39 @@
         <label class="report-option"><span>Reimbursements</span><input type="checkbox" data-report-bucket="reimbursements" checked></label>
         <label class="report-option"><span>CPA Review Flags</span><input type="checkbox" data-report-bucket="review" checked></label>
         <label class="report-option"><span>Missing Info Checklist</span><input type="checkbox" data-report-bucket="missing" checked></label>
+        </div>
+      </div>
+      <div class="hidden" id="reportExpenseOptions">
+        <label>Company / Trip Label</label>
+        <input id="expenseReportLabel" placeholder="Optional: August business trip">
+        <div class="row">
+          <div>
+            <label>Match Client</label>
+            <input id="expenseReportClient" placeholder="Optional">
+          </div>
+          <div>
+            <label>Match Site / Trip</label>
+            <input id="expenseReportSite" placeholder="Optional">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Reimbursement Status</label>
+            <select id="expenseReportStatus">
+              <option value="yes-unknown">Yes + Unknown</option>
+              <option value="yes">Yes only</option>
+              <option value="all">All statuses</option>
+            </select>
+          </div>
+          <div>
+            <label>Receipt Proof</label>
+            <select id="expenseReportProof">
+              <option value="all">All receipts</option>
+              <option value="has-proof">With proof</option>
+              <option value="missing-proof">Missing proof</option>
+            </select>
+          </div>
+        </div>
       </div>
       <div class="actions">
         <button class="btn" type="button" onclick="generateReport()">Preview Report</button>
@@ -2614,7 +2657,7 @@
     const LOGBOOK_PREFS_KEY = 'banditoTaxitoLogbookPrefs_v038';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.14';
+    const UI_VERSION = 'v0.3.15';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -3688,11 +3731,28 @@
       });
     }
 
+    function isExpenseReport() {
+      return val('reportType') === 'expense';
+    }
+
+    function updateReportTypeUi() {
+      const expense = isExpenseReport();
+      const cpaOptions = document.getElementById('reportCpaOptions');
+      const expenseOptions = document.getElementById('reportExpenseOptions');
+      const note = document.getElementById('reportTypeNote');
+      if (cpaOptions) cpaOptions.classList.toggle('hidden', expense);
+      if (expenseOptions) expenseOptions.classList.toggle('hidden', !expense);
+      if (note) note.textContent = expense
+        ? 'Build an itemized company expense report with receipt links for reimbursement.'
+        : 'Build a CPA/tax-prep packet from saved records. Review before sending to a CPA.';
+    }
+
     function generateReport() {
       setDefaultReportDates();
       const preview = document.getElementById('reportPreview');
       const buckets = selectedReportBuckets();
-      if (!buckets.length) {
+      const expense = isExpenseReport();
+      if (!expense && !buckets.length) {
         toast('Select at least one report bucket.');
         return Promise.resolve();
       }
@@ -3707,7 +3767,8 @@
         .then(function(data) {
           const report = (data && data.report) || {};
           appState.report = report;
-          renderReport(report, buckets);
+          if (expense) renderExpenseReport(report);
+          else renderReport(report, buckets);
           toast('Report preview ready.');
         })
         .catch(function(err) {
@@ -3747,6 +3808,74 @@
 
       preview.classList.remove('hidden');
       preview.innerHTML = sections.join('');
+    }
+
+    function renderExpenseReport(report) {
+      report = report || {};
+      const preview = document.getElementById('reportPreview');
+      if (!preview) return;
+      const rows = filterExpenseReportRows(report.receipts || []);
+      const total = rows.reduce(function(sum, row) { return sum + (Number(row.amount) || 0); }, 0);
+      const proofCount = rows.filter(function(row) { return hasValue(row.fileUrl); }).length;
+      const title = val('expenseReportLabel') || 'Company Expense / Reimbursement Report';
+      const sections = [
+        '<h2 class="report-title">' + escapeHtml(title) + '</h2>',
+        '<p class="report-subtitle">' + escapeHtml(reportRangeLabel(report.range)) + ' | Generated ' + escapeHtml(report.generatedAt || '') + '</p>',
+        '<section class="report-section"><h3>Submission Summary</h3><div class="report-grid">' +
+          reportStat(money(total), 'Total expenses') +
+          reportStat(String(rows.length), 'Itemized receipts') +
+          reportStat(String(proofCount), 'Receipt links attached') +
+          reportStat(String(rows.length - proofCount), 'Missing proof') +
+        '</div></section>',
+        renderExpenseReportTable(rows)
+      ];
+      preview.classList.remove('hidden');
+      preview.innerHTML = sections.join('');
+    }
+
+    function filterExpenseReportRows(rows) {
+      const status = val('expenseReportStatus') || 'yes-unknown';
+      const proof = val('expenseReportProof') || 'all';
+      const client = val('expenseReportClient').toLowerCase();
+      const site = val('expenseReportSite').toLowerCase();
+      return (rows || []).filter(function(row) {
+        const reimbursable = String(row.reimbursable || 'Unknown');
+        if (status === 'yes' && reimbursable !== 'Yes') return false;
+        if (status === 'yes-unknown' && reimbursable !== 'Yes' && reimbursable !== 'Unknown') return false;
+        if (proof === 'has-proof' && !hasValue(row.fileUrl)) return false;
+        if (proof === 'missing-proof' && hasValue(row.fileUrl)) return false;
+        if (client && String(row.client || '').toLowerCase().indexOf(client) === -1) return false;
+        if (site && String(row.site || '').toLowerCase().indexOf(site) === -1) return false;
+        return true;
+      });
+    }
+
+    function reportStat(value, label) {
+      return '<div class="report-stat"><strong>' + escapeHtml(value) + '</strong><span>' + escapeHtml(label) + '</span></div>';
+    }
+
+    function renderExpenseReportTable(rows) {
+      if (!rows.length) return '<section class="report-section"><h3>Itemized Expenses</h3><div class="report-empty">No receipts match these filters.</div></section>';
+      return '<section class="report-section"><h3>Itemized Expenses</h3><table class="report-table"><thead><tr>' +
+        ['Date', 'Vendor', 'Category', 'Client / Site', 'Notes', 'Amount', 'Status', 'Receipt Proof'].map(function(header) {
+          return '<th>' + escapeHtml(header) + '</th>';
+        }).join('') +
+        '</tr></thead><tbody>' + rows.map(function(row) {
+          const clientSite = [row.client, row.site].filter(hasValue).join(' / ');
+          return '<tr>' + [
+            shortDate(row.date), row.vendor, row.category, clientSite, row.notes, money(row.amount), row.reimbursable
+          ].map(function(cell) {
+            return '<td>' + escapeHtml(cell) + '</td>';
+          }).join('') + '<td>' + receiptProofLinks(row.fileUrl) + '</td></tr>';
+        }).join('') + '</tbody></table></section>';
+    }
+
+    function receiptProofLinks(fileUrl) {
+      const urls = String(fileUrl || '').split(/\r?\n/).map(function(url) { return url.trim(); }).filter(Boolean);
+      if (!urls.length) return '<span class="report-empty">Missing</span>';
+      return urls.map(function(url, index) {
+        return '<a href="' + escapeAttr(url) + '" target="_blank" rel="noopener">' + (urls.length === 1 ? 'Open receipt' : 'Proof ' + (index + 1)) + '</a>';
+      }).join('<br>');
     }
 
     function renderReportSummary(summary) {
