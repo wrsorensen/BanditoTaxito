@@ -5,7 +5,7 @@
  */
 
 const APP = {
-  version: 'v0.3.14',
+  version: 'v0.3.16',
   spreadsheetName: 'Bandito Taxito Backend',
   receiptFolderName: 'Bandito Taxito Receipt Uploads',
   photoFolderName: 'Bandito Taxito Photo Uploads',
@@ -110,7 +110,8 @@ const LOGBOOK_ENTRY_TYPES = {
       notes: 'Notes',
       vendor: 'Vendor',
       amount: 'Amount',
-      category: 'Category'
+      category: 'Category',
+      reimbursable: 'Reimbursable?'
     },
     numberFields: ['amount']
   },

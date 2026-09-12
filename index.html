@@ -2114,7 +2114,7 @@
           <input id="endRate" inputmode="decimal" placeholder="Optional" oninput="updatePayEstimate()">
         </div>
       </div>
-      <div class="estimate-box" id="payEstimateBox">Estimated pay: —</div>
+      <div class="estimate-box" id="payEstimateBox">Estimated pay: â€”</div>
       <label>Status</label>
       <select id="endStatus">
         <option>Complete</option>
@@ -2161,7 +2161,7 @@
             <div class="receipt-ai-title">AI Draft Suggestions</div>
             <div class="tiny">Nothing below is saved until you apply, review, and confirm.</div>
           </div>
-          <div class="receipt-ai-confidence" id="receiptAiConfidence">Confidence —</div>
+          <div class="receipt-ai-confidence" id="receiptAiConfidence">Confidence â€”</div>
         </div>
         <div class="receipt-ai-grid" id="receiptAiDraftGrid"></div>
         <div class="receipt-ai-review hidden" id="receiptAiReview"></div>
@@ -2428,7 +2428,7 @@
       <section class="settings-panel" data-settings-panel="home">
         <div class="settings-head">
           <div class="settings-head-main"><h2 id="settingsTitle">Settings</h2></div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
         </div>
         <p class="settings-note">Choose what appears on this device, check sync, or send feedback.</p>
         <div class="settings-menu">
@@ -2480,7 +2480,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Customize Dashboard</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
         </div>
         <p class="settings-note">Choose what appears. On the dashboard, hold a module and drag it to change the order.</p>
         <div class="settings-list">
@@ -2523,7 +2523,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Appearance</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
         </div>
         <p class="settings-note">The current look is Western Night.</p>
         <div class="settings-placeholder"><strong>Dog-led branding is active.</strong><br>The v2 icon, Bandito status art, parchment background, and high-contrast dashboard treatment are enabled.</div>
@@ -2535,7 +2535,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Data &amp; Sync</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
         </div>
         <p class="settings-note">Check the backend connection and anything waiting in the offline queue.</p>
         <div class="settings-status-grid">
@@ -2578,7 +2578,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>About</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">×</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
         </div>
         <div class="settings-about">
           <img src="assets/main-emblem-v2.png" alt="Bandito Taxito dog-led emblem">
@@ -2608,7 +2608,7 @@
             <button class="settings-back" type="button" onclick="showLogbookControlPanel('actions')" aria-label="Back to record controls">&lsaquo;</button>
             <h2>Edit Record</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeLogbookControls()" aria-label="Close record controls">×</button>
+          <button class="settings-close" type="button" onclick="closeLogbookControls()" aria-label="Close record controls">Ã—</button>
         </div>
         <p class="settings-note">Uploaded receipt and note files stay unchanged.</p>
         <form id="logbookEditForm" onsubmit="saveLogbookEdit(event)">
@@ -2620,7 +2620,8 @@
             <div class="logbook-edit-field full" data-logbook-edit-field="workPerformed"><label for="logbookEditWorkPerformed">Work Performed</label><textarea id="logbookEditWorkPerformed"></textarea></div>
             <div class="logbook-edit-field" data-logbook-edit-field="vendor"><label for="logbookEditVendor">Vendor</label><input id="logbookEditVendor"></div>
             <div class="logbook-edit-field" data-logbook-edit-field="amount"><label for="logbookEditAmount">Amount</label><input id="logbookEditAmount" inputmode="decimal"></div>
-            <div class="logbook-edit-field full" data-logbook-edit-field="category"><label for="logbookEditCategory">Category</label><select id="logbookEditCategory"><option>Materials</option><option>Fuel</option><option>Tools</option><option>Meals</option><option>Parking/Tolls</option><option>Supplies</option><option>Other</option></select></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="category"><label for="logbookEditCategory">Category</label><select id="logbookEditCategory"><option>Materials</option><option>Fuel</option><option>Tools</option><option>Meals</option><option>Parking/Tolls</option><option>Supplies</option><option>Other</option></select></div>
+            <div class="logbook-edit-field" data-logbook-edit-field="reimbursable"><label for="logbookEditReimbursable">Reimbursable?</label><select id="logbookEditReimbursable"><option>Unknown</option><option>Yes</option><option>No</option></select></div>
             <div class="logbook-edit-field" data-logbook-edit-field="from"><label for="logbookEditFrom">From</label><input id="logbookEditFrom"></div>
             <div class="logbook-edit-field" data-logbook-edit-field="to"><label for="logbookEditTo">To</label><input id="logbookEditTo"></div>
             <div class="logbook-edit-field full" data-logbook-edit-field="purpose"><label for="logbookEditPurpose">Purpose</label><input id="logbookEditPurpose"></div>
@@ -2657,7 +2658,7 @@
     const LOGBOOK_PREFS_KEY = 'banditoTaxitoLogbookPrefs_v038';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.15';
+    const UI_VERSION = 'v0.3.16';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -3280,7 +3281,7 @@
 
       localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
       renderActiveSession();
-      toast('Work session started. Vámonos.');
+      toast('Work session started. VÃ¡monos.');
       showView('homeView');
     }
 
@@ -3589,7 +3590,7 @@
       if (summary) {
         summary.textContent = hasTrouble
           ? 'Bandito found trouble. Review the items below.'
-          : 'No loose ends. Keep Stackin’.';
+          : 'No loose ends. Keep Stackinâ€™.';
       }
     }
 
@@ -4270,7 +4271,7 @@
       const fieldsByType = {
         work: ['client', 'site', 'date', 'status', 'workPerformed', 'notes'],
         mileage: ['client', 'site', 'date', 'from', 'to', 'purpose', 'notes'],
-        receipt: ['client', 'site', 'date', 'vendor', 'amount', 'category', 'notes'],
+        receipt: ['client', 'site', 'date', 'vendor', 'amount', 'category', 'reimbursable', 'notes'],
         note: ['client', 'site', 'date', 'noteType', 'note', 'status']
       };
       const visibleFields = fieldsByType[item.type] || [];
@@ -4286,6 +4287,7 @@
       setInputValue('logbookEditVendor', item.vendor);
       setInputValue('logbookEditAmount', item.amount);
       setSelectValueWithFallback('logbookEditCategory', item.category);
+      setSelectValueWithFallback('logbookEditReimbursable', item.reimbursable || 'Unknown');
       setInputValue('logbookEditFrom', item.from);
       setInputValue('logbookEditTo', item.to);
       setInputValue('logbookEditPurpose', item.purpose);
@@ -4324,7 +4326,7 @@
         },
         receipt: {
           client: val('logbookEditClient'), site: val('logbookEditSite'), date: val('logbookEditDate'),
-          vendor: val('logbookEditVendor'), amount: val('logbookEditAmount'), category: val('logbookEditCategory'), notes: val('logbookEditNotes')
+          vendor: val('logbookEditVendor'), amount: val('logbookEditAmount'), category: val('logbookEditCategory'), reimbursable: val('logbookEditReimbursable'), notes: val('logbookEditNotes')
         },
         note: {
           client: val('logbookEditClient'), site: val('logbookEditSite'), date: val('logbookEditDate'),
@@ -4481,7 +4483,7 @@
       }
 
       card.classList.remove('hidden');
-      text.textContent = active.client + ' — ' + active.site + ' — Started: ' + prettyDateTime(active.startTime);
+      text.textContent = active.client + ' â€” ' + active.site + ' â€” Started: ' + prettyDateTime(active.startTime);
     }
 
     function fillEndFromActiveSession() {
@@ -4660,7 +4662,7 @@
       let estimate = '';
       if (type.toLowerCase().indexOf('day') !== -1 && rate && days) estimate = rate * days;
       if (type.toLowerCase().indexOf('hour') !== -1 && rate && hours) estimate = rate * hours;
-      box.textContent = estimate ? 'Estimated pay: $' + estimate.toFixed(2) : 'Estimated pay: —';
+      box.textContent = estimate ? 'Estimated pay: $' + estimate.toFixed(2) : 'Estimated pay: â€”';
     }
 
     function calculateBillableDaysClient(startDate, endDate) {
