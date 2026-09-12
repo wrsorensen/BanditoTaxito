@@ -1485,6 +1485,23 @@
       font-weight: 800;
     }
 
+    .report-filter-group { margin-top: 12px; }
+
+    .report-group-title {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .report-filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 9px;
+    }
+
     .report-preview {
       margin-top: 14px;
       padding: 14px;
@@ -1586,8 +1603,9 @@
       #reportView > select,
       #reportView > .row,
       #reportView > .report-options { display: none !important; }
+      #reportCpaOptions,
       #reportExpenseOptions,
-      #reportTypeNote,
+      #reportTypeNote { display: none !important; }
       .app { max-width: none; padding: 0; }
       .card, .report-preview {
         border: 0;
@@ -2383,19 +2401,21 @@
         </div>
       </div>
       <div class="hidden" id="reportExpenseOptions">
-        <label>Company / Trip Label</label>
-        <input id="expenseReportLabel" placeholder="Optional: August business trip">
-        <div class="row">
+        <div>
+          <label>Report Label</label>
+          <input id="expenseReportLabel" placeholder="Optional: August business trip">
+        </div>
+        <div class="report-filter-group">
+          <span class="report-group-title">Filters</span>
+          <div class="report-filter-row">
           <div>
-            <label>Match Client</label>
+            <label>Client</label>
             <input id="expenseReportClient" placeholder="Optional">
           </div>
           <div>
-            <label>Match Site / Trip</label>
+            <label>Site / Trip</label>
             <input id="expenseReportSite" placeholder="Optional">
           </div>
-        </div>
-        <div class="row">
           <div>
             <label>Reimbursement Status</label>
             <select id="expenseReportStatus">
@@ -2411,6 +2431,7 @@
               <option value="has-proof">With proof</option>
               <option value="missing-proof">Missing proof</option>
             </select>
+          </div>
           </div>
         </div>
       </div>
@@ -2660,7 +2681,7 @@
     const LOGBOOK_PREFS_KEY = 'banditoTaxitoLogbookPrefs_v038';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v0.3.18';
+    const UI_VERSION = 'v0.3.19';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -3798,7 +3819,7 @@
 
       const sections = [
         '<h2 class="report-title">CPA / Tax Prep Report</h2>',
-        '<p class="report-subtitle">' + escapeHtml(reportRangeLabel(report.range)) + ' | Generated ' + escapeHtml(report.generatedAt || '') + '</p>'
+        '<p class="report-subtitle">' + escapeHtml(reportRangeLabel(report.range)) + ' | Generated ' + escapeHtml(formatReportGeneratedAt(report.generatedAt)) + '</p>'
       ];
       if (buckets.indexOf('summary') !== -1) sections.push(renderReportSummary(report.summary || {}));
       if (buckets.indexOf('work') !== -1) sections.push(renderReportWork(report.work || []));
@@ -3823,7 +3844,7 @@
       const title = val('expenseReportLabel') || 'Company Expense / Reimbursement Report';
       const sections = [
         '<h2 class="report-title">' + escapeHtml(title) + '</h2>',
-        '<p class="report-subtitle">' + escapeHtml(reportRangeLabel(report.range)) + ' | Generated ' + escapeHtml(report.generatedAt || '') + '</p>',
+        '<p class="report-subtitle">' + escapeHtml(reportRangeLabel(report.range)) + ' | Generated ' + escapeHtml(formatReportGeneratedAt(report.generatedAt)) + '</p>',
         '<section class="report-section"><h3>Submission Summary</h3><div class="report-grid">' +
           reportStat(money(total), 'Total expenses') +
           reportStat(String(rows.length), 'Itemized receipts') +
@@ -3899,7 +3920,7 @@
 
     function renderReportWork(rows) {
       return reportSection('Work / Income', rows, ['Date', 'Client', 'Site', 'Hours', 'Billable Days', 'Estimated Pay'], function(row) {
-        return [shortDate(row.date), row.client, row.site, numberText(row.hours), numberText(row.billableDays), money(row.estimatedPay)];
+        return [formatReportDate(row.date), row.client, row.site, numberText(row.hours), numberText(row.billableDays), money(row.estimatedPay)];
       });
     }
 
@@ -3911,14 +3932,14 @@
         ? reportTable(['Category', 'Total'], categoryRows)
         : '<div class="report-empty">No category totals for this range.</div>';
       const receiptHtml = reportSection('Receipt Detail', report.receipts || [], ['Date', 'Vendor', 'Category', 'Amount', 'Reimbursable', 'Proof'], function(row) {
-        return [shortDate(row.date), row.vendor, row.category, money(row.amount), row.reimbursable, row.fileUrl ? 'Yes' : 'Missing'];
+        return [formatReportDate(row.date), row.vendor, row.category, money(row.amount), row.reimbursable, row.fileUrl ? 'Yes' : 'Missing'];
       });
       return '<section class="report-section"><h3>Receipts / Expenses</h3>' + categoryHtml + '</section>' + receiptHtml;
     }
 
     function renderReportMileage(rows) {
       return reportSection('Mileage', rows, ['Date', 'Client', 'Site', 'Miles', 'Purpose', 'Reimbursed'], function(row) {
-        return [shortDate(row.date), row.client, row.site, numberText(row.miles), row.purpose, row.reimbursed];
+        return [formatReportDate(row.date), row.client, row.site, numberText(row.miles), row.purpose, row.reimbursed];
       });
     }
 
@@ -3931,7 +3952,7 @@
         return ids[row.id] || isVehicleReceipt(row);
       });
       return reportSection('Vehicle Review', rows, ['Date', 'Vendor', 'Category', 'Amount', 'Reason'], function(row) {
-        return [shortDate(row.date), row.vendor, row.category, money(row.amount), vehicleReason(row)];
+        return [formatReportDate(row.date), row.vendor, row.category, money(row.amount), vehicleReason(row)];
       }, 'No vehicle-related receipt flags in this range.');
     }
 
@@ -3946,19 +3967,19 @@
       const rows = (receipts || []).filter(function(row) { return row.reimbursable === 'Unknown' || row.reimbursable === 'Yes'; });
       return '<section class="report-section"><h3>Reimbursements</h3>' + statHtml + '</section>' +
         reportSection('Reimbursement Detail', rows, ['Date', 'Vendor', 'Amount', 'Status'], function(row) {
-          return [shortDate(row.date), row.vendor, money(row.amount), row.reimbursable];
+          return [formatReportDate(row.date), row.vendor, money(row.amount), row.reimbursable];
         }, 'No reimbursable or unknown receipts in this range.');
     }
 
     function renderReportFlags(rows) {
       return reportSection('CPA Review Flags', rows, ['Date', 'Bucket', 'Record', 'Reason'], function(row) {
-        return [shortDate(row.date), row.bucket, row.title || row.id, row.reason];
+        return [formatReportDate(row.date), row.bucket, row.title || row.id, row.reason];
       }, 'No CPA review flags in this range.');
     }
 
     function renderReportMissing(rows) {
       return reportSection('Missing Info Checklist', rows, ['Date', 'Record', 'Needed'], function(row) {
-        return [shortDate(row.date), row.title || row.id, row.field];
+        return [formatReportDate(row.date), row.title || row.id, row.field];
       }, 'No missing info found in this range.');
     }
 
@@ -3981,7 +4002,7 @@
 
     function reportRangeLabel(range) {
       range = range || {};
-      return (range.startDate || 'Start') + ' to ' + (range.endDate || 'End');
+      return formatReportDate(range.startDate || 'Start') + ' to ' + formatReportDate(range.endDate || 'End');
     }
 
     function money(value) {
@@ -4459,6 +4480,12 @@
       if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
       const parts = raw.split('-');
       return parts[1] + '/' + parts[2] + '/' + parts[0];
+    }
+
+    function formatReportGeneratedAt(value) {
+      const text = String(value || '');
+      const match = text.match(/^(\d{4}-\d{2}-\d{2})(.*)$/);
+      return match ? formatReportDate(match[1]) + match[2] : text;
     }
 
     function reportRangeLabelUS(range) {
