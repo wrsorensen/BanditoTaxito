@@ -1586,6 +1586,8 @@
       #reportView > select,
       #reportView > .row,
       #reportView > .report-options { display: none !important; }
+      #reportExpenseOptions,
+      #reportTypeNote,
       .app { max-width: none; padding: 0; }
       .card, .report-preview {
         border: 0;
@@ -2114,7 +2116,7 @@
           <input id="endRate" inputmode="decimal" placeholder="Optional" oninput="updatePayEstimate()">
         </div>
       </div>
-      <div class="estimate-box" id="payEstimateBox">Estimated pay: â€”</div>
+      <div class="estimate-box" id="payEstimateBox">Estimated pay: Ã¢â‚¬â€</div>
       <label>Status</label>
       <select id="endStatus">
         <option>Complete</option>
@@ -2161,7 +2163,7 @@
             <div class="receipt-ai-title">AI Draft Suggestions</div>
             <div class="tiny">Nothing below is saved until you apply, review, and confirm.</div>
           </div>
-          <div class="receipt-ai-confidence" id="receiptAiConfidence">Confidence â€”</div>
+          <div class="receipt-ai-confidence" id="receiptAiConfidence">Confidence Ã¢â‚¬â€</div>
         </div>
         <div class="receipt-ai-grid" id="receiptAiDraftGrid"></div>
         <div class="receipt-ai-review hidden" id="receiptAiReview"></div>
@@ -2428,7 +2430,7 @@
       <section class="settings-panel" data-settings-panel="home">
         <div class="settings-head">
           <div class="settings-head-main"><h2 id="settingsTitle">Settings</h2></div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">X</button>
         </div>
         <p class="settings-note">Choose what appears on this device, check sync, or send feedback.</p>
         <div class="settings-menu">
@@ -2480,7 +2482,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Customize Dashboard</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">X</button>
         </div>
         <p class="settings-note">Choose what appears. On the dashboard, hold a module and drag it to change the order.</p>
         <div class="settings-list">
@@ -2504,7 +2506,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Logbook Setup</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">&times;</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">X</button>
         </div>
         <p class="settings-note">Choose the Logbook view this device opens first.</p>
         <div class="settings-list">
@@ -2523,7 +2525,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Appearance</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">X</button>
         </div>
         <p class="settings-note">The current look is Western Night.</p>
         <div class="settings-placeholder"><strong>Dog-led branding is active.</strong><br>The v2 icon, Bandito status art, parchment background, and high-contrast dashboard treatment are enabled.</div>
@@ -2535,7 +2537,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Data &amp; Sync</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">X</button>
         </div>
         <p class="settings-note">Check the backend connection and anything waiting in the offline queue.</p>
         <div class="settings-status-grid">
@@ -2551,7 +2553,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>Missing Something?</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">&times;</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">X</button>
         </div>
         <p class="settings-note">Send a bug, suggestion, or missing feature note. App version is attached automatically.</p>
         <label>Type</label>
@@ -2578,7 +2580,7 @@
             <button class="settings-back" type="button" onclick="showSettingsPanel('home')" aria-label="Back to settings">&lsaquo;</button>
             <h2>About</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">Ã—</button>
+          <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">X</button>
         </div>
         <div class="settings-about">
           <img src="assets/main-emblem-v2.png" alt="Bandito Taxito dog-led emblem">
@@ -2608,7 +2610,7 @@
             <button class="settings-back" type="button" onclick="showLogbookControlPanel('actions')" aria-label="Back to record controls">&lsaquo;</button>
             <h2>Edit Record</h2>
           </div>
-          <button class="settings-close" type="button" onclick="closeLogbookControls()" aria-label="Close record controls">Ã—</button>
+          <button class="settings-close" type="button" onclick="closeLogbookControls()" aria-label="Close record controls">X</button>
         </div>
         <p class="settings-note">Uploaded receipt and note files stay unchanged.</p>
         <form id="logbookEditForm" onsubmit="saveLogbookEdit(event)">
@@ -3281,7 +3283,7 @@
 
       localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
       renderActiveSession();
-      toast('Work session started. VÃ¡monos.');
+      toast('Work session started. VÃƒÂ¡monos.');
       showView('homeView');
     }
 
@@ -3590,7 +3592,7 @@
       if (summary) {
         summary.textContent = hasTrouble
           ? 'Bandito found trouble. Review the items below.'
-          : 'No loose ends. Keep Stackinâ€™.';
+          : 'No loose ends. Keep StackinÃ¢â‚¬â„¢.';
       }
     }
 
@@ -3864,7 +3866,7 @@
         '</tr></thead><tbody>' + rows.map(function(row) {
           const clientSite = [row.client, row.site].filter(hasValue).join(' / ');
           return '<tr>' + [
-            shortDate(row.date), row.vendor, row.category, clientSite, row.notes, money(row.amount), row.reimbursable
+            formatReportDate(row.date), row.vendor, row.category, clientSite, row.notes, money(row.amount), row.reimbursable
           ].map(function(cell) {
             return '<td>' + escapeHtml(cell) + '</td>';
           }).join('') + '<td>' + receiptProofLinks(row.fileUrl) + '</td></tr>';
@@ -4452,6 +4454,18 @@
       return String(value).slice(0, 10);
     }
 
+    function formatReportDate(value) {
+      const raw = shortDate(value);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+      const parts = raw.split('-');
+      return parts[1] + '/' + parts[2] + '/' + parts[0];
+    }
+
+    function reportRangeLabelUS(range) {
+      range = range || {};
+      return formatReportDate(range.startDate) + ' to ' + formatReportDate(range.endDate);
+    }
+
     function escapeAttr(value) {
       return escapeHtml(value).replace(/`/g, '&#096;');
     }
@@ -4483,7 +4497,7 @@
       }
 
       card.classList.remove('hidden');
-      text.textContent = active.client + ' â€” ' + active.site + ' â€” Started: ' + prettyDateTime(active.startTime);
+      text.textContent = active.client + ' Ã¢â‚¬â€ ' + active.site + ' Ã¢â‚¬â€ Started: ' + prettyDateTime(active.startTime);
     }
 
     function fillEndFromActiveSession() {
@@ -4662,7 +4676,7 @@
       let estimate = '';
       if (type.toLowerCase().indexOf('day') !== -1 && rate && days) estimate = rate * days;
       if (type.toLowerCase().indexOf('hour') !== -1 && rate && hours) estimate = rate * hours;
-      box.textContent = estimate ? 'Estimated pay: $' + estimate.toFixed(2) : 'Estimated pay: â€”';
+      box.textContent = estimate ? 'Estimated pay: $' + estimate.toFixed(2) : 'Estimated pay: Ã¢â‚¬â€';
     }
 
     function calculateBillableDaysClient(startDate, endDate) {
