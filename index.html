@@ -1914,6 +1914,17 @@
         </div>
       </div>
 
+      <div id="activeMileageCard" class="card active-session hidden">
+        <div class="section-head">
+          <h2 class="section-title">Mileage Trip In Progress</h2>
+          <button class="home-btn" onclick="showView('mileageView')">Finish Trip</button>
+        </div>
+        <div id="activeMileageText" class="tiny"></div>
+        <div class="actions compact-actions">
+          <button class="btn secondary compact" onclick="clearActiveMileageSession()">Clear Session</button>
+        </div>
+      </div>
+
       <div class="dashboard-modules" id="dashboardModules">
         <section class="dashboard-module quick-actions-module" id="quickActionsModule" data-dashboard-module="quickActions" aria-label="Main actions">
           <div class="quick-grid" id="quickActions">
@@ -2268,9 +2279,10 @@
 
     <section id="mileageView" class="card hidden">
       <div class="section-head">
-        <h2 class="section-title">Add Mileage</h2>
+        <h2 class="section-title" id="mileageViewTitle">Add Mileage</h2>
         <button class="home-btn" onclick="showView('homeView')">&larr; Home</button>
       </div>
+      <input type="hidden" id="mileageResumeId" value="">
       <label>Company / Client</label>
       <input id="mileageClient" list="clientList">
       <label>Project / Site</label>
@@ -2307,8 +2319,9 @@
       </select>
       <label>Notes</label>
       <textarea id="mileageNotes"></textarea>
+      <p class="tiny" id="mileageHelperText">Leave End Odometer blank to start the trip now and finish it later.</p>
       <div class="actions">
-        <button class="btn" onclick="saveMileageForm()">Save Mileage</button>
+        <button class="btn" id="mileageSaveButton" onclick="saveMileageForm()">Save Mileage</button>
         <button class="btn secondary" onclick="showView('homeView')">Cancel</button>
       </div>
     </section>
@@ -2678,12 +2691,13 @@
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyM4acSDZT7L6q_I7UQDfMc4xZiCFGXlw9B9pPPawGQSQtTCvtQZFNxbsAQ3z7vFBcPVQ/exec';
     const QUEUE_KEY = 'banditoTaxitoQueue_v020';
     const SESSION_KEY = 'banditoTaxitoActiveSession_v020';
+    const MILEAGE_SESSION_KEY = 'banditoTaxitoActiveMileage_v102';
     const DASHBOARD_PREFS_KEY = 'banditoTaxitoDashboardPrefs_v025';
     const DASHBOARD_ORDER_KEY = 'banditoTaxitoDashboardOrder_v026';
     const LOGBOOK_PREFS_KEY = 'banditoTaxitoLogbookPrefs_v038';
     const RECEIPT_MODE_KEY = 'banditoTaxitoReceiptMode_v034';
     const RECEIPT_CONTEXT_KEY = 'banditoTaxitoReceiptContext_v036';
-    const UI_VERSION = 'v1.0.1';
+    const UI_VERSION = 'v1.0.2';
     const LOADING_LINES = [
       'Checking the trail...',
       'Guarding the stack...',
@@ -2737,6 +2751,7 @@
       updateOnlineStatus();
       updateQueuePill();
       renderActiveSession();
+      renderActiveMileageSession();
       loadDashboardLayout();
       enableDashboardReordering();
       enableLogbookEntryControls();
@@ -3275,6 +3290,7 @@
       });
 
       if (id === 'endWorkView') fillEndFromActiveSession();
+      if (id === 'mileageView') fillMileageFromActiveSession();
       if (id === 'logbookView' && !options.skipRefresh) refreshLogbook();
       if (id === 'receiptView') {
         applyReceiptMode(getReceiptMode(), false);
@@ -3306,6 +3322,7 @@
 
       localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
       renderActiveSession();
+      renderWeeklyReview(appState.weeklyReview || {});
       toast('Work session started. VÃƒÂ¡monos.');
       showView('homeView');
     }
@@ -3341,6 +3358,7 @@
       submitOrQueue('workLog', payload, 'Work log sent.');
       localStorage.removeItem(SESSION_KEY);
       renderActiveSession();
+      renderWeeklyReview(appState.weeklyReview || {});
       clearEndForm();
       showView('homeView');
     }
@@ -3382,6 +3400,13 @@
     }
 
     function saveMileageForm() {
+      const resumeId = val('mileageResumeId');
+
+      if (resumeId) {
+        finishMileageSession(resumeId);
+        return;
+      }
+
       const payload = {
         client: val('mileageClient'),
         site: val('mileageSite'),
@@ -3395,14 +3420,72 @@
         notes: val('mileageNotes')
       };
 
-      if (!payload.tripDate || !payload.startOdometer || !payload.endOdometer) {
-        toast('Trip date and odometer fields are required.');
+      if (!payload.tripDate || !payload.startOdometer) {
+        toast('Trip date and start odometer are required.');
+        return;
+      }
+
+      if (!payload.endOdometer) {
+        payload.mileageId = makeClientId('MILE');
+        localStorage.setItem(MILEAGE_SESSION_KEY, JSON.stringify(Object.assign({ startedAt: new Date().toISOString() }, payload)));
+        submitOrQueue('mileage', payload, 'Mileage trip started. Finish it when you arrive.');
+        renderActiveMileageSession();
+        clearMileageForm();
+        showView('homeView');
         return;
       }
 
       submitOrQueue('mileage', payload, 'Mileage sent.');
       clearMileageForm();
       showView('homeView');
+    }
+
+    function finishMileageSession(resumeId) {
+      const active = getActiveMileageSession();
+      const endOdometer = val('mileageEnd');
+
+      if (!endOdometer) {
+        toast('End odometer is required to finish this trip.');
+        return;
+      }
+
+      const startOdometer = active ? active.startOdometer : val('mileageStart');
+      const miles = calculateMilesClient(startOdometer, endOdometer);
+      const updates = {
+        to: val('mileageTo'),
+        purpose: val('mileagePurpose'),
+        reimbursed: val('mileageReimbursed'),
+        notes: val('mileageNotes'),
+        endOdometer: endOdometer,
+        miles: miles,
+        status: 'Complete'
+      };
+
+      apiGet('updateLogbookEntry', {
+        payload: JSON.stringify({ type: 'mileage', id: resumeId, updates: updates, source: UI_VERSION + ' Mileage' })
+      }).then(function() {
+        localStorage.removeItem(MILEAGE_SESSION_KEY);
+        renderActiveMileageSession();
+        toast('Trip finished. Nice work, Bandito.');
+        window.setTimeout(refreshWeeklyReview, 1500);
+        if (!document.getElementById('logbookView').classList.contains('hidden')) window.setTimeout(refreshLogbook, 1500);
+        clearMileageForm();
+        showView('homeView');
+      }).catch(function(err) {
+        toast('Could not finish trip. Try again once online.');
+        console.error(err);
+      });
+    }
+
+    function calculateMilesClient(startOdometer, endOdometer) {
+      const start = Number(startOdometer);
+      const end = Number(endOdometer);
+      if (isNaN(start) || isNaN(end) || end < start) return '';
+      return Math.round((end - start) * 100) / 100;
+    }
+
+    function makeClientId(prefix) {
+      return prefix + '-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
     }
 
     function saveNoteForm() {
@@ -3622,6 +3705,13 @@
     function renderWeeklyReview(data) {
       data = data || {};
       const items = getReviewItems(data);
+      const activeWork = getActiveSession();
+      if (activeWork) {
+        items.unshift({
+          key: 'openWorkSession', label: 'Open work session', value: 'Started ' + prettyDateTime(activeWork.startTime),
+          type: 'bad', needsReview: true, recordType: 'work', reason: 'Work session started but not finished.'
+        });
+      }
 
       document.getElementById('reviewList').innerHTML = items.map(function(item) {
         const reviewClass = item.needsReview ? ' needs-review' : '';
@@ -3635,10 +3725,11 @@
         data.missingWorkNotes,
         data.missingReceiptFile,
         data.missingReceiptAmount,
-        data.missingMileage
+        data.missingMileage,
+        data.openMileageSessions
       ].reduce(function(total, value) {
         return total + (Number(value) || 0);
-      }, 0);
+      }, 0) + (activeWork ? 1 : 0);
       renderBanditoReviewStatus(troubleCount);
     }
 
@@ -3650,7 +3741,8 @@
         { key: 'missingWorkNotes', label: 'Missing notes', value: data.missingWorkNotes || 0, type: data.missingWorkNotes ? 'warn' : 'neutral', needsReview: Number(data.missingWorkNotes) > 0, recordType: 'work', reason: 'Missing work description or notes.' },
         { key: 'missingReceiptFile', label: 'Receipt file', value: data.missingReceiptFile || 0, type: data.missingReceiptFile ? 'warn' : 'neutral', needsReview: Number(data.missingReceiptFile) > 0, recordType: 'receipt', reason: 'Missing receipt proof file.' },
         { key: 'missingReceiptAmount', label: 'Receipt amount', value: data.missingReceiptAmount || 0, type: data.missingReceiptAmount ? 'bad' : 'neutral', needsReview: Number(data.missingReceiptAmount) > 0, recordType: 'receipt', reason: 'Missing receipt amount.' },
-        { key: 'missingMileage', label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'neutral', needsReview: Number(data.missingMileage) > 0, recordType: 'mileage', reason: 'Missing mileage miles.' }
+        { key: 'missingMileage', label: 'Missing miles', value: data.missingMileage || 0, type: data.missingMileage ? 'bad' : 'neutral', needsReview: Number(data.missingMileage) > 0, recordType: 'mileage', reason: 'Missing mileage miles.' },
+        { key: 'openMileageSessions', label: 'Open mileage', value: data.openMileageSessions || 0, type: data.openMileageSessions ? 'bad' : 'neutral', needsReview: Number(data.openMileageSessions) > 0, recordType: 'mileage', reason: 'Mileage trip started but not finished.' }
       ];
     }
 
@@ -3661,6 +3753,16 @@
     }
 
     function openReviewIssue(issueKey) {
+      if (issueKey === 'openWorkSession') {
+        if (!getActiveSession()) {
+          toast('No open work session.');
+          return;
+        }
+        toast('Opening Work Session...');
+        showView('endWorkView');
+        return;
+      }
+
       const issue = reviewIssueConfig(issueKey);
       if (!issue || !issue.needsReview) {
         toast('No matching review issue.');
@@ -3712,6 +3814,7 @@
 
     function reviewIssueMatchesItem(issueKey, item) {
       item = item || {};
+      if (issueKey === 'openMileageSessions') return item.type === 'mileage' && String(item.status || '').toUpperCase() === 'OPEN';
       if (!isRecentReviewItem(item)) return false;
       if (issueKey === 'missingEndTime') return item.type === 'work' && !hasValue(item.endTime);
       if (issueKey === 'missingWorkNotes') return item.type === 'work' && !hasValue(item.workPerformed) && !hasValue(item.notes);
@@ -4550,7 +4653,64 @@
     function clearActiveSession() {
       localStorage.removeItem(SESSION_KEY);
       renderActiveSession();
+      renderWeeklyReview(appState.weeklyReview || {});
       toast('Active session cleared.');
+    }
+
+    function getActiveMileageSession() {
+      try {
+        return JSON.parse(localStorage.getItem(MILEAGE_SESSION_KEY) || 'null');
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function renderActiveMileageSession() {
+      const active = getActiveMileageSession();
+      const card = document.getElementById('activeMileageCard');
+      const text = document.getElementById('activeMileageText');
+      if (!card || !text) return;
+
+      if (!active) {
+        card.classList.add('hidden');
+        text.textContent = '';
+        return;
+      }
+
+      card.classList.remove('hidden');
+      const startedAt = active.startedAt ? prettyDateTime(active.startedAt) : '';
+      text.textContent = (active.client || 'Trip') + ' — ' + (active.from || 'Start: ' + active.startOdometer) + ' — Started: ' + startedAt;
+    }
+
+    function fillMileageFromActiveSession() {
+      const active = getActiveMileageSession();
+      document.getElementById('mileageResumeId').value = '';
+      document.getElementById('mileageViewTitle').textContent = 'Add Mileage';
+      document.getElementById('mileageSaveButton').textContent = 'Save Mileage';
+      document.getElementById('mileageHelperText').classList.remove('hidden');
+
+      if (!active) return;
+
+      document.getElementById('mileageResumeId').value = active.mileageId || '';
+      document.getElementById('mileageClient').value = active.client || '';
+      document.getElementById('mileageSite').value = active.site || '';
+      document.getElementById('mileageDate').value = active.tripDate || today();
+      document.getElementById('mileageStart').value = active.startOdometer || '';
+      document.getElementById('mileageEnd').value = '';
+      document.getElementById('mileageFrom').value = active.from || '';
+      document.getElementById('mileageTo').value = active.to || '';
+      document.getElementById('mileagePurpose').value = active.purpose || 'Business/job travel';
+      document.getElementById('mileageReimbursed').value = active.reimbursed || 'Unknown';
+      document.getElementById('mileageNotes').value = active.notes || '';
+      document.getElementById('mileageViewTitle').textContent = 'Finish Trip';
+      document.getElementById('mileageSaveButton').textContent = 'Finish Trip';
+      document.getElementById('mileageHelperText').classList.add('hidden');
+    }
+
+    function clearActiveMileageSession() {
+      localStorage.removeItem(MILEAGE_SESSION_KEY);
+      renderActiveMileageSession();
+      toast('Mileage session cleared.');
     }
 
     function readOptionalFile(input, callback) {
